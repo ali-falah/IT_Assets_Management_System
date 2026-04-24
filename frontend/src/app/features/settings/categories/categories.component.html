@@ -1,0 +1,199 @@
+<div class="max-w-4xl mx-auto space-y-6 flex-1 flex flex-col w-full">
+  <div class="flex items-center space-x-4">
+    <a routerLink="/settings" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">
+      <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 flex items-center">
+        <lucide-icon name="tags" [size]="24" class="mr-2 text-indigo-600"></lucide-icon>
+        Manage Categories
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">Organize your assets into functional categories.</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex-1 flex flex-col">
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <h2 class="text-lg font-semibold text-slate-800">Asset Categories</h2>
+      <button *ngIf="!addingCat" (click)="addingCat = true" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
+        <lucide-icon name="plus" [size]="16" class="mr-1"></lucide-icon> New Category
+      </button>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="p-4 border-b border-slate-100 bg-white">
+      <div class="relative group">
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          placeholder="Search categories..." 
+          class="pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50/50 hover:bg-white hover:border-slate-300 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none w-full transition-all duration-200"
+        >
+      </div>
+    </div>
+    
+    <div class="p-4 space-y-4">
+      <!-- Add Form -->
+      <div *ngIf="addingCat" class="p-4 border border-indigo-200 bg-indigo-50/50 rounded-lg space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Category Name</label>
+            <input type="text" [(ngModel)]="newCat.name" placeholder="e.g. Laptops" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Description (Optional)</label>
+            <input type="text" [(ngModel)]="newCat.description" placeholder="Brief description" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-6 items-start">
+          <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Assign Icon</label>
+            <div class="flex flex-wrap gap-1.5 p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+              @for (icon of iconOptions; track icon) {
+                <button (click)="newCat.icon = icon" 
+                  [class.bg-primary]="newCat.icon === icon"
+                  [class.text-white]="newCat.icon === icon"
+                  [class.bg-slate-50]="newCat.icon !== icon"
+                  class="p-2 rounded-lg hover:scale-110 transition-all duration-200 shadow-sm border border-transparent">
+                  <lucide-icon [name]="icon" [size]="18"></lucide-icon>
+                </button>
+              }
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 italic">* Leave empty for smart auto-assignment</p>
+          </div>
+
+          <div class="w-full md:w-auto">
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Brand Color</label>
+            <div class="flex flex-wrap md:grid md:grid-cols-5 gap-2 p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+              @for (color of colorOptions; track color) {
+                <button (click)="newCat.color = color" 
+                  [class.ring-2]="newCat.color === color"
+                  [class.ring-offset-2]="newCat.color === color"
+                  class="w-6 h-6 rounded-full bg-{{color}}-500 transition-all border border-white shadow-sm ring-{{color}}-400">
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2 border-t border-indigo-100">
+          <button (click)="addingCat = false" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors">Cancel</button>
+          <button (click)="saveNewCategory()" [disabled]="!newCat.name" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-600 text-sm font-medium transition-colors disabled:opacity-50">Save Category</button>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="space-y-2">
+        @for (cat of filteredCategories; track cat.id) {
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 border border-slate-100 rounded-lg hover:border-slate-200 transition-colors bg-white">
+            
+            <!-- View Mode -->
+            <div class="flex-1 mr-4 flex items-center" *ngIf="editingCat !== cat.id">
+              <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-{{cat.color || 'slate'}}-50 text-{{cat.color || 'slate'}}-600 mr-4 border border-{{cat.color || 'slate'}}-100">
+                <lucide-icon [name]="cat.icon || 'package'" [size]="20"></lucide-icon>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800">{{ cat.name }}</p>
+                <p class="text-sm text-slate-500 mt-0.5 line-clamp-1">{{ cat.description || 'No description provided.' }}</p>
+              </div>
+            </div>
+            
+            <!-- Edit Mode -->
+            <div class="flex-1 w-full space-y-4 mr-4" *ngIf="editingCat === cat.id">
+              <div class="grid grid-cols-2 gap-4">
+                <input type="text" [(ngModel)]="editCatData.name" placeholder="Category Name" class="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                <input type="text" [(ngModel)]="editCatData.description" placeholder="Description" class="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+              </div>
+              
+              <div class="flex flex-wrap gap-4 items-end">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Pick Icon</label>
+                  <div class="flex flex-wrap gap-1 max-w-[300px]">
+                    @for (icon of iconOptions; track icon) {
+                      <button (click)="editCatData.icon = icon" 
+                        [class.ring-2]="editCatData.icon === icon"
+                        [class.ring-primary]="editCatData.icon === icon"
+                        class="p-1.5 rounded hover:bg-slate-100 transition-all">
+                        <lucide-icon [name]="icon" [size]="16" [class.text-primary]="editCatData.icon === icon"></lucide-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Pick Color</label>
+                  <div class="flex flex-wrap gap-1">
+                    @for (color of colorOptions; track color) {
+                      <button (click)="editCatData.color = color" 
+                        [class.ring-2]="editCatData.color === color"
+                        [class.ring-primary]="editCatData.color === color"
+                        class="w-6 h-6 rounded-full bg-{{color}}-500 transition-all border border-white">
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex space-x-2 shrink-0 mt-3 sm:mt-0">
+              <ng-container *ngIf="editingCat !== cat.id">
+                <button (click)="startEditCategory(cat)" class="p-1.5 text-slate-400 hover:text-primary hover:bg-indigo-50 rounded transition-colors" title="Edit">
+                  <lucide-icon name="pencil" [size]="18"></lucide-icon>
+                </button>
+                <button (click)="deleteCategory(cat)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Delete">
+                  <lucide-icon name="trash-2" [size]="18"></lucide-icon>
+                </button>
+              </ng-container>
+              
+              <ng-container *ngIf="editingCat === cat.id">
+                <button (click)="saveCategory()" class="p-1.5 text-green-600 hover:bg-green-50 rounded border border-transparent hover:border-green-200 transition-colors flex items-center" title="Save">
+                  <lucide-icon name="check" [size]="18"></lucide-icon>
+                </button>
+                <button (click)="editingCat = null" class="p-1.5 text-slate-500 hover:bg-slate-100 rounded border border-transparent hover:border-slate-200 transition-colors flex items-center" title="Cancel">
+                  <lucide-icon name="x" [size]="18"></lucide-icon>
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        }
+        @if (filteredCategories.length === 0 && !addingCat) {
+          <div class="text-center py-12 px-4 border-2 border-dashed border-slate-200 rounded-xl">
+            <lucide-icon name="tags" [size]="48" class="mx-auto text-slate-300 mb-3"></lucide-icon>
+            <h3 class="text-lg font-medium text-slate-900">No categories found</h3>
+            <p class="text-sm text-slate-500 mt-1">Try a different search term or create a new category.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Standard Delete Confirmation -->
+<div *ngIf="showConfirmDelete" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md transform transition-all overflow-hidden border border-slate-100">
+    <div class="p-8 text-center">
+      <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <lucide-icon name="trash-2" [size]="32" class="text-rose-500"></lucide-icon>
+      </div>
+      
+      <h3 class="text-xl font-bold text-slate-800 mb-2">Delete Category?</h3>
+      <p class="text-slate-500 mb-8 leading-relaxed">
+        Are you sure you want to delete <span class="font-bold text-slate-700">"{{ categoryToDelete?.name }}"</span>? This will remove the category classification from all systems.
+      </p>
+      
+      <div class="flex items-center gap-3">
+        <button (click)="cancelDelete()" 
+                class="flex-1 px-6 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all">
+          Cancel
+        </button>
+        <button (click)="executeDelete()" 
+                class="flex-1 px-6 py-3 bg-rose-500 text-white rounded-xl font-bold text-sm hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all">
+          Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

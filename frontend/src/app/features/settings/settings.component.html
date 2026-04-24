@@ -1,0 +1,44 @@
+<div class="max-w-5xl mx-auto space-y-8">
+  <div>
+    <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Settings</h1>
+    <p class="text-slate-500 mt-2">Manage your master data and system configuration.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Categories -->
+    <a routerLink="/settings/categories" class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col hover:shadow-md hover:border-indigo-100 transition-all cursor-pointer">
+      <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <lucide-icon name="tags" [size]="24"></lucide-icon>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1 flex justify-between items-center">
+        Categories
+        <lucide-icon name="chevron-right" [size]="18" class="text-slate-400 group-hover:text-indigo-600 transition-colors"></lucide-icon>
+      </h3>
+      <p class="text-sm text-slate-500 flex-1">Manage asset classifications and types.</p>
+    </a>
+
+    <!-- Locations -->
+    <a routerLink="/settings/locations" class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col hover:shadow-md hover:teal-100 transition-all cursor-pointer">
+      <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <lucide-icon name="map-pin" [size]="24"></lucide-icon>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1 flex justify-between items-center">
+        Locations
+        <lucide-icon name="chevron-right" [size]="18" class="text-slate-400 group-hover:text-teal-600 transition-colors"></lucide-icon>
+      </h3>
+      <p class="text-sm text-slate-500 flex-1">Define physical locations and addresses.</p>
+    </a>
+
+    <!-- Statuses -->
+    <a routerLink="/settings/statuses" class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col hover:shadow-md hover:amber-100 transition-all cursor-pointer">
+      <div class="h-12 w-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <lucide-icon name="circle-dot" [size]="24"></lucide-icon>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1 flex justify-between items-center">
+        Statuses
+        <lucide-icon name="chevron-right" [size]="18" class="text-slate-400 group-hover:text-amber-600 transition-colors"></lucide-icon>
+      </h3>
+      <p class="text-sm text-slate-500 flex-1">Configure asset lifecycle states and colors.</p>
+    </a>
+  </div>
+</div>

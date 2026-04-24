@@ -1,0 +1,222 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in slide-in-from-bottom-8 duration-300">
+    
+    <!-- Header -->
+    <div class="relative bg-slate-50 border-b border-slate-100 p-6 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <lucide-icon name="user" [size]="24"></lucide-icon>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">{{ loading ? 'Loading...' : user?.name }}</h2>
+          <p class="text-sm text-slate-500">{{ loading ? 'Please wait' : user?.email }}</p>
+        </div>
+      </div>
+      <button (click)="close.emit()" class="p-2 hover:bg-slate-200/50 rounded-lg text-slate-400 hover:text-slate-600 transition-colors">
+        <lucide-icon name="x" [size]="24"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-slate-100 bg-white sticky top-0 z-10 px-6">
+      <button (click)="activeTab = 'overview'" 
+              [class.text-primary]="activeTab === 'overview'"
+              [class.border-primary]="activeTab === 'overview'"
+              class="px-4 py-4 text-sm font-medium border-b-2 border-transparent transition-all hover:text-primary">
+        Overview
+      </button>
+      <button (click)="activeTab = 'assets'" 
+              [class.text-primary]="activeTab === 'assets'"
+              [class.border-primary]="activeTab === 'assets'"
+              class="px-4 py-4 text-sm font-medium border-b-2 border-transparent transition-all hover:text-primary flex items-center">
+        Assets
+        <span *ngIf="user?.assets?.length" class="ml-2 px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] rounded-md font-bold">
+          {{ user?.assets?.length }}
+        </span>
+      </button>
+      <button (click)="activeTab = 'history'" 
+              [class.text-primary]="activeTab === 'history'"
+              [class.border-primary]="activeTab === 'history'"
+              class="px-4 py-4 text-sm font-medium border-b-2 border-transparent transition-all hover:text-primary">
+        History
+      </button>
+      <button (click)="activeTab = 'edit'" 
+              [class.text-primary]="activeTab === 'edit'"
+              [class.border-primary]="activeTab === 'edit'"
+              class="px-4 py-4 text-sm font-medium border-b-2 border-transparent transition-all hover:text-primary">
+        Settings
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 space-y-4">
+        <lucide-icon name="loader" [size]="48" class="text-primary animate-spin"></lucide-icon>
+        <p class="text-slate-500 font-medium">Fetching profile details...</p>
+      </div>
+
+      <div *ngIf="!loading && user">
+        
+        <!-- Overview Tab -->
+        <div *ngIf="activeTab === 'overview'" class="space-y-6 animate-in fade-in duration-300">
+          <div class="grid grid-cols-2 gap-6">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Role</p>
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-1 bg-indigo-100 text-primary text-xs font-bold rounded-lg uppercase">
+                  {{ user.role.name }}
+                </span>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+              <div class="flex items-center space-x-2">
+                <span class="h-2 w-2 rounded-full" [class.bg-green-500]="user.isActive" [class.bg-red-500]="!user.isActive"></span>
+                <span class="text-sm font-bold text-slate-700">{{ user.isActive ? 'Active Account' : 'Disabled' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Quick Summary</p>
+            <div class="space-y-3">
+              <div class="flex items-center text-sm text-slate-600">
+                <lucide-icon name="laptop" [size]="16" class="mr-3 opacity-60"></lucide-icon>
+                <span>Currently holding <strong>{{ user.assets?.length || 0 }}</strong> assets</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <lucide-icon name="history" [size]="16" class="mr-3 opacity-60"></lucide-icon>
+                <span>Total of <strong>{{ user.assignments?.length || 0 }}</strong> assignment records</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <lucide-icon name="calendar" [size]="16" class="mr-3 opacity-60"></lucide-icon>
+                <span>Member since {{ user.createdAt | date:'longDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assets Tab -->
+        <div *ngIf="activeTab === 'assets'" class="space-y-4 animate-in fade-in duration-300">
+          <div *ngIf="!user.assets?.length" class="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <lucide-icon name="package" [size]="48" class="mx-auto text-slate-300 mb-3"></lucide-icon>
+            <p class="text-slate-500 font-medium">No assets currently assigned</p>
+          </div>
+
+          <div *ngFor="let asset of user.assets" 
+               [routerLink]="['/assets', asset.id, 'edit']" (click)="close.emit()"
+               class="p-4 rounded-xl border border-slate-100 bg-white hover:border-primary/30 hover:shadow-md transition-all group cursor-pointer">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center">
+                <div class="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                  <lucide-icon name="laptop" [size]="20"></lucide-icon>
+                </div>
+                <div class="ml-4">
+                  <h4 class="font-bold text-slate-800">{{ asset.name }}</h4>
+                  <p class="text-xs text-slate-500 font-mono">{{ asset.serialNumber }}</p>
+                </div>
+              </div>
+              <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                {{ asset.status?.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Tab -->
+        <div *ngIf="activeTab === 'history'" class="animate-in fade-in duration-300">
+          <div *ngIf="!user.assignments?.length" class="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <lucide-icon name="history" [size]="48" class="mx-auto text-slate-300 mb-3"></lucide-icon>
+            <p class="text-slate-500 font-medium">No assignment history found</p>
+          </div>
+
+          <div class="relative pl-6 border-l-2 border-slate-100 space-y-6 ml-3">
+            <div *ngFor="let assignment of user.assignments" class="relative">
+              <div class="absolute -left-[31px] top-0 h-4 w-4 rounded-full border-2 border-white" 
+                   [ngClass]="assignment.returnedAt ? 'bg-slate-300' : 'bg-primary ring-4 ring-primary/20'">
+              </div>
+              
+                <div [routerLink]="['/assets', assignment.asset?.id, 'edit']" (click)="close.emit()"
+                     class="bg-slate-50 rounded-xl p-4 border border-slate-100 hover:border-primary/30 hover:bg-white transition-all cursor-pointer group">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center">
+                      <div class="p-2 bg-white rounded-lg shadow-sm mr-3 group-hover:bg-primary/10 transition-colors">
+                        <lucide-icon name="package" [size]="18" class="text-slate-600 group-hover:text-primary"></lucide-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-slate-800 group-hover:text-primary transition-colors">{{ assignment.asset?.name || 'Unknown Asset' }}</p>
+                        <p class="text-xs text-slate-500 font-mono uppercase">{{ assignment.asset?.serialNumber }}</p>
+                      </div>
+                    </div>
+                    <span *ngIf="!assignment.returnedAt" class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Currently Holding</span>
+                  </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div class="flex items-center text-slate-600">
+                    <lucide-icon name="calendar" [size]="14" class="mr-2 opacity-70"></lucide-icon>
+                    <span>Assigned: {{ assignment.assignedAt | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="flex items-center text-slate-600">
+                    <lucide-icon name="clock" [size]="14" class="mr-2 opacity-70"></lucide-icon>
+                    <span *ngIf="assignment.returnedAt">Returned: {{ assignment.returnedAt | date:'mediumDate' }}</span>
+                    <span *ngIf="!assignment.returnedAt" class="text-primary font-bold italic uppercase tracking-tighter">In Use</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Tab -->
+        <div *ngIf="activeTab === 'edit'" class="animate-in fade-in duration-300">
+          <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
+              <input type="text" formControlName="name" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Email Address</label>
+              <input type="email" formControlName="email" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Role</label>
+                <select formControlName="roleId" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
+                  <option *ngFor="let role of roles" [value]="role.id">{{ role.name | titlecase }}</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center cursor-pointer p-2.5 bg-slate-50 border border-slate-100 rounded-xl w-full">
+                  <input type="checkbox" formControlName="isActive" class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary">
+                  <span class="ml-3 text-sm font-medium text-slate-700 uppercase tracking-tight">Active Account</span>
+                </label>
+              </div>
+            </div>
+            <div class="pt-2">
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">New Password (leave blank to keep current)</label>
+              <div class="relative">
+                <lucide-icon name="lock" [size]="16" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+                <input type="password" formControlName="password" placeholder="••••••••" class="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-6 gap-4 border-t border-slate-100 mt-6">
+              <button type="button" (click)="onDelete()" class="w-full sm:w-auto px-6 py-3 bg-white text-rose-500 border border-rose-200 hover:bg-rose-50 rounded-xl font-bold transition-all flex items-center justify-center">
+                <lucide-icon name="trash-2" [size]="18" class="mr-2"></lucide-icon>
+                Delete Account
+              </button>
+              <button type="submit" [disabled]="userForm.invalid || saving" class="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-indigo-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary/25 disabled:opacity-50 flex items-center justify-center">
+                <lucide-icon *ngIf="saving" name="loader" [size]="18" class="animate-spin mr-2"></lucide-icon>
+                <lucide-icon *ngIf="!saving" name="save" [size]="18" class="mr-2"></lucide-icon>
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

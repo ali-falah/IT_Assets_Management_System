@@ -1,0 +1,279 @@
+<div class="max-w-4xl mx-auto space-y-4 flex-1 flex flex-col w-full px-4 sm:px-0 pb-10">
+  <!-- Header -->
+  <div class="flex items-center justify-between shrink-0 py-2">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Asset Scanner</h1>
+      <p class="text-xs text-slate-500 font-medium">{{ batchMode ? 'Batch Scanning Mode Active' : 'Single Asset Scan Mode' }}</p>
+    </div>
+    <div class="flex space-x-2">
+      <button (click)="toggleBatchMode()"
+        class="flex items-center px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm border"
+        [ngClass]="batchMode ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
+        <lucide-icon [name]="batchMode ? 'layers' : 'square'" [size]="18" class="mr-2"></lucide-icon>
+        {{ batchMode ? 'Batch: ON' : 'Batch: OFF' }}
+      </button>
+      <button (click)="toggleScanner()"
+        class="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+        [title]="scannerEnabled ? 'Turn Off Camera' : 'Turn On Camera'">
+        <lucide-icon [name]="scannerEnabled ? 'video' : 'video-off'" [size]="20" [class.text-red-500]="!scannerEnabled"></lucide-icon>
+      </button>
+      @if (cameras.length > 1) {
+      <button (click)="switchCamera()"
+        class="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+        title="Switch Camera">
+        <lucide-icon name="refresh-cw" [size]="20"></lucide-icon>
+      </button>
+      }
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
+    
+    <!-- Left Column: Scanner -->
+    <div class="lg:col-span-7 flex flex-col space-y-4 min-h-0">
+      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-visible flex flex-col shrink-0 relative">
+        
+        <!-- Active Scanner Area -->
+        <div class="relative bg-black aspect-[4/3] sm:aspect-video flex items-center justify-center overflow-hidden">
+          
+          <!-- Visual Flash Feedback -->
+          <div *ngIf="scanFlash" class="absolute inset-0 z-50 animate-in fade-in duration-200 pointer-events-none"
+               [ngClass]="scanFlash === 'success' ? 'bg-green-500/30' : 'bg-red-500/30'">
+          </div>
+
+          <!-- Scanning Paused Overlay (Countdown/Wait) -->
+          <div *ngIf="isScanningPaused && scannerEnabled" class="absolute inset-0 z-40 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
+            <div class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-3"></div>
+            <p class="text-sm font-bold tracking-wide uppercase">Next scan in 2s...</p>
+          </div>
+
+          @if (scannerEnabled && !isScanningPaused) {
+            <zxing-scanner 
+              class="w-full h-full object-cover" 
+              (scanSuccess)="onCodeResult($event)" 
+              (scanError)="onScanError($event)"
+              [formats]="formatsEnabled"
+              [device]="currentDevice" 
+              [enable]="scannerEnabled && !isScanningPaused"
+              [torch]="torchEnabled" 
+              (torchCompatible)="onTorchCompatible($event)"
+              (camerasFound)="onCamerasFound($event)" 
+              (permissionResponse)="onPermissionResponse($event)" 
+              [tryHarder]="true">
+            </zxing-scanner>
+
+            <!-- Scanner Overlay -->
+            <div *ngIf="hasPermission" class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+              <div class="absolute inset-0 bg-black/40"></div>
+              <div class="relative w-48 h-48 sm:w-64 sm:h-64 bg-transparent border-2 border-white/20 rounded-2xl overflow-hidden"
+                   [class.border-primary]="!isScanningPaused">
+                <div class="absolute inset-0 shadow-[0_0_0_2000px_rgba(0,0,0,0.4)]"></div>
+                <div *ngIf="!isScanningPaused" class="absolute top-0 left-0 w-full h-1 bg-primary shadow-[0_0_15px_rgba(99,102,241,0.8)] animate-scan-line"></div>
+                <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 rounded-tl-xl transition-colors" [class.border-primary]="!isScanningPaused" [class.border-slate-500]="isScanningPaused"></div>
+                <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 rounded-tr-xl transition-colors" [class.border-primary]="!isScanningPaused" [class.border-slate-500]="isScanningPaused"></div>
+                <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 rounded-bl-xl transition-colors" [class.border-primary]="!isScanningPaused" [class.border-slate-500]="isScanningPaused"></div>
+                <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 rounded-br-xl transition-colors" [class.border-primary]="!isScanningPaused" [class.border-slate-500]="isScanningPaused"></div>
+              </div>
+            </div>
+          }
+
+          <!-- Camera Off State -->
+          @if (!scannerEnabled) {
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-900/90 z-10 p-6 text-center">
+              <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
+                <lucide-icon name="video-off" [size]="32" class="text-slate-500"></lucide-icon>
+              </div>
+              <h3 class="text-lg font-bold mb-1">Camera is Off</h3>
+              <p class="text-sm text-slate-400 mb-6">Enable the camera to scan asset codes</p>
+              <button (click)="toggleScanner()"
+                class="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-indigo-600 transition-all font-semibold shadow-lg shadow-indigo-500/30">
+                Turn On Camera
+              </button>
+            </div>
+          }
+
+          <!-- Permission Fallback -->
+          @if (!hasPermission && scannerEnabled) {
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-900 z-10 p-6 text-center">
+              <lucide-icon name="camera-off" [size]="48" class="text-red-400 mb-4"></lucide-icon>
+              <h3 class="text-lg font-bold mb-2">Access Denied</h3>
+              <p class="text-sm text-slate-400 mb-6">Please grant camera permissions in your browser settings.</p>
+              <button (click)="requestPermission()"
+                class="px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold transition-all hover:bg-slate-100">
+                Try Again
+              </button>
+            </div>
+          }
+
+          <!-- Torch Toggle -->
+          @if (torchAvailable && hasPermission) {
+            <button (click)="toggleTorch()"
+              class="absolute bottom-4 right-4 p-3.5 bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl text-white transition-all z-30"
+              [class.bg-yellow-400]="torchEnabled" [class.text-slate-900]="torchEnabled">
+              <lucide-icon [name]="torchEnabled ? 'zap' : 'zap-off'" [size]="20"></lucide-icon>
+            </button>
+          }
+        </div>
+
+        <!-- Manual Input Section -->
+        <div class="p-6 bg-white">
+          <div class="flex items-center space-x-2">
+            <div class="relative flex-1">
+              <lucide-icon name="hash" [size]="16" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+              <input type="text" #manualInput placeholder="Serial or Code..."
+                class="w-full pl-10 pr-4 py-3 text-sm border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-slate-50/50 uppercase transition-all"
+                (keyup.enter)="manualSearch(manualInput.value); manualInput.value=''">
+            </div>
+            <button (click)="manualSearch(manualInput.value); manualInput.value=''"
+              class="bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95 shrink-0">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Single Scan Result (Bottom Sheet on Mobile) -->
+      <div *ngIf="!batchMode && scannedAsset" class="bottom-sheet-overlay lg:hidden" (click)="resetScanner()"></div>
+      <div *ngIf="!batchMode && scannedAsset" class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-visible flex flex-col min-h-0 animate-in slide-in-from-bottom-4 duration-300 relative z-20 asset-bottom-sheet animate-bottom-sheet">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Asset Identified</h2>
+          <button (click)="resetScanner()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <lucide-icon name="x" [size]="18"></lucide-icon>
+          </button>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center space-x-4 mb-6">
+            <div class="h-16 w-16 bg-{{scannedAsset.category?.color || 'slate'}}-50 rounded-xl flex items-center justify-center border border-{{scannedAsset.category?.color || 'slate'}}-100 overflow-hidden shrink-0">
+              <img *ngIf="scannedAsset.imageUrl" [src]="scannedAsset.imageUrl" class="h-full w-full object-cover">
+              <lucide-icon *ngIf="!scannedAsset.imageUrl" [name]="scannedAsset.category?.icon || 'package'" [size]="28" class="text-{{scannedAsset.category?.color || 'slate'}}-500"></lucide-icon>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-base font-bold text-slate-900 truncate">{{ scannedAsset.name }}</h3>
+              <p class="text-xs font-mono text-slate-500 mt-0.5">{{ scannedAsset.serialNumber }}</p>
+              <div *ngIf="scannedAsset.assignedUser" class="flex items-center text-[11px] font-bold text-indigo-600 mt-2 bg-indigo-50 px-2 py-0.5 rounded-md w-fit">
+                <lucide-icon name="user" [size]="12" class="mr-1"></lucide-icon>
+                With: {{ scannedAsset.assignedUser.name }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <app-searchable-select 
+              [items]="employees" 
+              [placeholder]="scannedAsset.assignedUser ? 'Change employee...' : 'Assign to...'"
+              [(ngModel)]="selectedEmployeeId"
+              direction="up"
+            ></app-searchable-select>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <button (click)="quickAssign()" [disabled]="!selectedEmployeeId || isActionLoading"
+                class="flex items-center justify-center px-4 py-3 bg-primary text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-100 disabled:opacity-50">
+                <lucide-icon name="user-plus" [size]="16" class="mr-2"></lucide-icon>
+                {{ scannedAsset.assignedUser ? 'Transfer' : 'Assign' }}
+              </button>
+              <button (click)="quickUnassign()" [disabled]="!scannedAsset.assignedUser || isActionLoading"
+                class="flex items-center justify-center px-4 py-3 bg-white text-red-600 border border-red-100 rounded-xl font-bold text-xs hover:bg-red-50 disabled:opacity-50">
+                <lucide-icon name="user-minus" [size]="16" class="mr-2"></lucide-icon>
+                Stock
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Not Found View -->
+      <div *ngIf="notFoundCode && !batchMode" class="bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-xl shadow-slate-200/50 animate-in zoom-in-95 duration-300">
+        <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <lucide-icon name="alert-circle" [size]="32"></lucide-icon>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">Asset Not Found</h3>
+        <p class="text-sm text-slate-500 mb-6">No asset found with code: <span class="font-mono font-bold text-slate-900">{{ notFoundCode }}</span></p>
+        <div class="flex flex-col space-y-2">
+          <button [routerLink]="['/assets/new']" [queryParams]="{ serialNumber: notFoundCode }" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm">Create New Asset</button>
+          <button (click)="resetScanner()" class="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Batch List & Actions -->
+    <div class="lg:col-span-5 flex flex-col space-y-4 min-h-0">
+      
+      <!-- Batch List Container -->
+      <div class="flex-1 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-visible flex flex-col min-h-0">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 z-10">
+          <div class="flex items-center space-x-2">
+            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Scanned Batch</h2>
+            <span class="px-2 py-0.5 bg-primary text-white rounded-full text-[10px] font-bold">{{ batchAssets.length }}</span>
+          </div>
+          <button *ngIf="batchAssets.length > 0" (click)="clearBatch()" class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors">Clear All</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+          @if (batchAssets.length === 0) {
+            <div class="h-full flex flex-col items-center justify-center text-center p-8 opacity-40">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <lucide-icon name="layers" [size]="32" class="text-slate-400"></lucide-icon>
+              </div>
+              <p class="text-sm font-medium text-slate-500">No assets scanned yet.<br>Switch to Batch Mode to scan multiple items.</p>
+            </div>
+          }
+
+          <div *ngFor="let asset of batchAssets; let i = index" 
+               class="flex items-center p-3 bg-slate-50 border border-slate-100 rounded-xl group animate-in slide-in-from-right-4 duration-300">
+            <div class="h-10 w-10 bg-{{asset.category?.color || 'slate'}}-50 rounded-lg flex items-center justify-center border border-{{asset.category?.color || 'slate'}}-100 overflow-hidden shrink-0">
+              <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" class="h-full w-full object-cover">
+              <lucide-icon *ngIf="!asset.imageUrl" [name]="asset.category?.icon || 'package'" [size]="18" class="text-{{asset.category?.color || 'slate'}}-500"></lucide-icon>
+            </div>
+            <div class="flex-1 min-w-0 mx-3">
+              <p class="text-xs font-bold text-slate-800 truncate">{{ asset.name }}</p>
+              <p class="text-[10px] font-mono text-slate-400 truncate">{{ asset.serialNumber }}</p>
+              <p *ngIf="asset.assignedUser" class="text-[9px] font-bold text-rose-500 mt-0.5">
+                Owned by: {{ asset.assignedUser.name }}
+              </p>
+            </div>
+            <button (click)="removeFromBatch(i)" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+              <lucide-icon name="x" [size]="16"></lucide-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bulk Actions Panel (Sticky Bottom) -->
+        <div *ngIf="batchAssets.length > 0" class="p-4 bg-slate-50 border-t border-slate-100 space-y-4">
+          <div class="space-y-3">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bulk Actions</label>
+            <app-searchable-select 
+              [items]="employees" 
+              placeholder="Select user for batch..."
+              [(ngModel)]="selectedEmployeeId"
+              direction="up"
+            ></app-searchable-select>
+            
+            <div class="grid grid-cols-1 gap-2">
+              <button (click)="bulkAssign()" [disabled]="!selectedEmployeeId || isActionLoading"
+                class="w-full flex items-center justify-center px-4 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 disabled:opacity-50 transition-all active:scale-95">
+                <lucide-icon name="user-plus" [size]="18" class="mr-2"></lucide-icon>
+                {{ isActionLoading ? 'Processing...' : 'Assign All to Selected' }}
+              </button>
+              
+              <div class="grid grid-cols-1 gap-2">
+                <button (click)="bulkReturn()" [disabled]="isActionLoading"
+                  class="flex items-center justify-center px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-xs hover:bg-slate-50 disabled:opacity-50 transition-all">
+                  <lucide-icon name="user-minus" [size]="16" class="mr-2 text-red-500"></lucide-icon>
+                  Stock All
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Global Loading Overlay -->
+  <div *ngIf="loading" class="fixed inset-0 bg-white/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center">
+    <div class="w-14 h-14 border-4 border-slate-100 border-t-primary rounded-full animate-spin mb-4"></div>
+    <p class="font-bold text-slate-600">Retrieving asset data...</p>
+  </div>
+</div>

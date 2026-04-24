@@ -1,0 +1,134 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
+    <div class="flex space-x-2">
+      <button class="bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center">
+        <lucide-icon name="download" [size]="16" class="mr-2"></lucide-icon>
+        Export
+      </button>
+      <button routerLink="/assets/new" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
+        <lucide-icon name="plus" [size]="16" class="mr-2"></lucide-icon>
+        New Asset
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <ng-container *ngIf="loading">
+    <div class="flex items-center justify-center h-64">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  </ng-container>
+
+  <!-- Loaded -->
+  <ng-container *ngIf="!loading && stats">
+
+    <!-- KPI Cards — Total + all statuses from DB -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Assets (always shown) -->
+      <div routerLink="/assets" class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md hover:border-primary/20 transition-all cursor-pointer group">
+        <p class="text-sm font-medium text-slate-500">Total Assets</p>
+        <h3 class="text-2xl font-bold text-slate-800 mt-1 group-hover:text-primary transition-colors">{{ stats.kpi.total }}</h3>
+        <div class="mt-2 flex items-center">
+          <lucide-icon name="laptop" [size]="14" class="text-slate-400 mr-1"></lucide-icon>
+          <span class="text-xs text-slate-400">All assets</span>
+        </div>
+      </div>
+
+      <!-- Dynamic status KPI cards from DB -->
+      <div *ngFor="let s of stats.kpi.byStatus"
+        [routerLink]="['/assets']" [queryParams]="{ statusId: s.id }"
+        class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md hover:border-primary/20 transition-all cursor-pointer group">
+        <p class="text-sm font-medium text-slate-500">{{ s.name }}</p>
+        <h3 class="text-2xl font-bold text-slate-800 mt-1 group-hover:text-primary transition-colors">{{ s.count }}</h3>
+        <div class="mt-2">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium" [class]="s.colorClass">{{ s.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Charts row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Status Donut — labels & colors from DB -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Asset Status</h3>
+            <div class="h-64 flex items-center justify-center">
+              <canvas *ngIf="isBrowser && hasStatusData; else noStatusChart"
+                baseChart [data]="statusChartData" [options]="donutChartOptions" [type]="'doughnut'">
+              </canvas>
+              <ng-template #noStatusChart>
+                <p class="text-slate-400">No assets available for chart.</p>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Category Bar — data from DB -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Assets by Category</h3>
+            <div class="h-64 flex items-center justify-center">
+              <canvas *ngIf="isBrowser && hasCategoryData; else noCategoryChart"
+                baseChart [data]="categoryChartData" [options]="barChartOptions" [type]="'bar'">
+              </canvas>
+              <ng-template #noCategoryChart>
+                <p class="text-slate-400">No categories to display.</p>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-slate-800">Recent Activity</h3>
+            <button routerLink="/activities" class="text-sm text-primary hover:underline font-medium">View All</button>
+          </div>
+          <div class="space-y-4">
+            <div *ngIf="stats.recentActivity.length === 0" class="text-sm text-slate-500">No recent activity.</div>
+            <div *ngFor="let activity of stats.recentActivity"
+              routerLink="/activities"
+              class="flex items-start space-x-3 pb-4 border-b border-slate-100 last:border-0 last:pb-0 hover:bg-slate-50 cursor-pointer rounded-lg p-2 transition-colors">
+              <div class="p-2 rounded-full mt-0.5"
+                [ngClass]="{
+                  'bg-blue-50 text-blue-600': activity.type === 'assignment',
+                  'bg-amber-50 text-amber-600': activity.type === 'maintenance'
+                }">
+                <lucide-icon [name]="activity.type === 'assignment' ? 'user-check' : 'wrench'" [size]="16"></lucide-icon>
+              </div>
+              <div>
+                <p class="text-sm text-slate-800 font-medium">{{ activity.message }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ activity.date | date:'short' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar widgets -->
+      <div class="space-y-6">
+        <!-- Status Breakdown from DB -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+          <h3 class="text-lg font-semibold text-slate-800 mb-4">Status Breakdown</h3>
+          <div class="space-y-3">
+            <div *ngFor="let s of stats.kpi.byStatus" class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="s.colorClass">{{ s.name }}</span>
+              <div class="flex items-center space-x-2">
+                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-primary rounded-full"
+                    [style.width.%]="stats.kpi.total > 0 ? (s.count / stats.kpi.total) * 100 : 0">
+                  </div>
+                </div>
+                <span class="text-sm font-semibold text-slate-700">{{ s.count }}</span>
+              </div>
+            </div>
+            <div *ngIf="stats.kpi.byStatus.length === 0" class="text-sm text-slate-500">No statuses configured.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

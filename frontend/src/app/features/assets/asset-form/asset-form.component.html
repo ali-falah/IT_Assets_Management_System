@@ -1,0 +1,178 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  <div class="flex items-center space-x-4">
+    <button (click)="goBack()" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">
+      <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
+    </button>
+    <h1 class="text-2xl font-bold text-slate-800">{{ isEditMode ? 'Edit Asset' : 'New Asset' }}</h1>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+    <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="space-y-8">
+      
+      <!-- Basic Details -->
+      <div>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Basic Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Asset Name *</label>
+            <input type="text" formControlName="name" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Serial Number *</label>
+            <input type="text" formControlName="serialNumber" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none uppercase">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Category *</label>
+            <app-searchable-select 
+              formControlName="categoryId" 
+              [items]="categories" 
+              placeholder="Select Category" 
+              label="category"
+              [canAdd]="true"
+              (add)="createNewCategory($event)"
+            ></app-searchable-select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Status</label>
+            <select formControlName="statusId" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white disabled:bg-slate-50 disabled:text-slate-500 transition-colors">
+              <option value="">Select Status</option>
+              @for (status of statuses; track status.id) {
+                <option [value]="status.id">{{ status.name }}</option>
+              }
+            </select>
+            <p *ngIf="assetForm.get('statusId')?.disabled" class="text-[10px] text-amber-600 mt-1 flex items-center font-medium">
+              <lucide-icon name="info" [size]="10" class="mr-1"></lucide-icon>
+              Status locked while asset is assigned to a user
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lifecycle & Assignment -->
+      <div>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Lifecycle & Assignment</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Location *</label>
+            <app-searchable-select 
+              formControlName="locationId" 
+              [items]="locations" 
+              placeholder="Select Location" 
+              label="location"
+              [canAdd]="true"
+              (add)="createNewLocation($event)"
+            ></app-searchable-select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Assignee</label>
+            <app-searchable-select 
+              formControlName="assignedUserId" 
+              [items]="users" 
+              placeholder="Unassigned" 
+              nullLabel="Unassigned"
+              label="user"
+            ></app-searchable-select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Details -->
+      <div>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Additional Details</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Asset Image</label>
+            <div class="flex items-center space-x-4">
+              <div class="h-24 w-24 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center bg-slate-50 overflow-hidden relative group">
+                @if (imageUrl) {
+                  <img [src]="imageUrl" alt="Asset" class="h-full w-full object-cover">
+                  <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" (click)="removeImage()" class="text-white bg-red-500 rounded-full p-1"><lucide-icon name="x" [size]="16"></lucide-icon></button>
+                  </div>
+                } @else {
+                  <lucide-icon name="image" [size]="24" class="text-slate-400"></lucide-icon>
+                }
+              </div>
+              <div class="flex-1">
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-primary hover:file:bg-indigo-100 transition-colors">
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+            <textarea formControlName="notes" rows="4" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset History (Edit Mode Only) -->
+      @if (isEditMode && fullAsset?.assignments?.length > 0) {
+        <div>
+          <h3 class="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center">
+            <lucide-icon name="history" [size]="20" class="mr-2 text-primary"></lucide-icon>
+            Asset History
+          </h3>
+          <div class="relative pl-6 border-l-2 border-slate-100 space-y-6 mt-4 ml-3">
+            @for (assignment of fullAsset.assignments; track assignment.id) {
+              <div class="relative">
+                <!-- Timeline Dot -->
+                <div class="absolute -left-[31px] top-0 h-4 w-4 rounded-full border-2 border-white" 
+                     [ngClass]="assignment.returnedAt ? 'bg-slate-300' : 'bg-primary ring-4 ring-primary/20'">
+                </div>
+                
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                  <div class="flex items-start justify-between">
+                    <a [routerLink]="['/users']" [queryParams]="{ userId: assignment.user?.id }" 
+                       class="flex items-center group/user cursor-pointer">
+                      <div class="p-2 bg-white rounded-lg shadow-sm mr-3 group-hover/user:bg-primary/10 transition-colors">
+                        <lucide-icon name="user" [size]="18" class="text-slate-600 group-hover/user:text-primary transition-colors"></lucide-icon>
+                      </div>
+                      <div>
+                        <p class="font-bold text-slate-800 group-hover/user:text-primary transition-colors">{{ assignment.user?.name || 'Unknown User' }}</p>
+                        <p class="text-xs text-slate-500">{{ assignment.user?.email }}</p>
+                      </div>
+                    </a>
+                    @if (!assignment.returnedAt) {
+                      <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Current Holder</span>
+                    }
+                  </div>
+                  
+                  <div class="grid grid-cols-2 gap-4 mt-4 text-sm">
+                    <div class="flex items-center text-slate-600">
+                      <lucide-icon name="calendar" [size]="14" class="mr-2 opacity-70"></lucide-icon>
+                      <span>Assigned: {{ assignment.assignedAt | date:'mediumDate' }}</span>
+                    </div>
+                    <div class="flex items-center text-slate-600">
+                      <lucide-icon name="clock" [size]="14" class="mr-2 opacity-70"></lucide-icon>
+                      @if (assignment.returnedAt) {
+                        <span>Returned: {{ assignment.returnedAt | date:'mediumDate' }}</span>
+                      } @else {
+                        <span class="text-primary font-medium italic">In Use</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Actions -->
+      <div class="flex justify-end space-x-3 pt-6 border-t border-slate-100">
+        <button type="button" routerLink="/assets" class="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="assetForm.invalid || loading" class="px-5 py-2.5 bg-primary hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+          @if (loading) {
+            <lucide-icon name="loader" [size]="18" class="animate-spin mr-2"></lucide-icon>
+            Saving...
+          } @else {
+            <lucide-icon name="save" [size]="18" class="mr-2"></lucide-icon>
+            Save Asset
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

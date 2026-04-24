@@ -1,0 +1,211 @@
+<div class="flex h-[100dvh] bg-background overflow-hidden font-sans text-slate-800">
+  <!-- Desktop Sidebar -->
+  <aside
+    class="bg-sidebar text-slate-300 hidden md:flex flex-col transition-all duration-300 ease-in-out shrink-0"
+    [class.w-64]="!isCollapsed"
+    [class.w-16]="isCollapsed"
+  >
+    <div class="h-16 flex items-center px-4 shrink-0"
+      [class.justify-between]="!isCollapsed"
+      [class.justify-center]="isCollapsed">
+      @if (!isCollapsed) {
+        <span class="text-white font-bold text-lg truncate">IT Assets</span>
+      }
+      <button (click)="toggleSidebar()" class="text-slate-400 hover:text-white p-1 rounded-md transition-colors focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+      <!-- Dashboard -->
+      <a routerLink="/dashboard" routerLinkActive="bg-primary text-white shadow-md"
+        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+        [title]="isCollapsed ? 'Dashboard' : ''">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Dashboard</span> }
+      </a>
+
+      <!-- Assets -->
+      <a routerLink="/assets" routerLinkActive="bg-primary text-white shadow-md"
+        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+        [title]="isCollapsed ? 'Assets' : ''">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m14 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Assets</span> }
+      </a>
+
+      <!-- Activity -->
+      <a routerLink="/activities" routerLinkActive="bg-primary text-white shadow-md"
+        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+        [title]="isCollapsed ? 'Activity' : ''">
+        <lucide-icon name="history" [size]="20" class="shrink-0"></lucide-icon>
+        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Activity</span> }
+      </a>
+
+      <!-- Scan -->
+      <a routerLink="/scan" routerLinkActive="bg-primary text-white shadow-md"
+        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+        [title]="isCollapsed ? 'Scan' : ''">
+        <lucide-icon name="scan" [size]="20" class="shrink-0"></lucide-icon>
+        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Scan</span> }
+      </a>
+
+      <!-- Users — uses plain isAdmin boolean to avoid async pipe race condition -->
+      @if (isAdmin) {
+        <a routerLink="/users" routerLinkActive="bg-primary text-white shadow-md"
+          class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+          [title]="isCollapsed ? 'Users' : ''">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Users</span> }
+        </a>
+      }
+
+      <!-- Settings -->
+      <a routerLink="/settings" routerLinkActive="bg-primary text-white shadow-md"
+        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+        [title]="isCollapsed ? 'Settings' : ''">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Settings</span> }
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden mb-[70px] md:mb-0">
+    <!-- Topbar -->
+    <header class="bg-white h-16 shrink-0 border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-10 shadow-sm">
+      <div class="flex-1 flex items-center">
+        <button (click)="openCommandPalette()" class="w-full max-w-md hidden sm:flex items-center text-left text-slate-400 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="flex-1 text-sm">Search assets, users...</span>
+          <kbd class="hidden sm:inline-block border border-slate-200 rounded px-2 py-0.5 text-xs font-sans bg-white shadow-sm">Ctrl+K</kbd>
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-4 ml-4">
+        <button class="text-slate-400 hover:text-slate-600 transition-colors relative focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+        </button>
+
+        <!-- Profile Menu — wrapped in .profile-menu-container for click-outside detection -->
+        <div class="relative profile-menu-container">
+          <button (click)="toggleProfileMenu($event)" class="flex items-center space-x-2 focus:outline-none">
+            <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm select-none">
+              {{ userInitials$ | async }}
+            </div>
+          </button>
+
+          @if (isProfileMenuOpen) {
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-slate-100 z-50">
+              <div class="px-4 py-2 border-b border-slate-100">
+                <p class="text-sm font-medium text-slate-800 truncate">{{ (user$ | async)?.name }}</p>
+                <p class="text-xs text-slate-500 truncate">{{ (user$ | async)?.email }}</p>
+              </div>
+              <button (click)="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-colors">
+                Sign out
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 bg-background p-4 sm:p-6 md:p-8 overflow-y-auto flex flex-col pb-28 md:pb-8">
+      <router-outlet></router-outlet>
+      <!-- Mobile Safe Area Spacer -->
+      <div class="h-20 shrink-0 md:hidden"></div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around pb-safe z-50">
+    <a routerLink="/dashboard" routerLinkActive="text-primary" class="text-slate-400 hover:text-primary flex flex-col items-center py-2 px-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+      <span class="text-[10px] mt-1">Dashboard</span>
+    </a>
+    <a routerLink="/assets" routerLinkActive="text-primary" class="text-slate-400 hover:text-primary flex flex-col items-center py-2 px-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m14 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/></svg>
+      <span class="text-[10px] mt-1">Assets</span>
+    </a>
+    <a routerLink="/activities" routerLinkActive="text-primary" class="text-slate-400 hover:text-primary flex flex-col items-center py-2 px-3">
+      <lucide-icon name="history" [size]="24"></lucide-icon>
+      <span class="text-[10px] mt-1">Activity</span>
+    </a>
+    <a routerLink="/scan" routerLinkActive="text-primary" class="text-slate-400 hover:text-primary flex flex-col items-center py-2 px-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" x2="17" y1="12" y2="12"/></svg>
+      <span class="text-[10px] mt-1">Scan</span>
+    </a>
+    <a routerLink="/settings" routerLinkActive="text-primary" class="text-slate-400 hover:text-primary flex flex-col items-center py-2 px-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span class="text-[10px] mt-1">Settings</span>
+    </a>
+  </nav>
+
+  <!-- Command Palette Modal -->
+  @if (isCommandPaletteOpen) {
+    <div class="fixed inset-0 z-[100] flex items-start justify-center pt-20 sm:pt-24 px-4 pb-20">
+      <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" (click)="closeCommandPalette()"></div>
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden text-left">
+        <div class="flex items-center border-b border-slate-200 px-4">
+          <lucide-icon name="search" [size]="20" class="text-slate-400"></lucide-icon>
+          <input 
+            type="text" 
+            class="w-full bg-transparent border-0 py-4 px-3 text-slate-900 placeholder:text-slate-400 focus:ring-0 sm:text-sm outline-none" 
+            placeholder="Search assets, users..." 
+            (input)="onSearchInput($event)"
+            #searchInput
+            autofocus
+          >
+          <button class="text-xs bg-slate-100 text-slate-500 rounded px-2 py-1" (click)="closeCommandPalette()">ESC</button>
+        </div>
+        <div class="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+          @if (isSearching) {
+            <div class="flex items-center justify-center py-10">
+              <lucide-icon name="loader" [size]="24" class="animate-spin text-primary opacity-50"></lucide-icon>
+            </div>
+          } @else if (searchResults.assets.length > 0 || searchResults.users.length > 0) {
+            <!-- Assets Section -->
+            @if (searchResults.assets.length > 0) {
+              <div class="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Assets</div>
+              @for (asset of searchResults.assets; track asset.id) {
+                <button (click)="navigateToResult('asset', asset.id)" class="w-full text-left px-3 py-3 rounded-xl hover:bg-indigo-50 transition-colors flex items-center space-x-3 group">
+                  <div class="p-2 bg-indigo-50 text-primary rounded-lg group-hover:bg-white transition-colors">
+                    <lucide-icon name="laptop" [size]="18"></lucide-icon>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-800 truncate">{{ asset.name }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ asset.subtitle }}</p>
+                  </div>
+                  <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">{{ asset.status }}</span>
+                </button>
+              }
+            }
+
+            <!-- Users Section -->
+            @if (searchResults.users.length > 0) {
+              <div class="px-3 py-2 mt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Users</div>
+              @for (user of searchResults.users; track user.id) {
+                <button (click)="navigateToResult('user', user.id)" class="w-full text-left px-3 py-3 rounded-xl hover:bg-emerald-50 transition-colors flex items-center space-x-3 group">
+                  <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-white transition-colors">
+                    <lucide-icon name="user-check" [size]="18"></lucide-icon>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-800 truncate">{{ user.name }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ user.email }} • {{ user.subtitle }}</p>
+                  </div>
+                </button>
+              }
+            }
+          } @else {
+            <div class="py-12 text-center">
+              <lucide-icon name="search" [size]="32" class="mx-auto mb-3 text-slate-300 opacity-50"></lucide-icon>
+              <p class="text-sm text-slate-500">No results found for your search.</p>
+              <p class="text-xs text-slate-400 mt-1">Try searching for asset names, serial numbers, or user emails.</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
