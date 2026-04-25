@@ -54,11 +54,14 @@
               (scanError)="onScanError($event)"
               [formats]="formatsEnabled"
               [device]="currentDevice" 
+              (deviceChange)="onDeviceChange($event)"
+              [videoConstraints]="videoConstraints"
               [enable]="scannerEnabled && !isScanningPaused"
               [torch]="torchEnabled" 
               (torchCompatible)="onTorchCompatible($event)"
               (camerasFound)="onCamerasFound($event)" 
               (permissionResponse)="onPermissionResponse($event)" 
+              [timeBetweenScans]="500"
               [tryHarder]="true">
             </zxing-scanner>
 
@@ -112,6 +115,21 @@
               [class.bg-yellow-400]="torchEnabled" [class.text-slate-900]="torchEnabled">
               <lucide-icon [name]="torchEnabled ? 'zap' : 'zap-off'" [size]="20"></lucide-icon>
             </button>
+          }
+
+          <!-- Zoom Slider -->
+          @if (zoomSupported && hasPermission) {
+            <div class="absolute bottom-4 left-4 right-20 z-30 px-4 py-3 bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl flex items-center space-x-3">
+              <lucide-icon name="search-code" [size]="16" class="text-white opacity-60"></lucide-icon>
+              <input type="range" 
+                [min]="minZoom" 
+                [max]="maxZoom" 
+                [step]="0.1" 
+                [value]="zoomLevel"
+                (input)="onZoomChange($event)"
+                class="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white">
+              <span class="text-[10px] font-bold text-white w-8 text-right">{{ zoomLevel | number:'1.1-1' }}x</span>
+            </div>
           }
         </div>
 

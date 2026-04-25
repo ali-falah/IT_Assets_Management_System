@@ -63,3 +63,8 @@
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+::ng-deep zxing-scanner video {
+  transition: transform 0.2s ease-out;
+  image-rendering: -webkit-optimize-contrast;
+}

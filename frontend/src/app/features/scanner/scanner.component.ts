@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, TriangleAlert, CheckCircle, Package, Scan, Trash2, X, Plus } from 'lucide-angular';
+import { LucideAngularModule, TriangleAlert, CheckCircle, Package, Scan, Trash2, X, Plus, SearchCode } from 'lucide-angular';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AssetService, Asset } from '../../core/services/asset.service';
@@ -48,6 +48,18 @@ export class ScannerComponent implements OnInit {
     BarcodeFormat.QR_CODE,
     BarcodeFormat.DATA_MATRIX
   ];
+
+  videoConstraints: MediaTrackConstraints = {
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+    facingMode: 'environment'
+  };
+
+  zoomLevel = 1;
+  minZoom = 1;
+  maxZoom = 5;
+  zoomSupported = false;
+  videoTrack: MediaStreamTrack | null = null;
 
   torchEnabled = false;
   torchAvailable = false;
@@ -323,6 +335,58 @@ export class ScannerComponent implements OnInit {
     if (devices && devices.length > 0 && !this.currentDevice) {
       const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
       this.currentDevice = backCamera || devices[0];
+    }
+    // Give some time for the stream to initialize
+    setTimeout(() => this.checkZoomCapabilities(), 2000);
+  }
+
+  onDeviceChange(device: MediaDeviceInfo) {
+    this.currentDevice = device;
+    this.zoomSupported = false;
+    setTimeout(() => this.checkZoomCapabilities(), 2000);
+  }
+
+  private checkZoomCapabilities() {
+    const videoElement = document.querySelector('zxing-scanner video') as HTMLVideoElement;
+    if (!videoElement || !videoElement.srcObject) return;
+
+    const stream = videoElement.srcObject as MediaStream;
+    const tracks = stream.getVideoTracks();
+    if (tracks.length > 0) {
+      this.videoTrack = tracks[0];
+      const capabilities = this.videoTrack.getCapabilities() as any;
+      if (capabilities && capabilities.zoom) {
+        this.zoomSupported = true;
+        this.minZoom = capabilities.zoom.min;
+        this.maxZoom = capabilities.zoom.max;
+        this.zoomLevel = (this.videoTrack.getSettings() as any).zoom || this.minZoom;
+      }
+    }
+  }
+
+  onZoomChange(event: any) {
+    const value = parseFloat(event.target.value);
+    this.zoomLevel = value;
+    if (this.videoTrack) {
+      try {
+        const constraints: any = {
+          advanced: [{ zoom: value }]
+        };
+        
+        // Try to add image stabilization if supported
+        const capabilities = this.videoTrack.getCapabilities() as any;
+        if (capabilities.imageStabilizationMode) {
+          constraints.advanced.push({ imageStabilizationMode: 'cinematic' });
+        }
+        
+        if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+          constraints.advanced.push({ focusMode: 'continuous' });
+        }
+
+        this.videoTrack.applyConstraints(constraints);
+      } catch (e) {
+        console.error('Failed to apply constraints:', e);
+      }
     }
   }
 
