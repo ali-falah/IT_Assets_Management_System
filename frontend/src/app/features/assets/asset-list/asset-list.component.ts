@@ -1,13 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { LucideAngularModule, Search, Filter, Plus, Download, Trash2, TriangleAlert, Upload } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Plus, Download, Trash2, TriangleAlert, Upload, Pencil, Check, X } from 'lucide-angular';
 import { AgGridAngular, AgGridModule } from 'ag-grid-angular';
 import { ColDef, GridReadyEvent, GridApi, ICellRendererParams } from 'ag-grid-community';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { AssetService, Asset } from '../../../core/services/asset.service';
 import { MasterDataService, Status } from '../../../core/services/master-data.service';
 import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader.component';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -44,7 +45,7 @@ export class AssetNameRenderer implements ICellRendererAngularComp {
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent, ConfirmationModalComponent],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
 })
@@ -61,11 +62,14 @@ export class AssetListComponent implements OnInit {
   assets: Asset[] = [];
   selectedCount = 0;
   showImportModal = false;
+  
+  // Modal states
   showConfirmDelete = false;
   showUnassignConfirm = false;
   unassignErrorMsg = '';
   deleteType: 'single' | 'bulk' = 'single';
   assetToDelete: Asset | null = null;
+  
   loading = false;
   currentFilters: any = {};
   statuses: Status[] = [];

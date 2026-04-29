@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { DashboardOfflineService } from './dashboard-offline.service';
+import { withOfflineFallback } from '../utils/offline-operators';
 
 export interface StatusCount {
   id: string;
@@ -25,9 +27,12 @@ export interface DashboardStats {
 })
 export class DashboardService {
   private http = inject(HttpClient);
+  private dashboardOffline = inject(DashboardOfflineService);
   private apiUrl = `${environment.apiUrl}/dashboard`;
 
   getStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);
+    return this.http.get<DashboardStats>(`${this.apiUrl}/stats`).pipe(
+      withOfflineFallback(() => this.dashboardOffline.getStats())
+    );
   }
 }

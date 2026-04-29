@@ -2,33 +2,21 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  isActive: boolean;
-  assets?: any[];
-  assignments?: any[];
-  createdAt?: string;
-}
-
-export interface UserRole {
-  id: string;
-  name: string;
-  description?: string;
-  colorClass?: string;
-}
+import { UserOfflineService, User, UserRole } from './user-offline.service';
+export { User, UserRole };
+import { withOfflineFallback } from '../utils/offline-operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   private http = inject(HttpClient);
+  private userOffline = inject(UserOfflineService);
 
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${environment.apiUrl}/users`);
+    return this.http.get<User[]>(`${environment.apiUrl}/users`).pipe(
+      withOfflineFallback(() => this.userOffline.getAll())
+    );
   }
 
   getUserById(id: string): Observable<User> {

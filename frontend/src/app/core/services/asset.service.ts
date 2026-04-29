@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AssetOfflineService } from './asset-offline.service';
+import { withOfflineFallback } from '../utils/offline-operators';
 
 export interface Asset {
   id: string;
@@ -26,6 +28,7 @@ export interface Asset {
 })
 export class AssetService {
   private http = inject(HttpClient);
+  private assetOffline = inject(AssetOfflineService);
   private apiUrl = `${environment.apiUrl}/assets`;
 
   getAssets(params: any): Observable<{ data: Asset[], total: number }> {
@@ -35,11 +38,21 @@ export class AssetService {
         httpParams = httpParams.append(key, params[key]);
       }
     });
-    return this.http.get<{ data: Asset[], total: number }>(this.apiUrl, { params: httpParams });
+
+    return this.http.get<{ data: Asset[], total: number }>(this.apiUrl, { params: httpParams }).pipe(
+      withOfflineFallback<{ data: Asset[], total: number }>(async () => {
+        const assets = params.search 
+          ? await this.assetOffline.search(params.search) 
+          : await this.assetOffline.getAll();
+        return { data: assets, total: assets.length };
+      })
+    );
   }
 
   getAsset(id: string): Observable<Asset> {
-    return this.http.get<Asset>(`${this.apiUrl}/${id}`);
+    return this.http.get<Asset>(`${this.apiUrl}/${id}`).pipe(
+      withOfflineFallback(() => this.assetOffline.getById(id))
+    );
   }
 
   createAsset(asset: Partial<Asset>): Observable<Asset> {
@@ -47,11 +60,22 @@ export class AssetService {
   }
 
   updateAsset(id: string, asset: Partial<Asset>): Observable<Asset> {
-    return this.http.patch<Asset>(`${this.apiUrl}/${id}`, asset);
+    return this.http.patch<Asset>(`${this.apiUrl}/${id}`, asset).pipe(
+      tap(() => {
+        // Update local DB instantly to keep UI fresh whether offline or online
+        this.assetOffline.update(id, asset).catch(err => console.error('Failed to update local asset', err));
+      })
+    );
   }
 
   bulkUpdateAssets(ids: string[], data: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/bulk-update`, { ids, data });
+    return this.http.patch(`${this.apiUrl}/bulk-update`, { ids, data }).pipe(
+      tap(() => {
+        ids.forEach(id => {
+          this.assetOffline.update(id, data).catch(() => {});
+        });
+      })
+    );
   }
 
   deleteAsset(id: string, force: boolean = false): Observable<void> {

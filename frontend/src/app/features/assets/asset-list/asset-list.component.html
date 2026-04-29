@@ -166,60 +166,24 @@
 </div>
 </div>
 
-<!-- Standard Delete Confirmation -->
-<div *ngIf="showConfirmDelete && !showUnassignConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md transform transition-all overflow-hidden border border-slate-100">
-    <div class="p-8 text-center">
-      <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon name="trash-2" [size]="32" class="text-rose-500"></lucide-icon>
-      </div>
-      
-      <h3 class="text-xl font-bold text-slate-800 mb-2">Delete IT Asset?</h3>
-      <p class="text-slate-500 mb-8 leading-relaxed">
-        This action is permanent. All historical data and attachments for this asset will be lost forever.
-      </p>
-      
-      <div class="flex items-center gap-3">
-        <button (click)="cancelDelete()" 
-                class="flex-1 px-6 py-3 border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all">
-          Cancel
-        </button>
-        <button (click)="executeDelete(false)" 
-                class="flex-1 px-6 py-3 bg-rose-500 text-white rounded-xl font-bold text-sm hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all">
-          Yes, Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Shared Delete Confirmation Modal -->
+<app-confirmation-modal
+  [show]="showConfirmDelete && !showUnassignConfirm"
+  title="Delete Asset?"
+  [message]="deleteType === 'single' 
+    ? 'Are you sure you want to delete this asset? This action is permanent and cannot be undone.'
+    : 'Are you sure you want to delete the ' + selectedCount + ' selected assets? This action is permanent.'"
+  confirmText="Yes, Delete"
+  (confirm)="executeDelete(false)"
+  (cancel)="showConfirmDelete = false">
+</app-confirmation-modal>
 
-<!-- Secondary "Unassign & Delete" Confirmation (409 Conflict) -->
-<div *ngIf="showUnassignConfirm" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md transform transition-all overflow-hidden border border-amber-100">
-    <div class="p-8 text-center">
-      <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-        <lucide-icon name="triangle-alert" [size]="32" class="text-amber-500"></lucide-icon>
-      </div>
-      
-      <h3 class="text-xl font-bold text-slate-800 mb-2">Asset is Assigned</h3>
-      <p class="text-slate-500 mb-4 leading-relaxed italic text-sm">
-        "{{ unassignErrorMsg }}"
-      </p>
-      <p class="text-slate-600 mb-8 font-medium">
-        Do you want to unassign this asset and delete it anyway?
-      </p>
-      
-      <div class="flex flex-col gap-3">
-        <button (click)="executeDelete(true)" 
-                class="w-full px-6 py-4 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all flex items-center justify-center">
-          <lucide-icon name="trash-2" [size]="18" class="mr-2"></lucide-icon>
-          Unassign & Delete Forever
-        </button>
-        <button (click)="cancelDelete()" 
-                class="w-full px-6 py-3 border border-slate-200 rounded-xl text-slate-500 font-bold text-sm hover:bg-slate-50 transition-all">
-          No, Keep Asset
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Shared Unassign & Delete Confirmation Modal (409 Conflict) -->
+<app-confirmation-modal
+  [show]="showUnassignConfirm"
+  title="Asset is Assigned"
+  [message]="unassignErrorMsg + ' Do you want to unassign it and delete it anyway?'"
+  confirmText="Unassign & Delete"
+  (confirm)="executeDelete(true)"
+  (cancel)="showUnassignConfirm = false; showConfirmDelete = false">
+</app-confirmation-modal>

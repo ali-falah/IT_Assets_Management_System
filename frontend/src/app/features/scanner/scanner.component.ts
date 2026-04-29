@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, TriangleAlert, CheckCircle, Package, Scan, Trash2, X, Plus, SearchCode } from 'lucide-angular';
+import { LucideAngularModule, TriangleAlert, CheckCircle, Package, Scan, Trash2, X, Plus, SearchCode, ZapOff } from 'lucide-angular';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { BarcodeFormat } from '@zxing/library';
 import { AssetService, Asset } from '../../core/services/asset.service';
@@ -11,6 +11,8 @@ import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { OfflineManagerService } from '../../core/services/offline-manager.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-scanner',
@@ -25,6 +27,9 @@ export class ScannerComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
   private router = inject(Router);
+  private offlineManager = inject(OfflineManagerService);
+
+  isOffline$ = this.offlineManager.getOnlineStatus().pipe(map(online => !online));
 
   hasPermission = false;
   cameras: MediaDeviceInfo[] = [];
@@ -130,7 +135,7 @@ export class ScannerComponent implements OnInit {
 
     this.lastScannedCode = resultString;
     this.lastScannedTime = now;
-    
+
     if (this.batchMode) {
       this.isScanningPaused = true;
       this.searchAsset(resultString);
@@ -372,13 +377,13 @@ export class ScannerComponent implements OnInit {
         const constraints: any = {
           advanced: [{ zoom: value }]
         };
-        
+
         // Try to add image stabilization if supported
         const capabilities = this.videoTrack.getCapabilities() as any;
         if (capabilities.imageStabilizationMode) {
           constraints.advanced.push({ imageStabilizationMode: 'cinematic' });
         }
-        
+
         if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
           constraints.advanced.push({ focusMode: 'continuous' });
         }
@@ -467,10 +472,16 @@ export class ScannerComponent implements OnInit {
 
   private reloadAsset() {
     if (!this.scannedAsset) return;
-    this.assetService.getAsset(this.scannedAsset.id).subscribe(asset => {
-      this.scannedAsset = asset;
-      this.selectedEmployeeId = null;
-      this.isActionLoading = false;
+    this.assetService.getAsset(this.scannedAsset.id).subscribe({
+      next: (asset) => {
+        this.scannedAsset = asset;
+        this.selectedEmployeeId = null;
+        this.isActionLoading = false;
+      },
+      error: () => {
+        console.warn('Could not reload asset after action, using existing local data.');
+        this.isActionLoading = false;
+      }
     });
   }
 }

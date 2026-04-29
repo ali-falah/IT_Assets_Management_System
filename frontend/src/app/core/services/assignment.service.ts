@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AssignmentOfflineService } from './assignment-offline.service';
+import { withOfflineFallback } from '../utils/offline-operators';
 
 export interface Assignment {
   id: string;
@@ -27,12 +29,15 @@ export interface Assignment {
 })
 export class AssignmentService {
   private http = inject(HttpClient);
+  private assignmentOffline = inject(AssignmentOfflineService);
 
   getAssignments(assetId?: string): Observable<Assignment[]> {
     const url = assetId 
       ? `${environment.apiUrl}/assignments?assetId=${assetId}`
       : `${environment.apiUrl}/assignments`;
-    return this.http.get<Assignment[]>(url);
+    return this.http.get<Assignment[]>(url).pipe(
+      withOfflineFallback(() => this.assignmentOffline.getAll())
+    );
   }
 
   getAssignmentById(id: string): Observable<Assignment> {
