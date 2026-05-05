@@ -28,7 +28,7 @@ import { LucideAngularModule, AlertTriangle, X } from 'lucide-angular';
                   </button>
                 </div>
                 <div class="mt-2">
-                  <p class="text-sm text-slate-500">{{ message }}</p>
+                  <p class="text-sm text-slate-500" [innerHTML]="message"></p>
                 </div>
               </div>
             </div>

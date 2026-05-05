@@ -1,9 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location as AngularLocation } from '@angular/common';
-import { LucideAngularModule, ArrowLeft, Image as ImageIcon, X, Save, Loader, History, User as UserIcon, Clock, Calendar } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Image as ImageIcon, X, Save, Loader, History, User as UserIcon, Clock, Calendar, Copy, Upload } from 'lucide-angular';
 import { AssetService } from '../../../core/services/asset.service';
 import { MasterDataService, Category, Location, Status } from '../../../core/services/master-data.service';
 import { UserService, User } from '../../../core/services/user.service';
@@ -11,6 +11,10 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
+const DRAFT_KEY = 'asset_form_draft';
 
 @Component({
   selector: 'app-asset-form',
@@ -19,7 +23,7 @@ import { SearchableSelectComponent } from '../../../shared/components/searchable
   templateUrl: './asset-form.component.html',
   styleUrls: ['./asset-form.component.css']
 })
-export class AssetFormComponent implements OnInit {
+export class AssetFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -44,6 +48,14 @@ export class AssetFormComponent implements OnInit {
   imageUrl: string | null = null;
   fullAsset: any | null = null;
 
+  // Draft auto-save
+  draftInfo: { savedAt: Date; data: any } | null = null;
+  showDraftBanner = false;
+  private formSub?: Subscription;
+
+  // Drag & Drop
+  isDragging = false;
+
   ngOnInit() {
     this.initForm();
     this.loadMasterData();
@@ -53,13 +65,111 @@ export class AssetFormComponent implements OnInit {
       this.isEditMode = true;
       this.loadAssetData(this.assetId);
     } else {
-      const serial = this.route.snapshot.queryParamMap.get('serialNumber');
-      if (serial) {
-        this.assetForm.patchValue({ serialNumber: serial.toUpperCase() });
+      // Check for clone data from navigation state (history.state persists after nav)
+      const cloneData = history.state?.['cloneData'];
+      if (cloneData) {
+        this.assetForm.patchValue({
+          name: cloneData.name ? `${cloneData.name} (Copy)` : '',
+          categoryId: cloneData.categoryId || '',
+          statusId: cloneData.statusId || '',
+          locationId: cloneData.locationId || '',
+          notes: cloneData.notes || ''
+          // intentionally exclude serialNumber — must be unique
+        });
+        this.imageUrl = cloneData.imageUrl || null;
+        this.clearDraft(); // don't restore old draft when cloning
+      } else {
+        const serial = this.route.snapshot.queryParamMap.get('serialNumber');
+        if (serial) {
+          this.assetForm.patchValue({ serialNumber: serial.toUpperCase() });
+        }
+        // Check for saved draft
+        this.checkForDraft();
       }
+
+      // Auto-save draft on form changes (new mode only)
+      this.formSub = this.assetForm.valueChanges.pipe(debounceTime(1500)).subscribe(() => {
+        if (!this.isEditMode) this.saveDraft();
+      });
     }
   }
-  
+
+  ngOnDestroy() {
+    this.formSub?.unsubscribe();
+  }
+
+  // ── Draft Management ──────────────────────────────────────────────
+
+  private checkForDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.data && parsed?.savedAt) {
+        this.draftInfo = { savedAt: new Date(parsed.savedAt), data: parsed.data };
+        this.showDraftBanner = true;
+      }
+    } catch { /* ignore */ }
+  }
+
+  restoreDraft() {
+    if (!this.draftInfo) return;
+    this.assetForm.patchValue(this.draftInfo.data);
+    this.showDraftBanner = false;
+  }
+
+  discardDraft() {
+    this.clearDraft();
+    this.showDraftBanner = false;
+    this.draftInfo = null;
+  }
+
+  private saveDraft() {
+    try {
+      const data = { data: this.assetForm.value, savedAt: Date.now() };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    } catch { /* ignore */ }
+  }
+
+  private clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+  }
+
+  // ── Drag & Drop ───────────────────────────────────────────────────
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    const file = event.dataTransfer?.files[0];
+    if (file && file.type.startsWith('image/')) {
+      this.processFile(file);
+    } else if (file) {
+      this.toastr.warning('Only image files are supported for asset photos');
+    }
+  }
+
+  private processFile(file: File) {
+    this.selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = () => { this.imageUrl = reader.result as string; };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Standard Methods ──────────────────────────────────────────────
+
   goBack() {
     this.location.back();
   }
@@ -120,14 +230,7 @@ export class AssetFormComponent implements OnInit {
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imageUrl = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+    if (file) this.processFile(file);
   }
 
   removeImage() {
@@ -149,6 +252,23 @@ export class AssetFormComponent implements OnInit {
       this.toastr.error('Image upload failed');
       return null;
     }
+  }
+
+  /** Navigate to /assets/new pre-filled with current asset's data (minus serial) */
+  duplicateAsset() {
+    const raw = this.assetForm.getRawValue();
+    this.router.navigate(['/assets/new'], {
+      state: {
+        cloneData: {
+          name: raw.name,
+          categoryId: raw.categoryId,
+          statusId: raw.statusId,
+          locationId: raw.locationId,
+          notes: raw.notes,
+          imageUrl: this.imageUrl
+        }
+      }
+    });
   }
 
   async onSubmit() {
@@ -178,6 +298,7 @@ export class AssetFormComponent implements OnInit {
         await this.assetService.createAsset(formValue).toPromise();
         this.toastr.success('Asset created successfully');
       }
+      this.clearDraft();
       this.router.navigate(['/assets']);
     } catch (error) {
       this.toastr.error(this.isEditMode ? 'Failed to update asset' : 'Failed to create asset');

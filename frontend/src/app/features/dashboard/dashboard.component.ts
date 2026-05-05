@@ -6,6 +6,9 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { DashboardService, DashboardStats, StatusCount } from '../../core/services/dashboard.service';
+import { ActivityLogService, ActivityLog } from '../../core/services/activity-log.service';
+import { AssignmentService, Assignment } from '../../core/services/assignment.service';
+import { forkJoin } from 'rxjs';
 
 // Converts Tailwind bg class like "bg-green-500" to a hex for Chart.js
 // Falls back to a palette if the colorClass is a compound badge class
@@ -43,25 +46,67 @@ function tailwindToHex(colorClass: string, index: number): string {
 export class DashboardComponent implements OnInit {
   isBrowser: boolean;
   private dashboardService = inject(DashboardService);
+  private activityLogService = inject(ActivityLogService);
+  private assignmentService = inject(AssignmentService);
   private cdr = inject(ChangeDetectorRef);
 
   stats: DashboardStats | null = null;
   loading = true;
+
+  /** Unified recent activity feed for the dashboard widget */
+  recentActivity: Array<{
+    action: string;
+    message: string;
+    entityId?: string;
+    date: Date;
+  }> = [];
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit(): void {
-    this.dashboardService.getStats().subscribe({
-      next: (data) => {
-        this.stats = data;
-        this.buildCharts(data);
+    forkJoin({
+      stats: this.dashboardService.getStats(),
+      logs: this.activityLogService.getAll(50),
+      assignments: this.assignmentService.getAssignments()
+    }).subscribe({
+      next: ({ stats, logs, assignments }) => {
+        this.stats = stats;
+        this.buildCharts(stats);
+
+        // Build unified recent-activity feed
+        const fromLogs = logs
+          .filter(l => l.action !== 'asset_assigned' && l.action !== 'asset_returned')
+          .map(l => ({ action: l.action, message: l.message, entityId: l.entityId, date: new Date(l.createdAt) }));
+
+        const fromAssignments: typeof fromLogs = [];
+        for (const a of assignments) {
+          fromAssignments.push({
+            action: 'asset_assigned',
+            message: `"${a.asset?.name || 'Asset'}" assigned to ${a.user?.name || 'user'}`,
+            entityId: a.assetId,
+            date: new Date(a.assignedAt)
+          });
+          if (a.returnedAt) {
+            fromAssignments.push({
+              action: 'asset_returned',
+              message: `"${a.asset?.name || 'Asset'}" returned by ${a.user?.name || 'user'}`,
+              entityId: a.assetId,
+              date: new Date(a.returnedAt)
+            });
+          }
+        }
+
+        this.recentActivity = [...fromLogs, ...fromAssignments]
+          .sort((a, b) => b.date.getTime() - a.date.getTime())
+          .slice(0, 8);
+
         this.loading = false;
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error fetching dashboard stats', err);
+        console.error('Dashboard load error', err);
         this.loading = false;
         this.cdr.markForCheck();
       }

@@ -10,12 +10,12 @@
       <div class="flex flex-wrap items-center gap-3">
         <!-- Search Bar -->
         <div class="relative min-w-[300px]">
-          <lucide-icon name="search" [size]="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+          <lucide-icon name="search" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
           <input 
             type="text" 
             placeholder="Search by name, email, role..." 
             (input)="onSearch($event)"
-            class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none placeholder:text-slate-400"
+            class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none placeholder:text-slate-400"
           >
         </div>
 
@@ -46,9 +46,30 @@
   </div>
 
   <!-- Grid Section -->
-  <div class="flex-1 min-h-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="flex-1 min-h-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+    <!-- Desktop Skeleton Loader -->
+    <div *ngIf="loading && users.length === 0" class="flex-1 p-6">
+      <div class="flex items-center gap-4 px-4 py-3 border-b border-slate-100">
+        <div class="w-4 h-4 bg-slate-100 rounded animate-pulse"></div>
+        <div class="h-3 bg-slate-100 rounded w-28 animate-pulse"></div>
+        <div class="h-3 bg-slate-100 rounded w-24 animate-pulse ml-8"></div>
+        <div class="h-3 bg-slate-100 rounded w-12 animate-pulse ml-8"></div>
+        <div class="h-3 bg-slate-100 rounded w-16 animate-pulse ml-8"></div>
+        <div class="h-3 bg-slate-100 rounded w-16 animate-pulse ml-auto"></div>
+      </div>
+      <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="flex items-center gap-4 px-4 py-4 border-b border-slate-50">
+        <div class="w-4 h-4 bg-slate-100 rounded animate-pulse"></div>
+        <div class="h-3.5 bg-slate-100 rounded w-36 animate-pulse"></div>
+        <div class="h-3 bg-slate-100 rounded w-44 animate-pulse ml-8"></div>
+        <div class="h-5 bg-slate-100 rounded-lg w-8 animate-pulse ml-8"></div>
+        <div class="h-5 bg-slate-100 rounded-full w-16 animate-pulse ml-8"></div>
+        <div class="h-3 bg-slate-100 rounded w-14 animate-pulse ml-auto"></div>
+      </div>
+    </div>
+
     <ag-grid-angular
-      class="ag-theme-quartz w-full h-full"
+      *ngIf="!loading || users.length > 0"
+      class="ag-theme-quartz w-full flex-1"
       [rowData]="users"
       [columnDefs]="columnDefs"
       [defaultColDef]="defaultColDef"

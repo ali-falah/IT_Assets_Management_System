@@ -10,6 +10,7 @@ import * as AuthActions from '../store/auth/auth.actions';
 import { User } from '../services/user.service';
 import { SearchService, SearchResult } from '../services/search.service';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+import { OfflineManagerService } from '../services/offline-manager.service';
 
 @Component({
   selector: 'app-layout',
@@ -22,12 +23,20 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private store = inject(Store<{ auth: AuthState }>);
   private router = inject(Router);
   private searchService = inject(SearchService);
+  private offlineManager = inject(OfflineManagerService);
   private routerSubscription?: Subscription;
   private searchSubscription?: Subscription;
 
   isCollapsed = false;
   isProfileMenuOpen = false;
   isCommandPaletteOpen = false;
+
+  // Offline / queue state
+  isOnline$: Observable<boolean> = this.offlineManager.getOnlineStatus();
+  queueCount$: Observable<number> = this.offlineManager.queueCount$;
+  lastSyncedAt: Date | null = null;
+  showOfflineBanner = false;
+  private onlineSubscription?: Subscription;
   
   searchTerms = new Subject<string>();
   searchResults: SearchResult = { assets: [], users: [] };
@@ -46,6 +55,20 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.store.select(state => state.auth.user).subscribe((user: any) => {
       this.isAdmin = user?.role === 'admin' || user?.role?.name === 'admin';
+    });
+
+    // Track online/offline for banner
+    const ts = this.offlineManager.getLastSyncedAt();
+    this.lastSyncedAt = ts ? new Date(ts) : null;
+    this.onlineSubscription = this.isOnline$.subscribe(online => {
+      this.showOfflineBanner = !online;
+      if (online) {
+        // Refresh last sync time after coming back online
+        setTimeout(() => {
+          const newTs = this.offlineManager.getLastSyncedAt();
+          this.lastSyncedAt = newTs ? new Date(newTs) : null;
+        }, 3000);
+      }
     });
 
     this.searchSubscription = this.searchTerms.pipe(
@@ -77,6 +100,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
     this.searchSubscription?.unsubscribe();
+    this.onlineSubscription?.unsubscribe();
   }
 
   private checkScreenSize() {

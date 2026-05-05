@@ -27,6 +27,7 @@ export class UserListComponent implements OnInit {
 
   private gridApi!: GridApi;
 
+  loading = false;
   users: User[] = [];
   roles: UserRole[] = [];
   showModal = false;
@@ -123,6 +124,36 @@ export class UserListComponent implements OnInit {
           </div>
         `;
       }
+    },
+    {
+      headerName: 'Actions',
+      width: 110,
+      sortable: false,
+      filter: false,
+      resizable: false,
+      suppressMovable: true,
+      pinned: 'right' as const,
+      cellRenderer: (params: any) => {
+        return `
+          <div class="flex items-center gap-1 h-full">
+            <button class="user-view-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-primary rounded-lg transition-all" title="View Details">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="user-delete-btn p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-all" title="Delete User">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        `;
+      },
+      onCellClicked: (params: any) => {
+        const target = params.event?.target as HTMLElement;
+        if (target?.closest('.user-delete-btn')) {
+          this.deleteUser(params.data.id);
+        } else if (target?.closest('.user-view-btn')) {
+          this.selectedUserId = params.data.id;
+          this.showDetailDialog = true;
+        }
+      }
     }
   ];
 
@@ -153,12 +184,15 @@ export class UserListComponent implements OnInit {
   }
 
   loadUsers() {
+    this.loading = true;
     this.userService.getUsers().subscribe({
       next: (res: User[]) => {
         this.users = res;
+        this.loading = false;
       },
       error: (err: any) => {
         this.toastr.error('Failed to load users');
+        this.loading = false;
       }
     });
   }

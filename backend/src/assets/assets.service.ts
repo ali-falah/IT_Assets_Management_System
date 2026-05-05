@@ -10,6 +10,7 @@ import { AssetImportDto } from './dto/asset-import.dto';
 import { CategoriesService } from '../categories/categories.service';
 import { LocationsService } from '../locations/locations.service';
 import { StatusesService } from '../statuses/statuses.service';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 
 @Injectable()
 export class AssetsService {
@@ -24,6 +25,7 @@ export class AssetsService {
     private categoriesService: CategoriesService,
     private locationsService: LocationsService,
     private statusesService: StatusesService,
+    private activityLogs: ActivityLogsService,
   ) { }
 
   async bulkImport(importData: AssetImportDto[]) {
@@ -97,6 +99,14 @@ export class AssetsService {
       lastTransactionDate: new Date(),
     });
     const saved = await this.assetsRepository.save(asset);
+
+    // Log activity
+    this.activityLogs.log({
+      action: 'asset_created',
+      message: `Asset "${saved.name}" was added to inventory`,
+      entityId: saved.id,
+      entityName: saved.name,
+    });
 
     // If initially assigned, create history
     if (saved.assignedUserId) {
@@ -246,7 +256,23 @@ export class AssetsService {
       await transactionalEntityManager.update(Asset, id, updateData);
 
       await this.invalidateCache();
-      return await this.findOne(id); // Return fresh data
+      const fresh = await this.findOne(id);
+
+      // Log meaningful changes
+      const meta: Record<string, any> = {};
+      if (updateData.categoryId && updateData.categoryId !== asset.categoryId) meta.category = 'changed';
+      if (updateData.locationId && updateData.locationId !== asset.locationId) meta.location = 'changed';
+      if (updateData.statusId && updateData.statusId !== asset.statusId) meta.status = 'changed';
+
+      this.activityLogs.log({
+        action: 'asset_updated',
+        message: `Asset "${asset.name}" was updated`,
+        entityId: id,
+        entityName: asset.name,
+        meta: Object.keys(meta).length ? meta : undefined,
+      });
+
+      return fresh;
     });
   }
 
@@ -292,6 +318,14 @@ export class AssetsService {
 
       // 3. Hard Delete
       await transactionalEntityManager.delete(Asset, id);
+    });
+
+    // Log after successful delete
+    this.activityLogs.log({
+      action: 'asset_deleted',
+      message: `Asset "${asset.name}" was removed from inventory`,
+      entityId: id,
+      entityName: asset.name,
     });
 
     await this.invalidateCache();

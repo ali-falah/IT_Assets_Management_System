@@ -43,9 +43,13 @@
         <div class="relative bg-black aspect-[4/3] sm:aspect-video flex items-center justify-center overflow-hidden">
           
           <!-- Visual Flash Feedback -->
-          <div *ngIf="scanFlash" class="absolute inset-0 z-50 animate-in fade-in duration-200 pointer-events-none"
-               [ngClass]="scanFlash === 'success' ? 'bg-green-500/30' : 'bg-red-500/30'">
+          <div *ngIf="scanFlash" class="absolute inset-0 z-50 pointer-events-none"
+               [class.scan-flash-success]="scanFlash === 'success'"
+               [class.scan-flash-error]="scanFlash === 'error'"
+               [ngClass]="scanFlash === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'">
           </div>
+          <!-- Success ring (only on success) -->
+          <div *ngIf="scanFlash === 'success'" class="scan-success-ring"></div>
 
           <!-- Scanning Paused Overlay (Countdown/Wait) -->
           <div *ngIf="isScanningPaused && scannerEnabled" class="absolute inset-0 z-40 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">

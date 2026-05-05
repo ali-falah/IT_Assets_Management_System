@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { Asset } from '../assets/entities/asset.entity';
 import { Assignment } from '../assignments/entities/assignment.entity';
 import { Status } from '../statuses/entities/status.entity';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,7 @@ export class UsersService {
     private assignmentsRepository: Repository<Assignment>,
     @InjectRepository(Status)
     private statusesRepository: Repository<Status>,
+    private activityLogs: ActivityLogsService,
   ) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -47,7 +49,16 @@ export class UsersService {
     }
 
     const user = this.usersRepository.create({ name: createUserDto.name, email: createUserDto.email, passwordHash, roleId });
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+
+    this.activityLogs.log({
+      action: 'user_created',
+      message: `User "${saved.name}" was added to the system`,
+      entityId: saved.id,
+      entityName: saved.name,
+    });
+
+    return saved;
   }
 
   async findAll(): Promise<User[]> {
@@ -198,6 +209,13 @@ export class UsersService {
 
       // 3. Delete the user
       await transactionalEntityManager.remove(User, user);
+    });
+
+    this.activityLogs.log({
+      action: 'user_deleted',
+      message: `User "${user.name}" was removed from the system`,
+      entityId: id,
+      entityName: user.name,
     });
   }
 

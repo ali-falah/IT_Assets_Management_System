@@ -98,7 +98,13 @@ import {
   Plug,
   Shield,
   Square,
-  Upload
+  Upload,
+  Copy,
+  Bookmark,
+  BookmarkCheck,
+  MoreHorizontal,
+  AlertTriangle,
+  PlusCircle
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -201,7 +207,13 @@ export const appConfig: ApplicationConfig = {
         Plug,
         Shield,
         Square,
-        Upload
+        Upload,
+        Copy,
+        Bookmark,
+        BookmarkCheck,
+        MoreHorizontal,
+        AlertTriangle,
+        PlusCircle
     }))
 ]
 };

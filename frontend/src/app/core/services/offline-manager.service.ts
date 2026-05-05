@@ -4,6 +4,8 @@ import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { concatMap, finalize, tap } from 'rxjs/operators';
 
+export const LAST_SYNCED_KEY = 'offline_last_synced_at';
+
 interface QueuedRequest {
   url: string;
   method: string;
@@ -21,9 +23,24 @@ export class OfflineManagerService {
   private isSyncing = false;
   private offlineNotificationShown = false;
 
+  /** Emits the current number of pending offline requests */
+  private _queueCount = new BehaviorSubject<number>(this.getQueue().length);
+  queueCount$ = this._queueCount.asObservable();
+
   constructor(private http: HttpClient, private toastr: ToastrService) {
     window.addEventListener('online', () => this.updateOnlineStatus(true));
     window.addEventListener('offline', () => this.updateOnlineStatus(false));
+  }
+
+  /** Returns the timestamp (ms) of the last successful full sync, or null */
+  getLastSyncedAt(): number | null {
+    const val = localStorage.getItem(LAST_SYNCED_KEY);
+    return val ? parseInt(val, 10) : null;
+  }
+
+  /** Records the current time as the last successful sync timestamp */
+  recordSyncTime(): void {
+    localStorage.setItem(LAST_SYNCED_KEY, Date.now().toString());
   }
 
   private updateOnlineStatus(online: boolean) {
@@ -51,6 +68,7 @@ export class OfflineManagerService {
     };
     queue.push(newRequest);
     this.saveQueue(queue);
+    this._queueCount.next(queue.length);
     
     if (!this.offlineNotificationShown) {
       this.toastr.warning('Could not contact the backend server', 'Changes will be synced when online', {
@@ -93,7 +111,9 @@ export class OfflineManagerService {
       finalize(() => {
         this.isSyncing = false;
         const remaining = this.getQueue();
+        this._queueCount.next(remaining.length);
         if (remaining.length === 0) {
+          this.recordSyncTime();
           this.toastr.success('Back online, all your staged operations has been sent successfully to backend', 'Sync Complete');
         }
       })
@@ -103,6 +123,7 @@ export class OfflineManagerService {
         const currentQueue = this.getQueue();
         currentQueue.shift();
         this.saveQueue(currentQueue);
+        this._queueCount.next(currentQueue.length);
       },
       error: (err) => {
         console.error('Error syncing request:', err);
@@ -110,11 +131,11 @@ export class OfflineManagerService {
         if (err.status === 0) {
           this.isSyncing = false;
         } else {
-          // If it's a 4xx/5xx error, we might want to skip it or keep it. 
-          // For now, we skip to avoid blocking the whole queue.
+          // If it's a 4xx/5xx error, skip to avoid blocking the whole queue.
           const currentQueue = this.getQueue();
           currentQueue.shift();
           this.saveQueue(currentQueue);
+          this._queueCount.next(currentQueue.length);
         }
       }
     });

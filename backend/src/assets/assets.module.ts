@@ -8,13 +8,15 @@ import { Assignment } from '../assignments/entities/assignment.entity';
 import { CategoriesModule } from '../categories/categories.module';
 import { LocationsModule } from '../locations/locations.module';
 import { StatusesModule } from '../statuses/statuses.module';
+import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Asset, Assignment]),
     CategoriesModule,
     LocationsModule,
-    StatusesModule
+    StatusesModule,
+    ActivityLogsModule,
   ],
   providers: [AssetsService],
   controllers: [AssetsController],

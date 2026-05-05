@@ -7,9 +7,10 @@ import { UserRole } from '../user-roles/entities/user-role.entity';
 import { Asset } from '../assets/entities/asset.entity';
 import { Assignment } from '../assignments/entities/assignment.entity';
 import { Status } from '../statuses/entities/status.entity';
+import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserRole, Asset, Assignment, Status])],
+  imports: [TypeOrmModule.forFeature([User, UserRole, Asset, Assignment, Status]), ActivityLogsModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

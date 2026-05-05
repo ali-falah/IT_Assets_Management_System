@@ -36,6 +36,7 @@ export class DataSyncService {
     this.offlineManager.getOnlineStatus().subscribe(online => {
       if (online) {
         this.syncAll();
+        this.offlineManager.recordSyncTime();
       }
     });
   }

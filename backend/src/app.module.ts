@@ -20,6 +20,7 @@ import { StatusesModule } from './statuses/statuses.module';
 
 import { UserRolesModule } from './user-roles/user-roles.module';
 import { SearchModule } from './search/search.module';
+import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { SearchModule } from './search/search.module';
     StatusesModule,
     UserRolesModule,
     SearchModule,
+    ActivityLogsModule,
   ],
   controllers: [AppController],
   providers: [
