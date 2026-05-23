@@ -40,5 +40,28 @@
       </h3>
       <p class="text-sm text-slate-500 flex-1">Configure asset lifecycle states and colors.</p>
     </a>
+    <!-- Server Configuration (Mobile only) -->
+    <button
+      *ngIf="isMobile"
+      class="group bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col hover:shadow-md hover:border-violet-100 transition-all cursor-pointer text-left w-full"
+      (click)="showServerConfig = true"
+      id="open-server-config-btn"
+    >
+      <div class="h-12 w-12 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <lucide-icon name="server" [size]="24"></lucide-icon>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1 flex justify-between items-center w-full">
+        Server Connection
+        <lucide-icon name="chevron-right" [size]="18" class="text-slate-400 group-hover:text-violet-600 transition-colors"></lucide-icon>
+      </h3>
+      <p class="text-sm text-slate-500 flex-1">Configure the backend server address.</p>
+    </button>
   </div>
+
+  <!-- Server Config Dialog (Mobile only) -->
+  <app-server-config-dialog
+    *ngIf="isMobile && showServerConfig"
+    (closed)="showServerConfig = false"
+  ></app-server-config-dialog>
+
 </div>

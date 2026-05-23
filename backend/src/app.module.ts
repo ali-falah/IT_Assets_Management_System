@@ -1,25 +1,26 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { RolesGuard } from './auth/guards/roles.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
-import { CategoriesModule } from './categories/categories.module';
-import { LocationsModule } from './locations/locations.module';
 import { AssignmentsModule } from './assignments/assignments.module';
-import { MaintenanceModule } from './maintenance/maintenance.module';
-import { FilesModule } from './files/files.module';
-import { RedisModule } from './redis/redis.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { FilesModule } from './files/files.module';
+import { LocationsModule } from './locations/locations.module';
+import { MaintenanceModule } from './maintenance/maintenance.module';
+import { RedisModule } from './redis/redis.module';
 import { StatusesModule } from './statuses/statuses.module';
+import { UsersModule } from './users/users.module';
 
-import { UserRolesModule } from './user-roles/user-roles.module';
+import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 import { SearchModule } from './search/search.module';
+import { UserRolesModule } from './user-roles/user-roles.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { SearchModule } from './search/search.module';
     StatusesModule,
     UserRolesModule,
     SearchModule,
+    ActivityLogsModule,
   ],
   controllers: [AppController],
   providers: [

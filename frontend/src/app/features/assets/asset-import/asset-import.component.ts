@@ -1,30 +1,47 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, inject, ChangeDetectorRef } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
+import { ToastrService } from 'ngx-toastr';
 import * as XLSX from 'xlsx';
 import { AssetService } from '../../../core/services/asset.service';
-import { ToastrService } from 'ngx-toastr';
+import { MasterDataService } from '../../../core/services/master-data.service';
 
 interface ImportRow {
   name: string;
   serialNumber: string;
   status: string;
   location?: string;
+  category?: string;
   notes?: string;
 }
 
 @Component({
   selector: 'app-asset-import',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
-  templateUrl: './asset-import.component.html'
+  imports: [CommonModule, LucideAngularModule, FormsModule],
+  templateUrl: './asset-import.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AssetImportComponent {
+export class AssetImportComponent implements OnInit {
   private assetService = inject(AssetService);
+  private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   @Output() close = new EventEmitter<void>();
   @Output() imported = new EventEmitter<void>();
+
+  // Master Data
+  locations: any[] = [];
+  categories: any[] = [];
+  statuses: any[] = [];
+
+  // Quick Paste Options
+  quickPasteText = '';
+  bulkLocationId = '';
+  bulkCategory = '';
+  bulkStatus = '';
 
   previewData: ImportRow[] = [];
   importing = false;
@@ -75,6 +92,7 @@ export class AssetImportComponent {
     if (!this.previewData.length) return;
 
     this.importing = true;
+    this.cdr.markForCheck();
     this.assetService.importAssets(this.previewData).subscribe({
       next: (res) => {
         this.toastr.success(`Successfully imported ${res.imported} assets. ${res.skipped} skipped.`);
@@ -84,12 +102,97 @@ export class AssetImportComponent {
         this.importing = false;
         this.imported.emit();
         this.onClose();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.toastr.error('Failed to import assets: ' + (err.error?.message || 'Server error'));
         this.importing = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  ngOnInit() {
+    this.loadMasterData();
+  }
+
+  loadMasterData() {
+    this.cdr.markForCheck();
+    this.masterDataService.getLocations().subscribe(res => {
+      this.locations = res;
+      this.cdr.detectChanges();
+    });
+    this.masterDataService.getCategories().subscribe(res => {
+      this.categories = res;
+      this.cdr.detectChanges();
+    });
+    this.masterDataService.getStatuses().subscribe(res => {
+      this.statuses = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  onQuickPasteProcess() {
+    if (!this.quickPasteText.trim()) return;
+
+    const lines = this.quickPasteText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    if (lines.length === 0) {
+      this.toastr.warning('No valid lines found to import');
+      return;
+    }
+
+    const parsedRows: ImportRow[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      let name = '';
+      let serial = '';
+
+      // Support multi-format separators: Tab (\t), Colon (:), or Pipe (|)
+      if (line.includes('\t')) {
+        const parts = line.split('\t');
+        name = parts[0].trim();
+        serial = parts.slice(1).join('\t').trim();
+      } else if (line.includes(':')) {
+        const parts = line.split(':');
+        name = parts[0].trim();
+        serial = parts.slice(1).join(':').trim();
+      } else if (line.includes('|')) {
+        const parts = line.split('|');
+        name = parts[0].trim();
+        serial = parts.slice(1).join('|').trim();
+      }
+
+      if (!name || !serial) {
+        errors.push(`Line ${i + 1}: "${line}" is missing a serial number. Format: "Name : Serial"`);
+        continue;
+      }
+
+      parsedRows.push({
+        name,
+        serialNumber: serial,
+        status: this.bulkStatus,
+        location: this.bulkLocationId,
+        category: this.bulkCategory,
+        notes: 'Quick pasted asset'
+      });
+    }
+
+    if (errors.length > 0) {
+      // Toast the first 3 errors so we don't overwhelm the user
+      errors.slice(0, 3).forEach(err => this.toastr.error(err));
+      if (errors.length > 3) {
+        this.toastr.error(`...and ${errors.length - 3} other lines have parsing issues.`);
+      }
+      return;
+    }
+
+    this.previewData = parsedRows;
   }
 
   downloadTemplate() {
@@ -107,6 +210,10 @@ export class AssetImportComponent {
 
   reset() {
     this.previewData = [];
+    this.quickPasteText = '';
+    this.bulkLocationId = '';
+    this.bulkCategory = '';
+    this.bulkStatus = '';
   }
 
   onClose() {

@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, forwardRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
-import { LucideAngularModule, ChevronUp, ChevronDown, Search, Check, Plus } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, forwardRef, HostListener, Input, Output } from '@angular/core';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-searchable-select',
@@ -53,6 +53,7 @@ import { LucideAngularModule, ChevronUp, ChevronDown, Search, Check, Plus } from
               type="text" 
               [(ngModel)]="searchTerm" 
               (click)="$event.stopPropagation()"
+              (keydown.enter)="onKeyDownEnter($event)"
               [placeholder]="'Search ' + label + '...'" 
               class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             >
@@ -112,7 +113,8 @@ import { LucideAngularModule, ChevronUp, ChevronDown, Search, Check, Plus } from
       from { opacity: 0; transform: translateY(-10px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchableSelectComponent implements ControlValueAccessor {
   @Input() items: any[] = [];
@@ -177,6 +179,18 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     if (this.searchTerm.trim()) {
       this.add.emit(this.searchTerm.trim());
       this.isOpen = false;
+    }
+  }
+
+  onKeyDownEnter(event: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const filtered = this.filteredItems;
+    if (this.canAdd && this.searchTerm.trim() && !this.exactMatch) {
+      this.addNew();
+    } else if (filtered.length > 0) {
+      this.selectItem(filtered[0]);
     }
   }
 

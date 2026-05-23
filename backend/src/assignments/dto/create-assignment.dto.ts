@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateAssignmentDto {
   @ApiProperty()

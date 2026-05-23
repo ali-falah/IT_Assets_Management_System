@@ -39,6 +39,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  padding-bottom: 2rem;
 }
 
 @media (min-width: 1024px) {
@@ -52,11 +53,12 @@
   border-radius: 1.25rem;
   padding: 1.25rem;
   border: 1px solid #f1f5f9;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .asset-card:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
   background-color: #f8fafc;
 }
 
@@ -184,7 +186,63 @@
   transition: all 0.2s;
 }
 
-::ng-deep .ag-theme-quartz .ag-checkbox-input-wrapper.ag-checked {
-  background: #4f46e5;
-  border-color: #4f46e5;
+/* ──────────────────────────────────────────────────
+   SAVED VIEW PILLS
+────────────────────────────────────────────────── */
+.saved-view-pill {
+  white-space: nowrap;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1.5px solid #c4b5fd;
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.saved-view-pill:hover {
+  background-color: #ede9fe;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+/* Save view dropdown slide-in */
+@keyframes slideIn {
+  from { transform: translateY(-6px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-slide-in {
+  animation: slideIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Enhanced card hover */
+.asset-card:hover {
+  border-color: #e0e7ff;
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -5px rgba(79, 70, 229, 0.06);
+}
+
+/* Inline cell edit hint */
+::ng-deep .ag-theme-quartz .ag-cell.ag-cell-inline-editing {
+  border: 2px solid #4f46e5 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+  padding: 2px 12px !important;
+  background: white !important;
+}
+
+/* Actions column hover */
+::ng-deep .ag-theme-quartz .action-delete-btn,
+::ng-deep .ag-theme-quartz .action-clone-btn,
+::ng-deep .ag-theme-quartz .action-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+/* Pinned column shadow */
+::ng-deep .ag-theme-quartz .ag-pinned-right-cols-container {
+  box-shadow: -4px 0 12px rgba(0,0,0,0.04);
 }

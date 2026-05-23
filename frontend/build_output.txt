@@ -1,0 +1,1686 @@
+       Debug [tauri_cli::helpers::app_paths] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+        Info [tauri_cli::mobile::android] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+        Info [tauri_cli::build] Looking up installed tauri packages to check mismatched versions...
+     Running [tauri_cli::helpers] beforeBuildCommand `npm run build:mobile`
+       Debug [os_info::imp::lsb_release] lsb_release command failed with Os { code: 2, kind: NotFound, message: "No such file or directory" }
+       Debug [tauri_cli::helpers] Setting environment for hook {"TAURI_ENV_ARCH": "aarch64", "TAURI_ENV_DEBUG": "true", "TAURI_ENV_FAMILY": "unix", "TAURI_ENV_PLATFORM_VERSION": "44.0.0", "TAURI_ENV_PLATFORM": "android", "TAURI_ENV_TARGET_TRIPLE": "aarch64-linux-android"}
+     Running [tauri_cli] Command `sh -c npm run build:mobile`
+
+> frontend@0.0.0 build:mobile
+> ng build --configuration mobile
+
+- Building...
+
+Initial chunk files | Names                   |  Raw size | Estimated transfer size
+chunk-ZJT67MBL.js   | -                       |   1.02 MB |               237.93 kB
+chunk-4RYZLCOE.js   | -                       | 190.16 kB |                54.58 kB
+chunk-VR5POPKT.js   | -                       | 127.82 kB |                32.32 kB
+main.js             | main                    |  86.88 kB |                24.14 kB
+styles.css          | styles                  |  45.13 kB |                 6.43 kB
+chunk-WPDLU3BG.js   | -                       |  40.48 kB |                 8.20 kB
+polyfills.js        | polyfills               |  33.71 kB |                11.02 kB
+chunk-GPZC3WQV.js   | -                       |  22.92 kB |                 4.95 kB
+chunk-HX4YQAGJ.js   | -                       |  11.25 kB |                 3.60 kB
+chunk-OYGUJO5W.js   | -                       |   2.90 kB |                 1.05 kB
+chunk-AWFBIPL7.js   | -                       |   2.62 kB |               823 bytes
+chunk-RZCBXXCR.js   | -                       |   2.28 kB |               828 bytes
+chunk-6YVGUGYD.js   | -                       |   2.14 kB |               507 bytes
+chunk-B7V6IYW6.js   | -                       |   1.47 kB |               502 bytes
+chunk-OU3N6NDX.js   | -                       |   1.40 kB |               547 bytes
+chunk-45UWBGN5.js   | -                       |   1.17 kB |               431 bytes
+chunk-XITB2NRB.js   | -                       |   1.07 kB |               444 bytes
+chunk-N7HHK74H.js   | -                       | 864 bytes |               864 bytes
+chunk-TMC7WMLO.js   | -                       | 830 bytes |               830 bytes
+
+                    | Initial total           |   1.58 MB |               389.86 kB
+
+Lazy chunk files    | Names                   |  Raw size | Estimated transfer size
+chunk-IBIDAIIH.js   | scanner-component       | 475.08 kB |                95.46 kB
+chunk-DAUODXYJ.js   | -                       | 464.93 kB |               123.81 kB
+chunk-ZH3SWMIE.js   | dashboard-component     | 215.08 kB |                64.10 kB
+chunk-SJLQOM6T.js   | user-list-component     |  47.39 kB |                10.61 kB
+chunk-DTJAXROE.js   | asset-list-component    |  46.14 kB |                11.25 kB
+chunk-DUM5GO5Z.js   | layout-component        |  21.03 kB |                 5.32 kB
+chunk-WNLA6W2S.js   | asset-form-component    |  18.83 kB |                 5.32 kB
+chunk-KJ72PSLS.js   | settings-component      |  13.99 kB |                 3.88 kB
+chunk-CSZEYQWV.js   | categories-component    |  12.29 kB |                 3.43 kB
+chunk-KF4HHYTA.js   | statuses-component      |  12.19 kB |                 3.13 kB
+chunk-RLWMLZNP.js   | activity-list-component |   8.41 kB |                 2.61 kB
+chunk-OK3ULJ4O.js   | locations-component     |   7.81 kB |                 2.33 kB
+chunk-QG4W3RC6.js   | -                       |   7.52 kB |                 2.35 kB
+chunk-4VSO277M.js   | login-component         |   4.37 kB |                 1.65 kB
+chunk-RXTWBXY6.js   | -                       |   4.05 kB |                 1.42 kB
+...and 3 more lazy chunks files. Use "--verbose" to show all the files.
+
+Output location: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/dist/frontend
+
+Application bundle generation complete. [23.635 seconds]
+
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.68s
+        Info [cargo_mobile2::android::jnilibs] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+        Info [cargo_mobile2::android::ndk] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+        Info [cargo_mobile2::android::ndk] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+        Info [cargo_mobile2::android::ndk] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+        Info [cargo_mobile2::android::ndk] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+        Info [cargo_mobile2::android::ndk] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+        Info [cargo_mobile2::android::jnilibs] symlink at "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a/libapp_lib.so" points to "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so"
+        Info [cargo_mobile2::android::jnilibs] symlink at "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/armeabi-v7a/libapp_lib.so" points to "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so"
+        Info [cargo_mobile2::android::jnilibs] symlink at "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86/libapp_lib.so" points to "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so"
+        Info [cargo_mobile2::android::jnilibs] symlink at "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86_64/libapp_lib.so" points to "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so"
+Initialized native services in: /home/ali/.gradle/native
+Initialized jansi services in: /home/ali/.gradle/native
+The client will now receive all logging from the daemon (pid: 17030). The daemon log file: /home/ali/.gradle/daemon/8.14/daemon-17030.out.log
+Starting 5th build in daemon [uptime: 13 mins 11.844 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 8 worker leases.
+Now considering [/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android, /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc] as hierarchies to watch
+Now considering [/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc, /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/settings.gradle'.
+Projects loaded. Root project using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/build.gradle.kts'.
+Included projects: [root project 'android', project ':app', project ':tauri-android']
+
+> Configure project :buildSrc
+Evaluating project ':buildSrc' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.kotlin.kotlin-dsl', version: '5.2.0']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc/src/main/kotlin', not found
+Resolve mutations for :buildSrc:checkKotlinGradlePluginConfigurationErrors (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:checkKotlinGradlePluginConfigurationErrors (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':buildSrc:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :buildSrc:compileKotlin (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:compileKotlin (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:compileKotlin UP-TO-DATE
+Caching disabled for task ':buildSrc:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':buildSrc:compileKotlin' as it is up-to-date.
+Resolve mutations for :buildSrc:compileJava (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:compileJava (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:compileJava NO-SOURCE
+Skipping task ':buildSrc:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :buildSrc:compileGroovy (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:compileGroovy (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:compileGroovy NO-SOURCE
+Skipping task ':buildSrc:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :buildSrc:pluginDescriptors (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:pluginDescriptors (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':buildSrc:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :buildSrc:processResources (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:processResources (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:processResources UP-TO-DATE
+Caching disabled for task ':buildSrc:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:processResources' as it is up-to-date.
+Resolve mutations for :buildSrc:classes (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:classes (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:classes UP-TO-DATE
+Skipping task ':buildSrc:classes' as it has no actions.
+Resolve mutations for :buildSrc:jar (Thread[#552,Execution worker,5,main]) started.
+:buildSrc:jar (Thread[#552,Execution worker,5,main]) started.
+
+> Task :buildSrc:jar UP-TO-DATE
+Caching disabled for task ':buildSrc:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:jar' as it is up-to-date.
+
+> Configure project :
+Evaluating root project 'android' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/build.gradle.kts'.
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Resolved plugin [id: 'rust']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle82 variant
+
+> Configure project :tauri-android
+Evaluating project ':tauri-android' using build file '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle82 variant
+All projects evaluated.
+Task name matched 'assembleUniversalDebug'
+Selected primary task 'assembleUniversalDebug' from project :
+Tasks to be executed: [task ':app:preBuild', task ':app:preUniversalDebugBuild', task ':app:mergeUniversalDebugNativeDebugMetadata', task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:generateUniversalDebugBuildConfig', task ':tauri-android:preBuild', task ':tauri-android:preDebugBuild', task ':tauri-android:writeDebugAarMetadata', task ':app:checkUniversalDebugAarMetadata', task ':app:generateUniversalDebugResValues', task ':tauri-android:generateDebugResValues', task ':tauri-android:generateDebugResources', task ':tauri-android:packageDebugResources', task ':app:mapUniversalDebugSourceSetPaths', task ':app:generateUniversalDebugResources', task ':app:mergeUniversalDebugResources', task ':app:packageUniversalDebugResources', task ':app:parseUniversalDebugLocalResources', task ':app:createUniversalDebugCompatibleScreenManifests', task ':app:extractDeepLinksUniversalDebug', task ':tauri-android:extractDeepLinksDebug', task ':tauri-android:processDebugManifest', task ':app:processUniversalDebugMainManifest', task ':app:processUniversalDebugManifest', task ':app:processUniversalDebugManifestForPackage', task ':tauri-android:compileDebugLibraryResources', task ':tauri-android:parseDebugLocalResources', task ':tauri-android:generateDebugRFile', task ':app:processUniversalDebugResources', task ':tauri-android:checkKotlinGradlePluginConfigurationErrors', task ':tauri-android:generateDebugBuildConfig', task ':tauri-android:compileDebugKotlin', task ':tauri-android:javaPreCompileDebug', task ':tauri-android:compileDebugJavaWithJavac', task ':tauri-android:bundleLibCompileToJarDebug', task ':app:compileUniversalDebugKotlin', task ':app:javaPreCompileUniversalDebug', task ':app:compileUniversalDebugJavaWithJavac', task ':app:mergeUniversalDebugShaders', task ':app:compileUniversalDebugShaders', task ':app:generateUniversalDebugAssets', task ':tauri-android:mergeDebugShaders', task ':tauri-android:compileDebugShaders', task ':tauri-android:generateDebugAssets', task ':tauri-android:mergeDebugAssets', task ':app:mergeUniversalDebugAssets', task ':app:compressUniversalDebugAssets', task ':app:checkUniversalDebugDuplicateClasses', task ':app:desugarUniversalDebugFileDependencies', task ':app:mergeExtDexUniversalDebug', task ':tauri-android:bundleLibRuntimeToDirDebug', task ':app:mergeLibDexUniversalDebug', task ':app:dexBuilderUniversalDebug', task ':app:mergeProjectDexUniversalDebug', task ':app:processUniversalDebugJavaRes', task ':tauri-android:processDebugJavaRes', task ':app:mergeUniversalDebugJavaResource', task ':app:rustBuildArm64Debug', task ':app:rustBuildArmDebug', task ':app:rustBuildX86Debug', task ':app:rustBuildX86_64Debug', task ':app:rustBuildUniversalDebug', task ':app:mergeUniversalDebugJniLibFolders', task ':tauri-android:mergeDebugJniLibFolders', task ':tauri-android:mergeDebugNativeLibs', task ':tauri-android:copyDebugJniLibsProjectOnly', task ':app:mergeUniversalDebugNativeLibs', task ':app:stripUniversalDebugDebugSymbols', task ':app:validateSigningUniversalDebug', task ':app:writeUniversalDebugAppMetadata', task ':app:writeUniversalDebugSigningConfigVersions', task ':app:packageUniversalDebug', task ':app:createUniversalDebugApkListingFileRedirect', task ':app:assembleUniversalDebug']
+Tasks that were excluded: []
+work action Parameters of ClassesDirToClassesTransform (Thread[#558,Execution worker Thread 7,5,main]) started.
+work action Parameters of DexingNoClasspathTransform (Thread[#558,Execution worker Thread 7,5,main]) started.
+Resolve mutations for :app:preBuild (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:preBuild (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preUniversalDebugBuild (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:preUniversalDebugBuild (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :app:preUniversalDebugBuild UP-TO-DATE
+Skipping task ':app:preUniversalDebugBuild' as it has no actions.
+Resolve mutations for :app:mergeUniversalDebugNativeDebugMetadata (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:mergeUniversalDebugNativeDebugMetadata (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :app:mergeUniversalDebugNativeDebugMetadata NO-SOURCE
+Skipping task ':app:mergeUniversalDebugNativeDebugMetadata' as it has no source files and no previous output files.
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':app:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':app:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :app:generateUniversalDebugBuildConfig (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:generateUniversalDebugBuildConfig (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :app:generateUniversalDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :tauri-android:preBuild (Thread[#553,Execution worker Thread 2,5,main]) started.
+:tauri-android:preBuild (Thread[#552,Execution worker,5,main]) started.
+
+> Task :tauri-android:preBuild UP-TO-DATE
+Skipping task ':tauri-android:preBuild' as it has no actions.
+Resolve mutations for :tauri-android:preDebugBuild (Thread[#553,Execution worker Thread 2,5,main]) started.
+:tauri-android:preDebugBuild (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :tauri-android:preDebugBuild UP-TO-DATE
+Skipping task ':tauri-android:preDebugBuild' as it has no actions.
+Resolve mutations for :tauri-android:writeDebugAarMetadata (Thread[#553,Execution worker Thread 2,5,main]) started.
+:tauri-android:writeDebugAarMetadata (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :tauri-android:writeDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':tauri-android:writeDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:writeDebugAarMetadata' as it is up-to-date.
+work action resolve aar-metadata.properties (project :tauri-android) (Thread[#552,Execution worker,5,main]) started.
+Resolve mutations for :app:checkUniversalDebugAarMetadata (Thread[#552,Execution worker,5,main]) started.
+:app:checkUniversalDebugAarMetadata (Thread[#552,Execution worker,5,main]) started.
+
+> Task :app:checkUniversalDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':app:checkUniversalDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkUniversalDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :app:generateUniversalDebugResValues (Thread[#551,included builds,5,main]) started.
+:app:generateUniversalDebugResValues (Thread[#551,included builds,5,main]) started.
+
+> Task :app:generateUniversalDebugResValues UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugResValues' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugResValues' as it is up-to-date.
+Resolve mutations for :tauri-android:generateDebugResValues (Thread[#551,included builds,5,main]) started.
+:tauri-android:generateDebugResValues (Thread[#551,included builds,5,main]) started.
+
+> Task :tauri-android:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :tauri-android:generateDebugResources (Thread[#551,included builds,5,main]) started.
+:tauri-android:generateDebugResources (Thread[#551,included builds,5,main]) started.
+
+> Task :tauri-android:generateDebugResources UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugResources' as it is up-to-date.
+Resolve mutations for :tauri-android:packageDebugResources (Thread[#551,included builds,5,main]) started.
+:tauri-android:packageDebugResources (Thread[#551,included builds,5,main]) started.
+
+> Task :tauri-android:packageDebugResources UP-TO-DATE
+Caching disabled for task ':tauri-android:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:packageDebugResources' as it is up-to-date.
+work action resolve packageDebugResources (project :tauri-android) (Thread[#551,included builds,5,main]) started.
+Resolve mutations for :app:mapUniversalDebugSourceSetPaths (Thread[#551,included builds,5,main]) started.
+:app:mapUniversalDebugSourceSetPaths (Thread[#551,included builds,5,main]) started.
+
+> Task :app:mapUniversalDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':app:mapUniversalDebugSourceSetPaths' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mapUniversalDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :app:generateUniversalDebugResources (Thread[#552,Execution worker,5,main]) started.
+:app:generateUniversalDebugResources (Thread[#552,Execution worker,5,main]) started.
+
+> Task :app:generateUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:mergeUniversalDebugResources (Thread[#551,included builds,5,main]) started.
+:app:mergeUniversalDebugResources (Thread[#551,included builds,5,main]) started.
+
+> Task :app:mergeUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:mergeUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:packageUniversalDebugResources (Thread[#551,included builds,5,main]) started.
+:app:packageUniversalDebugResources (Thread[#551,included builds,5,main]) started.
+
+> Task :app:packageUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:packageUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:packageUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:parseUniversalDebugLocalResources (Thread[#551,included builds,5,main]) started.
+:app:parseUniversalDebugLocalResources (Thread[#551,included builds,5,main]) started.
+
+> Task :app:parseUniversalDebugLocalResources UP-TO-DATE
+Caching disabled for task ':app:parseUniversalDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':app:parseUniversalDebugLocalResources' as it is up-to-date.
+Resolve mutations for :app:createUniversalDebugCompatibleScreenManifests (Thread[#551,included builds,5,main]) started.
+:app:createUniversalDebugCompatibleScreenManifests (Thread[#551,included builds,5,main]) started.
+
+> Task :app:createUniversalDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':app:createUniversalDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createUniversalDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :app:extractDeepLinksUniversalDebug (Thread[#551,included builds,5,main]) started.
+:app:extractDeepLinksUniversalDebug (Thread[#551,included builds,5,main]) started.
+
+> Task :app:extractDeepLinksUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:extractDeepLinksUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:extractDeepLinksUniversalDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:extractDeepLinksDebug (Thread[#551,included builds,5,main]) started.
+:tauri-android:extractDeepLinksDebug (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :tauri-android:extractDeepLinksDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:extractDeepLinksDebug' because:
+  Build cache is disabled
+Skipping task ':tauri-android:extractDeepLinksDebug' as it is up-to-date.
+work action resolve navigation.json (project :tauri-android) (Thread[#556,Execution worker Thread 5,5,main]) started.
+Resolve mutations for :tauri-android:processDebugManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+:tauri-android:processDebugManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :tauri-android:processDebugManifest UP-TO-DATE
+Caching disabled for task ':tauri-android:processDebugManifest' because:
+  Build cache is disabled
+Skipping task ':tauri-android:processDebugManifest' as it is up-to-date.
+work action resolve AndroidManifest.xml (project :tauri-android) (Thread[#556,Execution worker Thread 5,5,main]) started.
+Resolve mutations for :app:processUniversalDebugMainManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:processUniversalDebugMainManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:processUniversalDebugMainManifest UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugMainManifest' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugMainManifest' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:processUniversalDebugManifest (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:processUniversalDebugManifest UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugManifest' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugManifest' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugManifestForPackage (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:processUniversalDebugManifestForPackage (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :app:processUniversalDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':app:processUniversalDebugManifestForPackage'.
+Caching disabled for task ':app:processUniversalDebugManifestForPackage' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugLibraryResources (Thread[#558,Execution worker Thread 7,5,main]) started.
+:tauri-android:compileDebugLibraryResources (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :tauri-android:compileDebugLibraryResources UP-TO-DATE
+Caching disabled for task ':tauri-android:compileDebugLibraryResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugLibraryResources' as it is up-to-date.
+work action resolve out (project :tauri-android) (Thread[#551,included builds,5,main]) started.
+Resolve mutations for :tauri-android:parseDebugLocalResources (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:parseDebugLocalResources (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:parseDebugLocalResources UP-TO-DATE
+Caching disabled for task ':tauri-android:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :tauri-android:generateDebugRFile (Thread[#551,included builds,5,main]) started.
+:tauri-android:generateDebugRFile (Thread[#551,included builds,5,main]) started.
+
+> Task :tauri-android:generateDebugRFile UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugRFile' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugRFile' as it is up-to-date.
+work action resolve package-aware-r.txt (project :tauri-android) (Thread[#557,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :app:processUniversalDebugResources (Thread[#557,Execution worker Thread 6,5,main]) started.
+:app:processUniversalDebugResources (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :app:processUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :tauri-android:checkKotlinGradlePluginConfigurationErrors (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:checkKotlinGradlePluginConfigurationErrors (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':tauri-android:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':tauri-android:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :tauri-android:generateDebugBuildConfig (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:generateDebugBuildConfig (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:generateDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugKotlin (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:compileDebugKotlin (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:compileDebugKotlin UP-TO-DATE
+Caching disabled for task ':tauri-android:compileDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugKotlin' as it is up-to-date.
+Resolve mutations for :tauri-android:javaPreCompileDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:javaPreCompileDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':tauri-android:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugJavaWithJavac (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:compileDebugJavaWithJavac (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:compileDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':tauri-android:compileDebugJavaWithJavac'.
+Caching disabled for task ':tauri-android:compileDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :tauri-android:compileDebugJavaWithJavac
+No compile result for :tauri-android:compileDebugJavaWithJavac
+Resolve mutations for :tauri-android:bundleLibCompileToJarDebug (Thread[#554,Execution worker Thread 3,5,main]) started.
+:tauri-android:bundleLibCompileToJarDebug (Thread[#554,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:bundleLibCompileToJarDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:bundleLibCompileToJarDebug' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:bundleLibCompileToJarDebug' as it is up-to-date.
+work action resolve classes.jar (project :tauri-android) (Thread[#554,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :app:compileUniversalDebugKotlin (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:compileUniversalDebugKotlin (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:compileUniversalDebugKotlin UP-TO-DATE
+Caching disabled for task ':app:compileUniversalDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:compileUniversalDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:javaPreCompileUniversalDebug (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:javaPreCompileUniversalDebug (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:javaPreCompileUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:compileUniversalDebugJavaWithJavac (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:compileUniversalDebugJavaWithJavac (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:compileUniversalDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':app:compileUniversalDebugJavaWithJavac'.
+Caching disabled for task ':app:compileUniversalDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':app:compileUniversalDebugJavaWithJavac' as it is up-to-date.
+No compile result for :app:compileUniversalDebugJavaWithJavac
+No compile result for :app:compileUniversalDebugJavaWithJavac
+Resolve mutations for :app:mergeUniversalDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:mergeUniversalDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:mergeUniversalDebugShaders UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugShaders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeUniversalDebugShaders' as it is up-to-date.
+Resolve mutations for :app:compileUniversalDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:compileUniversalDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:compileUniversalDebugShaders NO-SOURCE
+Skipping task ':app:compileUniversalDebugShaders' as it has no source files and no previous output files.
+Resolve mutations for :app:generateUniversalDebugAssets (Thread[#556,Execution worker Thread 5,5,main]) started.
+:app:generateUniversalDebugAssets (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:generateUniversalDebugAssets UP-TO-DATE
+Skipping task ':app:generateUniversalDebugAssets' as it has no actions.
+Resolve mutations for :tauri-android:mergeDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+:tauri-android:mergeDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :tauri-android:mergeDebugShaders UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugShaders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugShaders' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+:tauri-android:compileDebugShaders (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :tauri-android:compileDebugShaders NO-SOURCE
+Skipping task ':tauri-android:compileDebugShaders' as it has no source files and no previous output files.
+Resolve mutations for :tauri-android:generateDebugAssets (Thread[#556,Execution worker Thread 5,5,main]) started.
+:tauri-android:generateDebugAssets (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :tauri-android:generateDebugAssets UP-TO-DATE
+Skipping task ':tauri-android:generateDebugAssets' as it has no actions.
+Resolve mutations for :tauri-android:mergeDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+:tauri-android:mergeDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :tauri-android:mergeDebugAssets UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugAssets' as it is up-to-date.
+work action resolve mergeDebugAssets (project :tauri-android) (Thread[#558,Execution worker Thread 7,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:mergeUniversalDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :app:mergeUniversalDebugAssets UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeUniversalDebugAssets' as it is up-to-date.
+Resolve mutations for :app:compressUniversalDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:compressUniversalDebugAssets (Thread[#558,Execution worker Thread 7,5,main]) started.
+
+> Task :app:compressUniversalDebugAssets UP-TO-DATE
+Caching disabled for task ':app:compressUniversalDebugAssets' because:
+  Build cache is disabled
+Skipping task ':app:compressUniversalDebugAssets' as it is up-to-date.
+Resolve mutations for :app:checkUniversalDebugDuplicateClasses (Thread[#558,Execution worker Thread 7,5,main]) started.
+:app:checkUniversalDebugDuplicateClasses (Thread[#554,Execution worker Thread 3,5,main]) started.
+
+> Task :app:checkUniversalDebugDuplicateClasses UP-TO-DATE
+Caching disabled for task ':app:checkUniversalDebugDuplicateClasses' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkUniversalDebugDuplicateClasses' as it is up-to-date.
+Resolve mutations for :app:desugarUniversalDebugFileDependencies (Thread[#554,Execution worker Thread 3,5,main]) started.
+:app:desugarUniversalDebugFileDependencies (Thread[#554,Execution worker Thread 3,5,main]) started.
+
+> Task :app:desugarUniversalDebugFileDependencies UP-TO-DATE
+Caching disabled for task ':app:desugarUniversalDebugFileDependencies' because:
+  Build cache is disabled
+Skipping task ':app:desugarUniversalDebugFileDependencies' as it is up-to-date.
+Resolve mutations for :app:mergeExtDexUniversalDebug (Thread[#554,Execution worker Thread 3,5,main]) started.
+:app:mergeExtDexUniversalDebug (Thread[#552,Execution worker,5,main]) started.
+
+> Task :app:mergeExtDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeExtDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeExtDexUniversalDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:bundleLibRuntimeToDirDebug (Thread[#552,Execution worker,5,main]) started.
+:tauri-android:bundleLibRuntimeToDirDebug (Thread[#552,Execution worker,5,main]) started.
+
+> Task :tauri-android:bundleLibRuntimeToDirDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:bundleLibRuntimeToDirDebug' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:bundleLibRuntimeToDirDebug' as it is up-to-date.
+work action resolve bundleLibRuntimeToDirDebug (project :tauri-android) (Thread[#552,Execution worker,5,main]) started.
+ClassesDirToClassesTransform (Thread[#552,Execution worker,5,main]) started.
+Resolve mutations for :app:dexBuilderUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+:app:dexBuilderUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+DexingNoClasspathTransform (Thread[#552,Execution worker,5,main]) started.
+
+> Task :app:dexBuilderUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:dexBuilderUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:dexBuilderUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:mergeProjectDexUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Transform bundleLibRuntimeToDirDebug (project :tauri-android) with DexingNoClasspathTransform
+Caching disabled for DexingNoClasspathTransform: /home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug because:
+  Build cache is disabled
+Skipping DexingNoClasspathTransform: /home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug as it is up-to-date.
+Resolve mutations for :app:mergeLibDexUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+:app:mergeLibDexUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :app:mergeLibDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeLibDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeLibDexUniversalDebug' as it is up-to-date.
+:app:mergeProjectDexUniversalDebug (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :app:mergeProjectDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeProjectDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeProjectDexUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugJavaRes (Thread[#557,Execution worker Thread 6,5,main]) started.
+:app:processUniversalDebugJavaRes (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :app:processUniversalDebugJavaRes UP-TO-DATE
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universal/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/debug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universalDebug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universal/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/debug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universalDebug/resources', not found
+Caching disabled for task ':app:processUniversalDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processUniversalDebugJavaRes' as it is up-to-date.
+Resolve mutations for :tauri-android:processDebugJavaRes (Thread[#557,Execution worker Thread 6,5,main]) started.
+:tauri-android:processDebugJavaRes (Thread[#557,Execution worker Thread 6,5,main]) started.
+
+> Task :tauri-android:processDebugJavaRes UP-TO-DATE
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/main/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/debug/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/main/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/debug/resources', not found
+Caching disabled for task ':tauri-android:processDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:processDebugJavaRes' as it is up-to-date.
+work action resolve out (project :tauri-android) (Thread[#557,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugJavaResource (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:mergeUniversalDebugJavaResource (Thread[#553,Execution worker Thread 2,5,main]) started.
+
+> Task :app:mergeUniversalDebugJavaResource UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugJavaResource' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mergeUniversalDebugJavaResource' as it is up-to-date.
+Resolve mutations for :app:rustBuildArm64Debug (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:rustBuildArm64Debug (Thread[#553,Execution worker Thread 2,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:49856 conn_id=0
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildArm64Debug
+Caching disabled for task ':app:rustBuildArm64Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildArm64Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target aarch64
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target aarch64
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.31s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildArmDebug (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:rustBuildArmDebug (Thread[#553,Execution worker Thread 2,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:33310 conn_id=1
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildArmDebug
+Caching disabled for task ':app:rustBuildArmDebug' because:
+  Build cache is disabled
+Task ':app:rustBuildArmDebug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target armv7
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target armv7
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.32s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/armeabi-v7a"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildX86Debug (Thread[#553,Execution worker Thread 2,5,main]) started.
+:app:rustBuildX86Debug (Thread[#555,Execution worker Thread 4,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:33314 conn_id=2
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildX86Debug
+Caching disabled for task ':app:rustBuildX86Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildX86Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target i686
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target i686
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.35s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildX86_64Debug (Thread[#555,Execution worker Thread 4,5,main]) started.
+:app:rustBuildX86_64Debug (Thread[#555,Execution worker Thread 4,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:33320 conn_id=3
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildX86_64Debug
+Caching disabled for task ':app:rustBuildX86_64Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildX86_64Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target x86_64
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target x86_64
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[92m   Compiling[0m it-assets v1.0.0 (/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri)
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 2.97s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86_64"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildUniversalDebug (Thread[#555,Execution worker Thread 4,5,main]) started.
+:app:rustBuildUniversalDebug (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :app:rustBuildUniversalDebug
+Skipping task ':app:rustBuildUniversalDebug' as it has no actions.
+Resolve mutations for :app:mergeUniversalDebugJniLibFolders (Thread[#555,Execution worker Thread 4,5,main]) started.
+:app:mergeUniversalDebugJniLibFolders (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeUniversalDebugJniLibFolders
+Caching disabled for task ':app:mergeUniversalDebugJniLibFolders' because:
+  Build cache is disabled
+  Simple merging task
+Task ':app:mergeUniversalDebugJniLibFolders' is not up-to-date because:
+  Input property 'sourceFolderInputs' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86_64/libapp_lib.so has changed.
+Resolve mutations for :tauri-android:mergeDebugJniLibFolders (Thread[#555,Execution worker Thread 4,5,main]) started.
+:tauri-android:mergeDebugJniLibFolders (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:mergeDebugJniLibFolders UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugJniLibFolders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugJniLibFolders' as it is up-to-date.
+Resolve mutations for :tauri-android:mergeDebugNativeLibs (Thread[#555,Execution worker Thread 4,5,main]) started.
+:tauri-android:mergeDebugNativeLibs (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:mergeDebugNativeLibs NO-SOURCE
+Skipping task ':tauri-android:mergeDebugNativeLibs' as it has no source files and no previous output files.
+Resolve mutations for :tauri-android:copyDebugJniLibsProjectOnly (Thread[#555,Execution worker Thread 4,5,main]) started.
+:tauri-android:copyDebugJniLibsProjectOnly (Thread[#554,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+Caching disabled for task ':tauri-android:copyDebugJniLibsProjectOnly' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:copyDebugJniLibsProjectOnly' as it is up-to-date.
+work action resolve jni (project :tauri-android) (Thread[#554,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugNativeLibs (Thread[#551,included builds,5,main]) started.
+:app:mergeUniversalDebugNativeLibs (Thread[#551,included builds,5,main]) started.
+Resolve mutations for :app:validateSigningUniversalDebug (Thread[#554,Execution worker Thread 3,5,main]) started.
+:app:validateSigningUniversalDebug (Thread[#554,Execution worker Thread 3,5,main]) started.
+
+> Task :app:validateSigningUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:validateSigningUniversalDebug' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:validateSigningUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:writeUniversalDebugAppMetadata (Thread[#554,Execution worker Thread 3,5,main]) started.
+:app:writeUniversalDebugAppMetadata (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :app:writeUniversalDebugAppMetadata UP-TO-DATE
+Caching disabled for task ':app:writeUniversalDebugAppMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:writeUniversalDebugAppMetadata' as it is up-to-date.
+Resolve mutations for :app:writeUniversalDebugSigningConfigVersions (Thread[#555,Execution worker Thread 4,5,main]) started.
+:app:writeUniversalDebugSigningConfigVersions (Thread[#555,Execution worker Thread 4,5,main]) started.
+
+> Task :app:writeUniversalDebugSigningConfigVersions UP-TO-DATE
+Caching disabled for task ':app:writeUniversalDebugSigningConfigVersions' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:writeUniversalDebugSigningConfigVersions' as it is up-to-date.
+
+> Task :app:mergeUniversalDebugNativeLibs
+Caching disabled for task ':app:mergeUniversalDebugNativeLibs' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:mergeUniversalDebugNativeLibs' is not up-to-date because:
+  Input property 'projectNativeLibs' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/merged_jni_libs/universalDebug/mergeUniversalDebugJniLibFolders/out/x86_64/libapp_lib.so has changed.
+Resolve mutations for :app:stripUniversalDebugDebugSymbols (Thread[#551,included builds,5,main]) started.
+:app:stripUniversalDebugDebugSymbols (Thread[#551,included builds,5,main]) started.
+
+> Task :app:stripUniversalDebugDebugSymbols
+Caching disabled for task ':app:stripUniversalDebugDebugSymbols' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:stripUniversalDebugDebugSymbols' is not up-to-date because:
+  Input property 'inputDir' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/merged_native_libs/universalDebug/mergeUniversalDebugNativeLibs/out/lib/x86_64/libapp_lib.so has changed.
+Resolve mutations for :app:packageUniversalDebug (Thread[#551,included builds,5,main]) started.
+:app:packageUniversalDebug (Thread[#551,included builds,5,main]) started.
+
+> Task :app:packageUniversalDebug
+Custom actions are attached to task ':app:packageUniversalDebug'.
+Caching disabled for task ':app:packageUniversalDebug' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:packageUniversalDebug' is not up-to-date because:
+  Input property 'jniFolders' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/stripped_native_libs/universalDebug/stripUniversalDebugDebugSymbols/out/lib/x86_64/libapp_lib.so has changed.
+Resolve mutations for :app:createUniversalDebugApkListingFileRedirect (Thread[#551,included builds,5,main]) started.
+:app:createUniversalDebugApkListingFileRedirect (Thread[#551,included builds,5,main]) started.
+
+> Task :app:createUniversalDebugApkListingFileRedirect UP-TO-DATE
+Caching disabled for task ':app:createUniversalDebugApkListingFileRedirect' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createUniversalDebugApkListingFileRedirect' as it is up-to-date.
+Resolve mutations for :app:assembleUniversalDebug (Thread[#551,included builds,5,main]) started.
+:app:assembleUniversalDebug (Thread[#556,Execution worker Thread 5,5,main]) started.
+
+> Task :app:assembleUniversalDebug
+Skipping task ':app:assembleUniversalDebug' as it has no actions.
+Could not execute [report metric STATISTICS_COLLECT_METRICS_OVERHEAD]
+Could not execute [report metric STATISTICS_COLLECT_METRICS_OVERHEAD]
+
+[Incubating] Problems report is available at: file:///home/ali/Desktop/MyActiveCodes/IT%20Assets%20Inventory/frontend/src-tauri/gen/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 15s
+66 actionable tasks: 10 executed, 56 up-to-date
+Initialized native services in: /home/ali/.gradle/native
+Initialized jansi services in: /home/ali/.gradle/native
+The client will now receive all logging from the daemon (pid: 17030). The daemon log file: /home/ali/.gradle/daemon/8.14/daemon-17030.out.log
+Starting 6th build in daemon [uptime: 13 mins 27.528 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 8 worker leases.
+Now considering [/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android, /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc] as hierarchies to watch
+Now considering [/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc, /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/settings.gradle'.
+Projects loaded. Root project using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/build.gradle.kts'.
+Included projects: [root project 'android', project ':app', project ':tauri-android']
+
+> Configure project :buildSrc
+Evaluating project ':buildSrc' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.kotlin.kotlin-dsl', version: '5.2.0']
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/buildSrc/src/main/kotlin', not found
+Resolve mutations for :buildSrc:checkKotlinGradlePluginConfigurationErrors (Thread[#672,Execution worker,5,main]) started.
+:buildSrc:checkKotlinGradlePluginConfigurationErrors (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':buildSrc:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :buildSrc:compileKotlin (Thread[#674,Execution worker Thread 3,5,main]) started.
+:buildSrc:compileKotlin (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :buildSrc:compileKotlin UP-TO-DATE
+Caching disabled for task ':buildSrc:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':buildSrc:compileKotlin' as it is up-to-date.
+Resolve mutations for :buildSrc:compileJava (Thread[#674,Execution worker Thread 3,5,main]) started.
+:buildSrc:compileJava (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :buildSrc:compileJava NO-SOURCE
+Skipping task ':buildSrc:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :buildSrc:compileGroovy (Thread[#672,Execution worker,5,main]) started.
+:buildSrc:compileGroovy (Thread[#672,Execution worker,5,main]) started.
+
+> Task :buildSrc:compileGroovy NO-SOURCE
+Skipping task ':buildSrc:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :buildSrc:pluginDescriptors (Thread[#672,Execution worker,5,main]) started.
+:buildSrc:pluginDescriptors (Thread[#672,Execution worker,5,main]) started.
+
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':buildSrc:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :buildSrc:processResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+:buildSrc:processResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :buildSrc:processResources UP-TO-DATE
+Caching disabled for task ':buildSrc:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:processResources' as it is up-to-date.
+Resolve mutations for :buildSrc:classes (Thread[#672,Execution worker,5,main]) started.
+:buildSrc:classes (Thread[#672,Execution worker,5,main]) started.
+
+> Task :buildSrc:classes UP-TO-DATE
+Skipping task ':buildSrc:classes' as it has no actions.
+Resolve mutations for :buildSrc:jar (Thread[#672,Execution worker,5,main]) started.
+:buildSrc:jar (Thread[#672,Execution worker,5,main]) started.
+
+> Task :buildSrc:jar UP-TO-DATE
+Caching disabled for task ':buildSrc:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':buildSrc:jar' as it is up-to-date.
+
+> Configure project :
+Evaluating root project 'android' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/build.gradle.kts'.
+
+> Configure project :app
+Evaluating project ':app' using build file '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Resolved plugin [id: 'rust']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle82 variant
+
+> Configure project :tauri-android
+Evaluating project ':tauri-android' using build file '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build.gradle.kts'.
+Resolved plugin [id: 'com.android.library']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Using default execution profile
+Using Kotlin Gradle Plugin gradle82 variant
+All projects evaluated.
+Task name matched 'bundleUniversalDebug'
+Selected primary task 'bundleUniversalDebug' from project :
+Tasks to be executed: [task ':app:preBuild', task ':app:preUniversalDebugBuild', task ':app:generateUniversalDebugResValues', task ':tauri-android:preBuild', task ':tauri-android:preDebugBuild', task ':tauri-android:generateDebugResValues', task ':tauri-android:generateDebugResources', task ':tauri-android:packageDebugResources', task ':app:mapUniversalDebugSourceSetPaths', task ':app:generateUniversalDebugResources', task ':app:mergeUniversalDebugResources', task ':app:createUniversalDebugCompatibleScreenManifests', task ':app:extractDeepLinksUniversalDebug', task ':tauri-android:extractDeepLinksDebug', task ':tauri-android:processDebugManifest', task ':app:processUniversalDebugMainManifest', task ':app:processUniversalDebugManifest', task ':app:processApplicationManifestUniversalDebugForBundle', task ':tauri-android:writeDebugAarMetadata', task ':app:checkUniversalDebugAarMetadata', task ':app:packageUniversalDebugResources', task ':app:parseUniversalDebugLocalResources', task ':app:processUniversalDebugManifestForPackage', task ':tauri-android:compileDebugLibraryResources', task ':tauri-android:parseDebugLocalResources', task ':tauri-android:generateDebugRFile', task ':app:processUniversalDebugResources', task ':app:bundleUniversalDebugResources', task ':app:checkUniversalDebugDuplicateClasses', task ':app:desugarUniversalDebugFileDependencies', task ':app:mergeExtDexUniversalDebug', task ':tauri-android:checkKotlinGradlePluginConfigurationErrors', task ':tauri-android:generateDebugBuildConfig', task ':tauri-android:compileDebugKotlin', task ':tauri-android:javaPreCompileDebug', task ':tauri-android:compileDebugJavaWithJavac', task ':tauri-android:bundleLibRuntimeToDirDebug', task ':app:mergeLibDexUniversalDebug', task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:generateUniversalDebugBuildConfig', task ':tauri-android:bundleLibCompileToJarDebug', task ':app:compileUniversalDebugKotlin', task ':app:javaPreCompileUniversalDebug', task ':app:compileUniversalDebugJavaWithJavac', task ':app:dexBuilderUniversalDebug', task ':app:mergeProjectDexUniversalDebug', task ':app:mergeUniversalDebugShaders', task ':app:compileUniversalDebugShaders', task ':app:generateUniversalDebugAssets', task ':tauri-android:mergeDebugShaders', task ':tauri-android:compileDebugShaders', task ':tauri-android:generateDebugAssets', task ':tauri-android:mergeDebugAssets', task ':app:mergeUniversalDebugAssets', task ':app:processUniversalDebugJavaRes', task ':tauri-android:processDebugJavaRes', task ':app:mergeUniversalDebugJavaResource', task ':app:rustBuildArm64Debug', task ':app:rustBuildArmDebug', task ':app:rustBuildX86Debug', task ':app:rustBuildX86_64Debug', task ':app:rustBuildUniversalDebug', task ':app:mergeUniversalDebugJniLibFolders', task ':tauri-android:mergeDebugJniLibFolders', task ':tauri-android:mergeDebugNativeLibs', task ':tauri-android:copyDebugJniLibsProjectOnly', task ':app:mergeUniversalDebugNativeLibs', task ':app:stripUniversalDebugDebugSymbols', task ':app:writeUniversalDebugAppMetadata', task ':app:buildUniversalDebugPreBundle', task ':app:parseUniversalDebugIntegrityConfig', task ':app:packageUniversalDebugBundle', task ':app:validateSigningUniversalDebug', task ':app:signUniversalDebugBundle', task ':app:produceUniversalDebugBundleIdeListingFile', task ':app:createUniversalDebugBundleListingFileRedirect', task ':app:bundleUniversalDebug']
+Tasks that were excluded: []
+work action Parameters of ClassesDirToClassesTransform (Thread[#677,Execution worker Thread 6,5,main]) started.
+work action Parameters of DexingNoClasspathTransform (Thread[#677,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :app:preBuild (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:preBuild (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preUniversalDebugBuild (Thread[#671,included builds,5,main]) started.
+:app:preUniversalDebugBuild (Thread[#671,included builds,5,main]) started.
+
+> Task :app:preUniversalDebugBuild UP-TO-DATE
+Skipping task ':app:preUniversalDebugBuild' as it has no actions.
+Resolve mutations for :app:generateUniversalDebugResValues (Thread[#671,included builds,5,main]) started.
+:app:generateUniversalDebugResValues (Thread[#671,included builds,5,main]) started.
+
+> Task :app:generateUniversalDebugResValues UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugResValues' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugResValues' as it is up-to-date.
+Resolve mutations for :tauri-android:preBuild (Thread[#677,Execution worker Thread 6,5,main]) started.
+:tauri-android:preBuild (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:preBuild UP-TO-DATE
+Skipping task ':tauri-android:preBuild' as it has no actions.
+Resolve mutations for :tauri-android:preDebugBuild (Thread[#674,Execution worker Thread 3,5,main]) started.
+:tauri-android:preDebugBuild (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:preDebugBuild UP-TO-DATE
+Skipping task ':tauri-android:preDebugBuild' as it has no actions.
+Resolve mutations for :tauri-android:generateDebugResValues (Thread[#671,included builds,5,main]) started.
+:tauri-android:generateDebugResValues (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :tauri-android:generateDebugResources (Thread[#671,included builds,5,main]) started.
+:tauri-android:generateDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:generateDebugResources UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugResources' as it is up-to-date.
+Resolve mutations for :tauri-android:packageDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+:tauri-android:packageDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:packageDebugResources UP-TO-DATE
+Caching disabled for task ':tauri-android:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:packageDebugResources' as it is up-to-date.
+work action resolve packageDebugResources (project :tauri-android) (Thread[#674,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :app:mapUniversalDebugSourceSetPaths (Thread[#674,Execution worker Thread 3,5,main]) started.
+:app:mapUniversalDebugSourceSetPaths (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :app:mapUniversalDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':app:mapUniversalDebugSourceSetPaths' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mapUniversalDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :app:generateUniversalDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+:app:generateUniversalDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :app:generateUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:mergeUniversalDebugResources (Thread[#674,Execution worker Thread 3,5,main]) started.
+:app:mergeUniversalDebugResources (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:mergeUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:mergeUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:createUniversalDebugCompatibleScreenManifests (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:createUniversalDebugCompatibleScreenManifests (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:createUniversalDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':app:createUniversalDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createUniversalDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :app:extractDeepLinksUniversalDebug (Thread[#674,Execution worker Thread 3,5,main]) started.
+:app:extractDeepLinksUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:extractDeepLinksUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:extractDeepLinksUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:extractDeepLinksUniversalDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:extractDeepLinksDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:extractDeepLinksDebug (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:extractDeepLinksDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:extractDeepLinksDebug' because:
+  Build cache is disabled
+Skipping task ':tauri-android:extractDeepLinksDebug' as it is up-to-date.
+work action resolve navigation.json (project :tauri-android) (Thread[#674,Execution worker Thread 3,5,main]) started.
+Resolve mutations for :tauri-android:processDebugManifest (Thread[#674,Execution worker Thread 3,5,main]) started.
+:tauri-android:processDebugManifest (Thread[#674,Execution worker Thread 3,5,main]) started.
+
+> Task :tauri-android:processDebugManifest UP-TO-DATE
+Caching disabled for task ':tauri-android:processDebugManifest' because:
+  Build cache is disabled
+Skipping task ':tauri-android:processDebugManifest' as it is up-to-date.
+work action resolve AndroidManifest.xml (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :app:processUniversalDebugMainManifest (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processUniversalDebugMainManifest (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processUniversalDebugMainManifest UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugMainManifest' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugMainManifest' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugManifest (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processUniversalDebugManifest (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processUniversalDebugManifest UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugManifest' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugManifest' as it is up-to-date.
+Resolve mutations for :app:processApplicationManifestUniversalDebugForBundle (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processApplicationManifestUniversalDebugForBundle (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processApplicationManifestUniversalDebugForBundle UP-TO-DATE
+Caching disabled for task ':app:processApplicationManifestUniversalDebugForBundle' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processApplicationManifestUniversalDebugForBundle' as it is up-to-date.
+Resolve mutations for :tauri-android:writeDebugAarMetadata (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:writeDebugAarMetadata (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:writeDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':tauri-android:writeDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:writeDebugAarMetadata' as it is up-to-date.
+work action resolve aar-metadata.properties (project :tauri-android) (Thread[#676,Execution worker Thread 5,5,main]) started.
+Resolve mutations for :app:checkUniversalDebugAarMetadata (Thread[#676,Execution worker Thread 5,5,main]) started.
+:app:checkUniversalDebugAarMetadata (Thread[#676,Execution worker Thread 5,5,main]) started.
+
+> Task :app:checkUniversalDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':app:checkUniversalDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkUniversalDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :app:packageUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:packageUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:packageUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:packageUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:packageUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:parseUniversalDebugLocalResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:parseUniversalDebugLocalResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:parseUniversalDebugLocalResources UP-TO-DATE
+Caching disabled for task ':app:parseUniversalDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':app:parseUniversalDebugLocalResources' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugManifestForPackage (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processUniversalDebugManifestForPackage (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processUniversalDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':app:processUniversalDebugManifestForPackage'.
+Caching disabled for task ':app:processUniversalDebugManifestForPackage' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugLibraryResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:compileDebugLibraryResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:compileDebugLibraryResources UP-TO-DATE
+Caching disabled for task ':tauri-android:compileDebugLibraryResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugLibraryResources' as it is up-to-date.
+work action resolve out (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :tauri-android:parseDebugLocalResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:parseDebugLocalResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:parseDebugLocalResources UP-TO-DATE
+Caching disabled for task ':tauri-android:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':tauri-android:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :tauri-android:generateDebugRFile (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:generateDebugRFile (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:generateDebugRFile UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugRFile' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugRFile' as it is up-to-date.
+work action resolve package-aware-r.txt (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :app:processUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:processUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:processUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:bundleUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:bundleUniversalDebugResources (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:bundleUniversalDebugResources UP-TO-DATE
+Caching disabled for task ':app:bundleUniversalDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:bundleUniversalDebugResources' as it is up-to-date.
+Resolve mutations for :app:checkUniversalDebugDuplicateClasses (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:checkUniversalDebugDuplicateClasses (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:checkUniversalDebugDuplicateClasses UP-TO-DATE
+Caching disabled for task ':app:checkUniversalDebugDuplicateClasses' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkUniversalDebugDuplicateClasses' as it is up-to-date.
+Resolve mutations for :app:desugarUniversalDebugFileDependencies (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:desugarUniversalDebugFileDependencies (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:desugarUniversalDebugFileDependencies UP-TO-DATE
+Caching disabled for task ':app:desugarUniversalDebugFileDependencies' because:
+  Build cache is disabled
+Skipping task ':app:desugarUniversalDebugFileDependencies' as it is up-to-date.
+Resolve mutations for :app:mergeExtDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:mergeExtDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeExtDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeExtDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeExtDexUniversalDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:checkKotlinGradlePluginConfigurationErrors (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:checkKotlinGradlePluginConfigurationErrors (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':tauri-android:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':tauri-android:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :tauri-android:generateDebugBuildConfig (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:generateDebugBuildConfig (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:generateDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':tauri-android:generateDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':tauri-android:generateDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugKotlin (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:compileDebugKotlin (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:compileDebugKotlin UP-TO-DATE
+Caching disabled for task ':tauri-android:compileDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugKotlin' as it is up-to-date.
+Resolve mutations for :tauri-android:javaPreCompileDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:javaPreCompileDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':tauri-android:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugJavaWithJavac (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:compileDebugJavaWithJavac (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:compileDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':tauri-android:compileDebugJavaWithJavac'.
+Caching disabled for task ':tauri-android:compileDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':tauri-android:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :tauri-android:compileDebugJavaWithJavac
+No compile result for :tauri-android:compileDebugJavaWithJavac
+Resolve mutations for :tauri-android:bundleLibRuntimeToDirDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:bundleLibRuntimeToDirDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:bundleLibRuntimeToDirDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:bundleLibRuntimeToDirDebug' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:bundleLibRuntimeToDirDebug' as it is up-to-date.
+work action resolve bundleLibRuntimeToDirDebug (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+ClassesDirToClassesTransform (Thread[#678,Execution worker Thread 7,5,main]) started.
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#675,Execution worker Thread 4,5,main]) started.
+DexingNoClasspathTransform (Thread[#678,Execution worker Thread 7,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':app:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':app:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :app:generateUniversalDebugBuildConfig (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:generateUniversalDebugBuildConfig (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:generateUniversalDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':app:generateUniversalDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':app:generateUniversalDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :tauri-android:bundleLibCompileToJarDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:bundleLibCompileToJarDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Transform bundleLibRuntimeToDirDebug (project :tauri-android) with DexingNoClasspathTransform
+Caching disabled for DexingNoClasspathTransform: /home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug because:
+  Build cache is disabled
+Skipping DexingNoClasspathTransform: /home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug as it is up-to-date.
+
+> Task :tauri-android:bundleLibCompileToJarDebug UP-TO-DATE
+Caching disabled for task ':tauri-android:bundleLibCompileToJarDebug' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:bundleLibCompileToJarDebug' as it is up-to-date.
+work action resolve classes.jar (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :app:mergeLibDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:mergeLibDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeLibDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeLibDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeLibDexUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:compileUniversalDebugKotlin (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:compileUniversalDebugKotlin (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:compileUniversalDebugKotlin UP-TO-DATE
+Caching disabled for task ':app:compileUniversalDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:compileUniversalDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:javaPreCompileUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:javaPreCompileUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:javaPreCompileUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:compileUniversalDebugJavaWithJavac (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:compileUniversalDebugJavaWithJavac (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:compileUniversalDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':app:compileUniversalDebugJavaWithJavac'.
+Caching disabled for task ':app:compileUniversalDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':app:compileUniversalDebugJavaWithJavac' as it is up-to-date.
+No compile result for :app:compileUniversalDebugJavaWithJavac
+No compile result for :app:compileUniversalDebugJavaWithJavac
+Resolve mutations for :app:dexBuilderUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:dexBuilderUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:dexBuilderUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:dexBuilderUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:dexBuilderUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:mergeProjectDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:mergeProjectDexUniversalDebug (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeProjectDexUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:mergeProjectDexUniversalDebug' because:
+  Build cache is disabled
+Skipping task ':app:mergeProjectDexUniversalDebug' as it is up-to-date.
+Resolve mutations for :app:mergeUniversalDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:mergeUniversalDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeUniversalDebugShaders UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugShaders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeUniversalDebugShaders' as it is up-to-date.
+Resolve mutations for :app:compileUniversalDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:compileUniversalDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:compileUniversalDebugShaders NO-SOURCE
+Skipping task ':app:compileUniversalDebugShaders' as it has no source files and no previous output files.
+Resolve mutations for :app:generateUniversalDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:generateUniversalDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:generateUniversalDebugAssets UP-TO-DATE
+Skipping task ':app:generateUniversalDebugAssets' as it has no actions.
+Resolve mutations for :tauri-android:mergeDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:mergeDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:mergeDebugShaders UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugShaders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugShaders' as it is up-to-date.
+Resolve mutations for :tauri-android:compileDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:compileDebugShaders (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:compileDebugShaders NO-SOURCE
+Skipping task ':tauri-android:compileDebugShaders' as it has no source files and no previous output files.
+Resolve mutations for :tauri-android:generateDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:generateDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:generateDebugAssets UP-TO-DATE
+Skipping task ':tauri-android:generateDebugAssets' as it has no actions.
+Resolve mutations for :tauri-android:mergeDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:mergeDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :tauri-android:mergeDebugAssets UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugAssets' as it is up-to-date.
+work action resolve mergeDebugAssets (project :tauri-android) (Thread[#675,Execution worker Thread 4,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:mergeUniversalDebugAssets (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:mergeUniversalDebugAssets UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeUniversalDebugAssets' as it is up-to-date.
+Resolve mutations for :app:processUniversalDebugJavaRes (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:processUniversalDebugJavaRes (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:processUniversalDebugJavaRes UP-TO-DATE
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universal/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/debug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universalDebug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universal/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/debug/resources', not found
+file or directory '/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/universalDebug/resources', not found
+Caching disabled for task ':app:processUniversalDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processUniversalDebugJavaRes' as it is up-to-date.
+Resolve mutations for :tauri-android:processDebugJavaRes (Thread[#675,Execution worker Thread 4,5,main]) started.
+:tauri-android:processDebugJavaRes (Thread[#672,Execution worker,5,main]) started.
+
+> Task :tauri-android:processDebugJavaRes UP-TO-DATE
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/main/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/debug/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/main/resources', not found
+file or directory '/home/ali/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.1/mobile/android/src/debug/resources', not found
+Caching disabled for task ':tauri-android:processDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:processDebugJavaRes' as it is up-to-date.
+work action resolve out (project :tauri-android) (Thread[#672,Execution worker,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugJavaResource (Thread[#672,Execution worker,5,main]) started.
+:app:mergeUniversalDebugJavaResource (Thread[#672,Execution worker,5,main]) started.
+
+> Task :app:mergeUniversalDebugJavaResource UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugJavaResource' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mergeUniversalDebugJavaResource' as it is up-to-date.
+Resolve mutations for :app:rustBuildArm64Debug (Thread[#672,Execution worker,5,main]) started.
+:app:rustBuildArm64Debug (Thread[#672,Execution worker,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:49210 conn_id=4
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildArm64Debug
+Caching disabled for task ':app:rustBuildArm64Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildArm64Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target aarch64
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target aarch64
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.31s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/arm64-v8a"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/aarch64-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildArmDebug (Thread[#672,Execution worker,5,main]) started.
+:app:rustBuildArmDebug (Thread[#672,Execution worker,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:49222 conn_id=5
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildArmDebug
+Caching disabled for task ':app:rustBuildArmDebug' because:
+  Build cache is disabled
+Task ':app:rustBuildArmDebug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target armv7
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target armv7
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.33s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/armeabi-v7a"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/armv7-linux-androideabi/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildX86Debug (Thread[#672,Execution worker,5,main]) started.
+:app:rustBuildX86Debug (Thread[#677,Execution worker Thread 6,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:49226 conn_id=6
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildX86Debug
+Caching disabled for task ':app:rustBuildX86Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildX86Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target i686
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target i686
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.30s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/i686-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildX86_64Debug (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:rustBuildX86_64Debug (Thread[#677,Execution worker Thread 6,5,main]) started.
+        Info [jsonrpsee_server::server] connection; remote_addr=127.0.0.1:49238 conn_id=7
+       Debug [jsonrpsee-server] Accepting new connection 1/100
+
+> Task :app:rustBuildX86_64Debug
+Caching disabled for task ':app:rustBuildX86_64Debug' because:
+  Build cache is disabled
+Task ':app:rustBuildX86_64Debug' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Starting process 'command 'npm''. Working directory: /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri Command: npm run -- tauri android android-studio-script -v --target x86_64
+Successfully started process 'command 'npm''
+
+> frontend@0.0.0 tauri
+> tauri android android-studio-script -v --target x86_64
+
+[1m[34m       Debug[0m [[30mtauri_cli::helpers::app_paths[0m] Found Tauri project inside /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri on early lookup
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connecting to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[34m       Debug[0m [[30mjsonrpsee-client[0m] Connection established to target: Target { host: "127.0.0.1", host_header: "127.0.0.1:45967", _mode: Plain, path_and_query: "/", basic_auth: None }
+[1m[32m        Info[0m [[30mtauri_cli::mobile::android[0m] Using installed NDK: /home/ali/Android/Sdk/ndk/29.0.13846066
+[1m[33mwarning[0m[1m: unused import: `tauri::AppHandle`[0m
+  [1m[94m--> [0msrc/lib.rs:13:5
+   [1m[94m|[0m
+[1m[94m13[0m [1m[94m|[0m use tauri::AppHandle;
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `it-assets` (lib) generated 1 warning (run `cargo fix --lib -p it-assets` to apply 1 suggestion)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
+[1m[32m        Info[0m [[30mcargo_mobile2::android::jnilibs[0m] symlinking lib "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" in jniLibs dir "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/src/main/jniLibs/x86_64"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "liblog.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libandroid.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libdl.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libm.so"
+[1m[32m        Info[0m [[30mcargo_mobile2::android::ndk[0m] "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/target/x86_64-linux-android/debug/libapp_lib.so" requires shared lib "libc.so"
+Resolve mutations for :app:rustBuildUniversalDebug (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:rustBuildUniversalDebug (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:rustBuildUniversalDebug
+Skipping task ':app:rustBuildUniversalDebug' as it has no actions.
+Resolve mutations for :app:mergeUniversalDebugJniLibFolders (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:mergeUniversalDebugJniLibFolders (Thread[#673,Execution worker Thread 2,5,main]) started.
+
+> Task :app:mergeUniversalDebugJniLibFolders UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugJniLibFolders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:mergeUniversalDebugJniLibFolders' as it is up-to-date.
+Resolve mutations for :tauri-android:mergeDebugJniLibFolders (Thread[#673,Execution worker Thread 2,5,main]) started.
+:tauri-android:mergeDebugJniLibFolders (Thread[#673,Execution worker Thread 2,5,main]) started.
+
+> Task :tauri-android:mergeDebugJniLibFolders UP-TO-DATE
+Caching disabled for task ':tauri-android:mergeDebugJniLibFolders' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':tauri-android:mergeDebugJniLibFolders' as it is up-to-date.
+Resolve mutations for :tauri-android:mergeDebugNativeLibs (Thread[#673,Execution worker Thread 2,5,main]) started.
+:tauri-android:mergeDebugNativeLibs (Thread[#673,Execution worker Thread 2,5,main]) started.
+
+> Task :tauri-android:mergeDebugNativeLibs NO-SOURCE
+Skipping task ':tauri-android:mergeDebugNativeLibs' as it has no source files and no previous output files.
+Resolve mutations for :tauri-android:copyDebugJniLibsProjectOnly (Thread[#673,Execution worker Thread 2,5,main]) started.
+:tauri-android:copyDebugJniLibsProjectOnly (Thread[#673,Execution worker Thread 2,5,main]) started.
+
+> Task :tauri-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+Caching disabled for task ':tauri-android:copyDebugJniLibsProjectOnly' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':tauri-android:copyDebugJniLibsProjectOnly' as it is up-to-date.
+work action resolve jni (project :tauri-android) (Thread[#673,Execution worker Thread 2,5,main]) started.
+Resolve mutations for :app:mergeUniversalDebugNativeLibs (Thread[#676,Execution worker Thread 5,5,main]) started.
+:app:mergeUniversalDebugNativeLibs (Thread[#676,Execution worker Thread 5,5,main]) started.
+
+> Task :app:mergeUniversalDebugNativeLibs UP-TO-DATE
+Caching disabled for task ':app:mergeUniversalDebugNativeLibs' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mergeUniversalDebugNativeLibs' as it is up-to-date.
+Resolve mutations for :app:stripUniversalDebugDebugSymbols (Thread[#676,Execution worker Thread 5,5,main]) started.
+:app:stripUniversalDebugDebugSymbols (Thread[#676,Execution worker Thread 5,5,main]) started.
+
+> Task :app:stripUniversalDebugDebugSymbols UP-TO-DATE
+Caching disabled for task ':app:stripUniversalDebugDebugSymbols' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:stripUniversalDebugDebugSymbols' as it is up-to-date.
+Resolve mutations for :app:writeUniversalDebugAppMetadata (Thread[#676,Execution worker Thread 5,5,main]) started.
+:app:writeUniversalDebugAppMetadata (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:writeUniversalDebugAppMetadata UP-TO-DATE
+Caching disabled for task ':app:writeUniversalDebugAppMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:writeUniversalDebugAppMetadata' as it is up-to-date.
+Resolve mutations for :app:buildUniversalDebugPreBundle (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:buildUniversalDebugPreBundle (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:buildUniversalDebugPreBundle
+Caching disabled for task ':app:buildUniversalDebugPreBundle' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:buildUniversalDebugPreBundle' is not up-to-date because:
+  Input property 'nativeLibsFiles' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/stripped_native_libs/universalDebug/stripUniversalDebugDebugSymbols/out/lib/x86_64/libapp_lib.so has changed.
+Resolve mutations for :app:parseUniversalDebugIntegrityConfig (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:parseUniversalDebugIntegrityConfig (Thread[#677,Execution worker Thread 6,5,main]) started.
+
+> Task :app:parseUniversalDebugIntegrityConfig UP-TO-DATE
+Caching disabled for task ':app:parseUniversalDebugIntegrityConfig' because:
+  Build cache is disabled
+Skipping task ':app:parseUniversalDebugIntegrityConfig' as it is up-to-date.
+Resolve mutations for :app:packageUniversalDebugBundle (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:packageUniversalDebugBundle (Thread[#677,Execution worker Thread 6,5,main]) started.
+Resolve mutations for :app:validateSigningUniversalDebug (Thread[#676,Execution worker Thread 5,5,main]) started.
+:app:validateSigningUniversalDebug (Thread[#676,Execution worker Thread 5,5,main]) started.
+
+> Task :app:validateSigningUniversalDebug UP-TO-DATE
+Caching disabled for task ':app:validateSigningUniversalDebug' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:validateSigningUniversalDebug' as it is up-to-date.
+
+> Task :app:packageUniversalDebugBundle
+Caching disabled for task ':app:packageUniversalDebugBundle' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:packageUniversalDebugBundle' is not up-to-date because:
+  Input property 'baseModuleZip' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/module_bundle/universalDebug/buildUniversalDebugPreBundle/base.zip has changed.
+Resolve mutations for :app:signUniversalDebugBundle (Thread[#677,Execution worker Thread 6,5,main]) started.
+:app:signUniversalDebugBundle (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:signUniversalDebugBundle
+Caching disabled for task ':app:signUniversalDebugBundle' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Task ':app:signUniversalDebugBundle' is not up-to-date because:
+  Input property 'intermediaryBundleFile' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/intermediates/intermediary_bundle/universalDebug/packageUniversalDebugBundle/intermediary-bundle.aab has changed.
+Resolve mutations for :app:produceUniversalDebugBundleIdeListingFile (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:produceUniversalDebugBundleIdeListingFile (Thread[#675,Execution worker Thread 4,5,main]) started.
+
+> Task :app:produceUniversalDebugBundleIdeListingFile
+Caching disabled for task ':app:produceUniversalDebugBundleIdeListingFile' because:
+  Build cache is disabled
+  Fast task
+Task ':app:produceUniversalDebugBundleIdeListingFile' is not up-to-date because:
+  Input property 'finalBundleFile' file /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/outputs/bundle/universalDebug/app-universal-debug.aab has changed.
+Resolve mutations for :app:createUniversalDebugBundleListingFileRedirect (Thread[#675,Execution worker Thread 4,5,main]) started.
+:app:createUniversalDebugBundleListingFileRedirect (Thread[#671,included builds,5,main]) started.
+
+> Task :app:createUniversalDebugBundleListingFileRedirect UP-TO-DATE
+Caching disabled for task ':app:createUniversalDebugBundleListingFileRedirect' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createUniversalDebugBundleListingFileRedirect' as it is up-to-date.
+Resolve mutations for :app:bundleUniversalDebug (Thread[#671,included builds,5,main]) started.
+:app:bundleUniversalDebug (Thread[#671,included builds,5,main]) started.
+
+> Task :app:bundleUniversalDebug
+Skipping task ':app:bundleUniversalDebug' as it has no actions.
+Could not execute [report metric STATISTICS_COLLECT_METRICS_OVERHEAD]
+Could not execute [report metric STATISTICS_COLLECT_METRICS_OVERHEAD]
+
+[Incubating] Problems report is available at: file:///home/ali/Desktop/MyActiveCodes/IT%20Assets%20Inventory/frontend/src-tauri/gen/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 22s
+70 actionable tasks: 10 executed, 60 up-to-date
+    Finished [tauri_cli::mobile] 1 APK at:
+        /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+
+    Finished [tauri_cli::mobile] 1 AAB at:
+        /home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend/src-tauri/gen/android/app/build/outputs/bundle/universalDebug/app-universal-debug.aab
+

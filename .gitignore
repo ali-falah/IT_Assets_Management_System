@@ -32,3 +32,6 @@ secrets/
 /libpeerconnection.log
 testem.log
 /typings
+
+# Zip archives (e.g. Gradle distributions)
+*.zip

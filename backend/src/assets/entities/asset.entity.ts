@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Assignment } from '../../assignments/entities/assignment.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { Location } from '../../locations/entities/location.entity';
-import { User } from '../../users/entities/user.entity';
-import { Assignment } from '../../assignments/entities/assignment.entity';
 import { Maintenance } from '../../maintenance/entities/maintenance.entity';
 import { Status } from '../../statuses/entities/status.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('assets')
 export class Asset {

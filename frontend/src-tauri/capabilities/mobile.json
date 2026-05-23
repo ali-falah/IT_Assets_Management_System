@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/@tauri-apps/cli/schema/acl/capability.schema.json",
+  "identifier": "mobile-default",
+  "description": "Default Android/iOS capabilities for IT Assets Inventory",
+  "platforms": ["android", "iOS"],
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:webview:default",
+    "log:default"
+  ]
+}

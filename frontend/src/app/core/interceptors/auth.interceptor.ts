@@ -1,9 +1,9 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);

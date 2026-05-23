@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { DashboardService } from './dashboard.service';
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()

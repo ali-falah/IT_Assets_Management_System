@@ -1,8 +1,14 @@
 <div class="max-w-4xl mx-auto space-y-4 flex-1 flex flex-col w-full px-4 sm:px-0 pb-10">
   <!-- Header -->
   <div class="flex items-center justify-between shrink-0 py-2">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-800">Asset Scanner</h1>
+    <div class="flex flex-col">
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold text-slate-800">Asset Scanner</h1>
+        <div *ngIf="isOffline$ | async" class="flex items-center px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-bold border border-amber-200">
+          <lucide-icon name="zap-off" [size]="12" class="mr-1"></lucide-icon>
+          OFFLINE CACHE
+        </div>
+      </div>
       <p class="text-xs text-slate-500 font-medium">{{ batchMode ? 'Batch Scanning Mode Active' : 'Single Asset Scan Mode' }}</p>
     </div>
     <div class="flex space-x-2">
@@ -37,33 +43,50 @@
         <div class="relative bg-black aspect-[4/3] sm:aspect-video flex items-center justify-center overflow-hidden">
           
           <!-- Visual Flash Feedback -->
-          <div *ngIf="scanFlash" class="absolute inset-0 z-50 animate-in fade-in duration-200 pointer-events-none"
-               [ngClass]="scanFlash === 'success' ? 'bg-green-500/30' : 'bg-red-500/30'">
+          <div *ngIf="scanFlash" class="absolute inset-0 z-50 pointer-events-none"
+               [class.scan-flash-success]="scanFlash === 'success'"
+               [class.scan-flash-error]="scanFlash === 'error'"
+               [ngClass]="scanFlash === 'success' ? 'bg-green-500/20' : 'bg-red-500/20'">
           </div>
+          <!-- Success ring (only on success) -->
+          <div *ngIf="scanFlash === 'success'" class="scan-success-ring"></div>
 
           <!-- Scanning Paused Overlay (Countdown/Wait) -->
-          <div *ngIf="isScanningPaused && scannerEnabled" class="absolute inset-0 z-40 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
+          <div *ngIf="isScanningPaused && scannerEnabled && batchMode" class="absolute inset-0 z-40 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
             <div class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-3"></div>
             <p class="text-sm font-bold tracking-wide uppercase">Next scan in 2s...</p>
           </div>
 
-          @if (scannerEnabled && !isScanningPaused) {
+          <!-- Single Scan Success Overlay -->
+          <div *ngIf="isScanningPaused && scannerEnabled && !batchMode && scannedAsset" class="absolute inset-0 z-40 bg-slate-900/80 flex flex-col items-center justify-center text-white backdrop-blur-[4px] animate-in fade-in duration-300">
+            <div class="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30 animate-in zoom-in-75 duration-300">
+              <lucide-icon name="check" [size]="32"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-bold">Asset Scanned!</h3>
+            <p class="text-xs text-slate-300 mt-1">Review and update details below</p>
+          </div>
+
+          <!-- Camera Stream -->
+          @if (scannerEnabled) {
             <zxing-scanner 
               class="w-full h-full object-cover" 
               (scanSuccess)="onCodeResult($event)" 
               (scanError)="onScanError($event)"
               [formats]="formatsEnabled"
               [device]="currentDevice" 
-              [enable]="scannerEnabled && !isScanningPaused"
+              (deviceChange)="onDeviceChange($event)"
+              [videoConstraints]="videoConstraints"
+              [enable]="scannerEnabled"
               [torch]="torchEnabled" 
               (torchCompatible)="onTorchCompatible($event)"
               (camerasFound)="onCamerasFound($event)" 
               (permissionResponse)="onPermissionResponse($event)" 
+              [timeBetweenScans]="500"
               [tryHarder]="true">
             </zxing-scanner>
 
             <!-- Scanner Overlay -->
-            <div *ngIf="hasPermission" class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <div *ngIf="hasPermission && !isScanningPaused" class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
               <div class="absolute inset-0 bg-black/40"></div>
               <div class="relative w-48 h-48 sm:w-64 sm:h-64 bg-transparent border-2 border-white/20 rounded-2xl overflow-hidden"
                    [class.border-primary]="!isScanningPaused">
@@ -113,6 +136,21 @@
               <lucide-icon [name]="torchEnabled ? 'zap' : 'zap-off'" [size]="20"></lucide-icon>
             </button>
           }
+
+          <!-- Zoom Slider -->
+          @if (zoomSupported && hasPermission) {
+            <div class="absolute bottom-4 left-4 right-20 z-30 px-4 py-3 bg-black/40 backdrop-blur-md border border-white/20 rounded-2xl flex items-center space-x-3">
+              <lucide-icon name="search" [size]="16" class="text-white opacity-60"></lucide-icon>
+              <input type="range" 
+                [min]="minZoom" 
+                [max]="maxZoom" 
+                [step]="0.1" 
+                [value]="zoomLevel"
+                (input)="onZoomChange($event)"
+                class="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white">
+              <span class="text-[10px] font-bold text-white w-8 text-right">{{ zoomLevel | number:'1.1-1' }}x</span>
+            </div>
+          }
         </div>
 
         <!-- Manual Input Section -->
@@ -158,23 +196,57 @@
           </div>
           
           <div class="space-y-4">
-            <app-searchable-select 
-              [items]="employees" 
-              [placeholder]="scannedAsset.assignedUser ? 'Change employee...' : 'Assign to...'"
-              [(ngModel)]="selectedEmployeeId"
-              direction="up"
-            ></app-searchable-select>
+            <!-- Selector Dropdowns Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <!-- Assignee/Owner Dropdown -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5">Assignee</label>
+                <app-searchable-select 
+                  [items]="employees" 
+                  placeholder="Unassigned"
+                  nullLabel="Unassigned"
+                  [(ngModel)]="selectedEmployeeId"
+                  direction="up"
+                  label="Employee"
+                ></app-searchable-select>
+              </div>
+
+              <!-- Location Dropdown -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5">Location</label>
+                <app-searchable-select 
+                  [items]="locations" 
+                  placeholder="Select Location"
+                  [(ngModel)]="selectedLocationId"
+                  direction="up"
+                  label="Location"
+                ></app-searchable-select>
+              </div>
+
+              <!-- Status Dropdown -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-0.5">Status</label>
+                <app-searchable-select 
+                  [items]="statuses" 
+                  placeholder="Select Status"
+                  [(ngModel)]="selectedStatusId"
+                  direction="up"
+                  label="Status"
+                ></app-searchable-select>
+              </div>
+            </div>
             
-            <div class="grid grid-cols-2 gap-2">
-              <button (click)="quickAssign()" [disabled]="!selectedEmployeeId || isActionLoading"
-                class="flex items-center justify-center px-4 py-3 bg-primary text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-100 disabled:opacity-50">
-                <lucide-icon name="user-plus" [size]="16" class="mr-2"></lucide-icon>
-                {{ scannedAsset.assignedUser ? 'Transfer' : 'Assign' }}
+            <!-- Bottom Actions Grid -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <button (click)="goToEdit()"
+                class="flex items-center justify-center px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all">
+                <lucide-icon name="arrow-up-right" [size]="16" class="mr-2 text-indigo-500"></lucide-icon>
+                View Details
               </button>
-              <button (click)="quickUnassign()" [disabled]="!scannedAsset.assignedUser || isActionLoading"
-                class="flex items-center justify-center px-4 py-3 bg-white text-red-600 border border-red-100 rounded-xl font-bold text-xs hover:bg-red-50 disabled:opacity-50">
-                <lucide-icon name="user-minus" [size]="16" class="mr-2"></lucide-icon>
-                Stock
+              <button (click)="saveScannedAssetChanges()" [disabled]="isActionLoading"
+                class="flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 disabled:opacity-50">
+                <lucide-icon name="save" [size]="16" class="mr-2"></lucide-icon>
+                {{ isActionLoading ? 'Saving...' : 'Save Changes' }}
               </button>
             </div>
           </div>
@@ -276,4 +348,16 @@
     <div class="w-14 h-14 border-4 border-slate-100 border-t-primary rounded-full animate-spin mb-4"></div>
     <p class="font-bold text-slate-600">Retrieving asset data...</p>
   </div>
+
+  <!-- Laptop Warning Modal -->
+  <app-confirmation-modal
+    [show]="showLaptopWarningModal"
+    title="Laptop Already Assigned"
+    [message]="laptopWarningMessage"
+    confirmText="Assign Anyway"
+    cancelText="Cancel"
+    type="warning"
+    (confirm)="confirmLaptopAssignment()"
+    (cancel)="cancelLaptopAssignment()"
+  ></app-confirmation-modal>
 </div>

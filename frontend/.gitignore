@@ -40,3 +40,12 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Tauri
+/src-tauri/target/
+/src-tauri/gen/android/
+/src-tauri/gen/apple/
+/src-tauri/WRY*/
+
+# Zip archives (e.g. Gradle distributions)
+*.zip

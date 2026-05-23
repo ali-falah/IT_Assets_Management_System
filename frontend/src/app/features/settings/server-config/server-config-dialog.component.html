@@ -1,0 +1,97 @@
+<div class="dialog-backdrop" (click)="onBackdropClick($event)">
+  <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="config-dialog-title">
+
+    <!-- Header -->
+    <div class="dialog-header">
+      <div class="dialog-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
+          <rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+          <line x1="6" x2="6.01" y1="6" y2="6"/>
+          <line x1="6" x2="6.01" y1="18" y2="18"/>
+        </svg>
+      </div>
+      <div>
+        <h2 id="config-dialog-title" class="dialog-title">Server Configuration</h2>
+        <p class="dialog-subtitle">Update the backend server address</p>
+      </div>
+      <button class="close-btn" (click)="onClose()" aria-label="Close" id="close-config-dialog-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Current URL badge -->
+    <div class="current-url-badge">
+      <span class="badge-label">Current:</span>
+      <code class="badge-value">{{ currentUrl }}</code>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSave()" #configForm="ngForm" novalidate>
+      <div class="field-group">
+        <label for="newServerUrl" class="field-label">New Server Address</label>
+        <input
+          id="newServerUrl"
+          type="url"
+          [(ngModel)]="newUrl"
+          name="newServerUrl"
+          class="field-input"
+          [class.input-error]="urlError"
+          placeholder="http://192.168.1.100:3000"
+          inputmode="url"
+          autocomplete="url"
+          required
+        />
+        <p *ngIf="urlError" class="field-error">{{ urlError }}</p>
+      </div>
+
+      <!-- Connection History -->
+      <div *ngIf="history.length > 0" class="history-section" style="margin-top: 1rem;">
+        <p class="field-label" style="font-size: 0.8rem; margin-bottom: 0.5rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Recent Connections</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <button
+            *ngFor="let url of history"
+            type="button"
+            (click)="selectHistory(url)"
+            style="text-align: left; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #334155; font-family: monospace; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;"
+          >
+            {{ url }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Test result -->
+      <div *ngIf="testStatus" class="test-result"
+        [class.success]="testStatus === 'success'"
+        [class.fail]="testStatus === 'fail'">
+        <span *ngIf="testStatus === 'success'">✓ Server reachable</span>
+        <span *ngIf="testStatus === 'fail'">✗ Server not reachable — check address and network</span>
+        <span *ngIf="testStatus === 'testing'">Testing…</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="dialog-actions">
+        <button type="button" class="btn-test"
+          (click)="onTest()" [disabled]="isTesting || !newUrl"
+          id="test-new-server-btn">
+          {{ isTesting ? 'Testing…' : 'Test' }}
+        </button>
+        <button type="button" class="btn-reset"
+          (click)="onReset()"
+          id="reset-server-config-btn">
+          Reset
+        </button>
+        <button type="submit" class="btn-save"
+          [disabled]="!newUrl"
+          id="save-new-server-btn">
+          Save
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
