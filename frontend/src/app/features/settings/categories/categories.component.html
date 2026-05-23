@@ -41,11 +41,13 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Category Name</label>
-          <input type="text" [(ngModel)]="addingCat ? newCat.name : editCatData.name" placeholder="e.g. Laptops" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="addingCat" type="text" [(ngModel)]="newCat.name" placeholder="e.g. Laptops" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="!addingCat" type="text" [(ngModel)]="editCatData.name" placeholder="e.g. Laptops" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
-          <input type="text" [(ngModel)]="addingCat ? newCat.description : editCatData.description" placeholder="Brief description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="addingCat" type="text" [(ngModel)]="newCat.description" placeholder="Brief description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="!addingCat" type="text" [(ngModel)]="editCatData.description" placeholder="Brief description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
         </div>
       </div>
       

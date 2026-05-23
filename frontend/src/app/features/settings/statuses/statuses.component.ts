@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Plus, Edit2, Trash2, Check, X, CircleDot } from 'lucide-angular';
-import { MasterDataService, Status } from '../../../core/services/master-data.service';
+import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
+import { MasterDataService, Status } from '../../../core/services/master-data.service';
 
 interface ColorPreset {
   name: string;
@@ -17,11 +17,13 @@ interface ColorPreset {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
   templateUrl: './statuses.component.html',
-  styleUrls: ['./statuses.component.css']
+  styleUrls: ['./statuses.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatusesComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   statuses: Status[] = [];
   
@@ -51,19 +53,45 @@ export class StatusesComponent implements OnInit {
   }
 
   loadStatuses() {
-    this.masterDataService.getStatuses().subscribe(res => this.statuses = res);
+    this.cdr.markForCheck();
+    this.masterDataService.getStatuses().subscribe({
+      next: (res) => {
+        this.statuses = res;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.error('Failed to load statuses');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   saveNewStatus() {
     if (!this.newStatus.name?.trim()) return;
-    this.masterDataService.createStatus(this.newStatus).subscribe({
+    const nameStr = this.newStatus.name.trim();
+    const slug = nameStr
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-');
+
+    const payload = {
+      ...this.newStatus,
+      slug
+    };
+
+    this.masterDataService.createStatus(payload).subscribe({
       next: () => {
         this.toastr.success('Status created');
         this.addingStatus = false;
         this.newStatus = { name: '', colorClass: 'bg-slate-100 text-slate-700' };
         this.loadStatuses();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to create status')
+      error: () => {
+        this.toastr.error('Failed to create status');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -75,13 +103,29 @@ export class StatusesComponent implements OnInit {
 
   saveStatus() {
     if (!this.editingStatus || !this.editStatusData.name?.trim()) return;
-    this.masterDataService.updateStatus(this.editingStatus, this.editStatusData).subscribe({
+    const nameStr = this.editStatusData.name.trim();
+    const slug = nameStr
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-');
+
+    const payload = {
+      ...this.editStatusData,
+      slug
+    };
+
+    this.masterDataService.updateStatus(this.editingStatus, payload).subscribe({
       next: () => {
         this.toastr.success('Status updated');
         this.editingStatus = null;
         this.loadStatuses();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to update status')
+      error: () => {
+        this.toastr.error('Failed to update status');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -92,8 +136,12 @@ export class StatusesComponent implements OnInit {
         next: () => {
           this.toastr.success('Status deleted');
           this.loadStatuses();
+          this.cdr.detectChanges();
         },
-        error: () => this.toastr.error('Failed to delete status. It might be in use.')
+        error: () => {
+          this.toastr.error('Failed to delete status. It might be in use.');
+          this.cdr.detectChanges();
+        }
       });
     }
   }

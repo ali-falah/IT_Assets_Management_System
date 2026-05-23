@@ -1,19 +1,20 @@
-import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, OnInit, OnChanges, Output, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { UserService, User } from '../../../core/services/user.service';
 import { ToastrService } from 'ngx-toastr';
-import { RouterModule } from '@angular/router';
+import { User, UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-user-detail-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, RouterModule],
   templateUrl: './user-detail-dialog.component.html',
-  styleUrls: ['./user-detail-dialog.component.css']
+  styleUrls: ['./user-detail-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserDetailDialogComponent implements OnInit {
+export class UserDetailDialogComponent implements OnInit, OnChanges {
   @Input() userId!: string | null;
   @Output() close = new EventEmitter<void>();
   @Output() updated = new EventEmitter<void>();
@@ -21,6 +22,8 @@ export class UserDetailDialogComponent implements OnInit {
   private userService = inject(UserService);
   private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   user: User | null = null;
   loading = true;
@@ -36,18 +39,32 @@ export class UserDetailDialogComponent implements OnInit {
     this.initForm();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['userId'] && !changes['userId'].firstChange) {
+      this.loadUser();
+    }
+  }
+
+  navigateToAsset(assetId: string) {
+    this.close.emit();
+    this.router.navigate(['/assets', assetId, 'edit']);
+  }
+
   loadUser() {
     if (!this.userId) return;
     this.loading = true;
+    this.cdr.markForCheck();
     this.userService.getUserById(this.userId).subscribe({
       next: (user) => {
         this.user = user;
         this.loading = false;
         this.patchForm();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to load user details');
         this.close.emit();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -55,6 +72,7 @@ export class UserDetailDialogComponent implements OnInit {
   loadRoles() {
     this.userService.getRoles().subscribe(roles => {
       this.roles = roles;
+      this.cdr.detectChanges();
     });
   }
 
@@ -83,6 +101,7 @@ export class UserDetailDialogComponent implements OnInit {
     if (this.userForm.invalid || !this.user) return;
 
     this.saving = true;
+    this.cdr.markForCheck();
     const formData = { ...this.userForm.value };
     if (!formData.password) delete formData.password;
 
@@ -93,10 +112,12 @@ export class UserDetailDialogComponent implements OnInit {
         this.updated.emit();
         this.loadUser();
         this.activeTab = 'overview';
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.toastr.error(err.error?.message || 'Failed to update user');
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -109,6 +130,7 @@ export class UserDetailDialogComponent implements OnInit {
         this.toastr.success('User deleted successfully');
         this.updated.emit();
         this.close.emit();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         if (err.status === 409) {
@@ -118,12 +140,17 @@ export class UserDetailDialogComponent implements OnInit {
                 this.toastr.success('User deleted successfully');
                 this.updated.emit();
                 this.close.emit();
+                this.cdr.detectChanges();
               },
-              error: () => this.toastr.error('Failed to delete user')
+              error: () => {
+                this.toastr.error('Failed to delete user');
+                this.cdr.detectChanges();
+              }
             });
           }
         } else {
           this.toastr.error('Failed to delete user');
+          this.cdr.detectChanges();
         }
       }
     });

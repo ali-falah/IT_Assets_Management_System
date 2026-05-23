@@ -1,27 +1,28 @@
-import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Location as AngularLocation, CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Location as AngularLocation } from '@angular/common';
-import { LucideAngularModule, ArrowLeft, Image as ImageIcon, X, Save, Loader, History, User as UserIcon, Clock, Calendar, Copy, Upload } from 'lucide-angular';
-import { AssetService } from '../../../core/services/asset.service';
-import { MasterDataService, Category, Location, Status } from '../../../core/services/master-data.service';
-import { UserService, User } from '../../../core/services/user.service';
+import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
-import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+import { AssetService } from '../../../core/services/asset.service';
+import { Category, Location, MasterDataService, Status } from '../../../core/services/master-data.service';
+import { User, UserService } from '../../../core/services/user.service';
+import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 
 const DRAFT_KEY = 'asset_form_draft';
 
 @Component({
   selector: 'app-asset-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, SearchableSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, SearchableSelectComponent, ConfirmationModalComponent],
   templateUrl: './asset-form.component.html',
-  styleUrls: ['./asset-form.component.css']
+  styleUrls: ['./asset-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
@@ -33,6 +34,8 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private toastr = inject(ToastrService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   assetForm!: FormGroup;
   isEditMode = false;
@@ -47,6 +50,9 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   imageUrl: string | null = null;
   fullAsset: any | null = null;
+  showLaptopWarningModal = false;
+  pendingSubmission: any = null;
+  laptopWarningMessage = 'This employee already has a laptop assigned. Do you want to proceed?';
 
   // Draft auto-save
   draftInfo: { savedAt: Date; data: any } | null = null;
@@ -277,12 +283,98 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loading = true;
     const formValue = { ...this.assetForm.getRawValue() };
     if (formValue.serialNumber) {
       formValue.serialNumber = formValue.serialNumber.trim().toUpperCase();
     }
 
+    const category = this.categories.find(c => c.id === formValue.categoryId);
+    const catName = category?.name?.toLowerCase() || '';
+    const isLaptop = catName === 'laptop' || catName === 'laptops' || catName.includes('laptop');
+    const newUserId = formValue.assignedUserId;
+    const newUserName = this.users.find(u => u.id === newUserId)?.name || 'Unassigned';
+
+    // Case A: Block direct transfer of an in-use laptop
+    if (this.isEditMode && this.fullAsset) {
+      const oldUserId = this.fullAsset.assignedUserId;
+      const oldUserName = this.users.find(u => u.id === oldUserId)?.name || 'Unassigned';
+      
+      if (isLaptop && oldUserId && newUserId && newUserId !== oldUserId) {
+        this.loading = true;
+        this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+          next: (res: any) => {
+            this.ngZone.run(() => {
+              this.loading = false;
+              const existingLaptop = res.data.find((a: any) => 
+                a.id !== this.assetId && 
+                (a.category?.name?.toLowerCase() === 'laptop' || 
+                 a.category?.name?.toLowerCase() === 'laptops' || 
+                 a.category?.name?.toLowerCase().includes('laptop'))
+              );
+              if (existingLaptop) {
+                this.toastr.error(
+                  `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring. Additionally, ${newUserName} already has a laptop assigned with serial ${existingLaptop.serialNumber || 'N/A'}.`,
+                  'Transfer Blocked',
+                  { timeOut: 8000 }
+                );
+              } else {
+                this.toastr.error(
+                  `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`,
+                  'Transfer Blocked',
+                  { timeOut: 6000 }
+                );
+              }
+              this.cdr.detectChanges();
+            });
+          },
+          error: () => {
+            this.ngZone.run(() => {
+              this.loading = false;
+              this.toastr.error(`This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`);
+              this.cdr.detectChanges();
+            });
+          }
+        });
+        return;
+      }
+    }
+
+    // Case B: Normal assignment flow (laptop is in stock / unassigned)
+    if (isLaptop && newUserId) {
+      this.loading = true;
+      this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+        next: (res: any) => {
+          this.ngZone.run(() => {
+            const existingLaptop = res.data.find((a: any) => 
+              a.id !== this.assetId && 
+              (a.category?.name?.toLowerCase() === 'laptop' || 
+               a.category?.name?.toLowerCase() === 'laptops' || 
+               a.category?.name?.toLowerCase().includes('laptop'))
+            );
+            if (existingLaptop) {
+              this.pendingSubmission = formValue;
+              this.laptopWarningMessage = `This employee already has a laptop assigned (Serial: ${existingLaptop.serialNumber || 'N/A'}). Do you want to proceed?`;
+              this.showLaptopWarningModal = true;
+              this.loading = false;
+              this.cdr.detectChanges();
+            } else {
+              this.executeFormSubmit(formValue);
+            }
+          });
+        },
+        error: () => {
+          this.ngZone.run(() => {
+            this.executeFormSubmit(formValue);
+          });
+        }
+      });
+    } else {
+      this.executeFormSubmit(formValue);
+    }
+  }
+
+  async executeFormSubmit(formValue: any) {
+    this.loading = true;
     try {
       if (this.selectedFile) {
         const uploadedUrl = await this.uploadImage();
@@ -305,6 +397,22 @@ export class AssetFormComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  confirmLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    this.cdr.detectChanges();
+    if (this.pendingSubmission) {
+      this.executeFormSubmit(this.pendingSubmission);
+      this.pendingSubmission = null;
+    }
+  }
+
+  cancelLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    this.cdr.detectChanges();
+    this.pendingSubmission = null;
+    this.toastr.info('Assignment cancelled');
   }
 
   createNewCategory(name: string) {

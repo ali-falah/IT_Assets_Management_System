@@ -1,9 +1,9 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { MasterDataOfflineService } from './master-data-offline.service';
 import { withOfflineFallback } from '../utils/offline-operators';
+import { MasterDataOfflineService } from './master-data-offline.service';
 
 export interface Category {
   id: string;
@@ -37,6 +37,9 @@ export class MasterDataService {
   // Categories
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${environment.apiUrl}/categories`).pipe(
+      tap(res => {
+        this.masterDataOffline.bulkSaveCategories(res).catch(err => console.error('Failed to cache categories', err));
+      }),
       withOfflineFallback(() => this.masterDataOffline.getCategories())
     );
   }
@@ -53,6 +56,9 @@ export class MasterDataService {
   // Locations
   getLocations(): Observable<Location[]> {
     return this.http.get<Location[]>(`${environment.apiUrl}/locations`).pipe(
+      tap(res => {
+        this.masterDataOffline.bulkSaveLocations(res).catch(err => console.error('Failed to cache locations', err));
+      }),
       withOfflineFallback(() => this.masterDataOffline.getLocations())
     );
   }
@@ -69,6 +75,9 @@ export class MasterDataService {
   // Statuses
   getStatuses(): Observable<Status[]> {
     return this.http.get<Status[]>(`${environment.apiUrl}/statuses`).pipe(
+      tap(res => {
+        this.masterDataOffline.bulkSaveStatuses(res).catch(err => console.error('Failed to cache statuses', err));
+      }),
       withOfflineFallback(() => this.masterDataOffline.getStatuses())
     );
   }

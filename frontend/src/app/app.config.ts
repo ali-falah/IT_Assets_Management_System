@@ -1,116 +1,128 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideStore } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-import { provideToastr } from 'ngx-toastr';
-import { authInterceptor } from './core/interceptors/auth.interceptor';
-import { offlineInterceptor } from './core/interceptors/offline.interceptor';
-import { apiInterceptor } from './core/interceptors/api.interceptor';
-import { authReducer } from './core/store/auth/auth.reducer';
-import { AuthEffects } from './core/store/auth/auth.effects';
+import { provideRouter, withHashLocation } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { isDevMode } from '@angular/core';
+import { provideEffects } from '@ngrx/effects';
+import { provideStore } from '@ngrx/store';
 import {
-  LucideAngularModule,
-  ArrowLeft,
-  Plus,
-  Edit2,
-  Trash2,
-  Check,
-  X,
-  MapPin,
-  Search,
-  Filter,
-  UserPlus,
-  Loader,
-  Tags,
-  ChevronRight,
-  CircleDot,
-  LayoutDashboard,
-  Laptop,
-  ScanLine,
-  Users,
-  Settings,
-  Bell,
-  Menu,
-  Pencil,
-  Camera,
-  CameraOff,
-  UserCheck,
-  CircleCheck,
-  Wrench,
-  Edit,
-  Info,
-  Download,
-  TriangleAlert,
-  Image,
-  Save,
-  Video,
-  VideoOff,
-  ChevronUp,
-  ChevronDown,
-  FileSpreadsheet,
-  UploadCloud,
-  Type,
-  Hash,
-  RefreshCw,
-  Package,
-  UserMinus,
   AlertCircle,
-  Edit3,
-  User,
-  Zap,
-  ZapOff,
-  History,
-  Calendar,
-  Clock,
-  Lock,
-  Scan,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Tv,
-  Printer,
-  Server,
-  Network,
-  MousePointer,
-  Cable,
-  Headphones,
-  HardDrive,
+  AlertTriangle,
   Armchair,
-  Wifi,
-  Router,
+  ArrowDownLeft,
+  ArrowLeft,
+  ArrowUpRight,
   Battery,
-  Cpu,
-  Radio,
-  Projector,
-  Key,
+  Bell,
   Bluetooth,
-  Briefcase,
-  Layers,
-  Component,
-  Database,
-  Plug,
-  Shield,
-  Square,
-  Upload,
-  Copy,
   Bookmark,
   BookmarkCheck,
+  Briefcase,
+  Cable,
+  Calendar,
+  Camera,
+  CameraOff,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  CircleCheck,
+  CircleDot,
+  Clock,
+  Component,
+  Copy,
+  Cpu,
+  Database,
+  Download,
+  Edit,
+  Edit2,
+  Edit3,
+  FileSpreadsheet,
+  Filter,
+  HardDrive,
+  Hash,
+  Headphones,
+  History,
+  Image,
+  Info,
+  Key,
+  Keyboard,
+  Laptop,
+  Layers,
+  LayoutDashboard,
+  Loader,
+  Lock,
+  LucideAngularModule,
+  MapPin,
+  Menu,
+  Monitor,
   MoreHorizontal,
-  AlertTriangle,
-  PlusCircle
+  MousePointer,
+  Network,
+  Package,
+  Pencil,
+  Plug,
+  Plus,
+  PlusCircle,
+  Printer,
+  Projector,
+  Radio,
+  RefreshCw,
+  Router,
+  Save,
+  Scan,
+  ScanLine,
+  Search,
+  Server,
+  Settings,
+  Shield,
+  Smartphone,
+  Square,
+  Tablet,
+  Tags,
+  Trash2,
+  TriangleAlert,
+  Tv,
+  Type,
+  Upload,
+  UploadCloud,
+  User,
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  Users,
+  Video,
+  VideoOff,
+  Wifi,
+  Wrench,
+  X,
+  Zap,
+  ZapOff,
+  QrCode
 } from 'lucide-angular';
+import { provideToastr } from 'ngx-toastr';
+import { environment } from '../environments/environment';
+import { routes } from './app.routes';
+import { apiInterceptor } from './core/interceptors/api.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { mobileUrlInterceptor } from './core/interceptors/mobile-url.interceptor';
+import { offlineInterceptor } from './core/interceptors/offline.interceptor';
+import { AuthEffects } from './core/store/auth/auth.effects';
+import { authReducer } from './core/store/auth/auth.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, offlineInterceptor, apiInterceptor])),
+    // Mobile: use hash-based routing so Android WebView history
+    // never causes a blank screen on re-launch.
+    (environment.platform as string) === 'mobile'
+      ? provideRouter(routes, withHashLocation())
+      : provideRouter(routes),
+    provideHttpClient(withInterceptors([
+      mobileUrlInterceptor, // Mobile: rewrites URL base. Web: complete no-op.
+      authInterceptor,
+      offlineInterceptor,
+      apiInterceptor,
+    ])),
     provideAnimations(),
     provideServiceWorker('ngsw-worker.js', {
         enabled: !isDevMode(),
@@ -199,6 +211,7 @@ export const appConfig: ApplicationConfig = {
         Radio,
         Projector,
         Key,
+        Keyboard,
         Bluetooth,
         Briefcase,
         Layers,
@@ -213,7 +226,8 @@ export const appConfig: ApplicationConfig = {
         BookmarkCheck,
         MoreHorizontal,
         AlertTriangle,
-        PlusCircle
+        PlusCircle,
+        QrCode
     }))
 ]
 };

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -25,7 +25,8 @@ import { CommonModule } from '@angular/common';
       0%, 100% { opacity: 1; }
       50% { opacity: .5; }
     }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonLoaderComponent {
   @Input() width: string = '100%';

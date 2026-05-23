@@ -1,34 +1,65 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule, ActivatedRoute } from '@angular/router';
-import { LucideAngularModule, Search, Plus, X, UserPlus, Trash2, TriangleAlert } from 'lucide-angular';
-import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, GridApi } from 'ag-grid-community';
-import { UserService, User, UserRole } from '../../../core/services/user.service';
-import { ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { LucideAngularModule } from 'lucide-angular';
+import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../../environments/environment';
-import { UserImportComponent } from '../user-import/user-import.component';
+import { PlatformService } from '../../../core/services/platform.service';
+import { User, UserRole, UserService } from '../../../core/services/user.service';
+import { ExcelExportService } from '../../../shared/services/excel-export.service';
 import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dialog.component';
+import { UserImportComponent } from '../user-import/user-import.component';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, AgGridAngular, UserImportComponent, UserDetailDialogComponent],
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.css']
+  styleUrls: ['./user-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent implements OnInit {
   private userService = inject(UserService);
+  private excelExportService = inject(ExcelExportService);
+  private platform = inject(PlatformService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private toastr = inject(ToastrService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
+  openUserDetail(userId: string) {
+    this.selectedUserId = userId;
+    this.showDetailDialog = true;
+    this.cdr.detectChanges();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { userId },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  closeUserDetail() {
+    this.showDetailDialog = false;
+    this.selectedUserId = null;
+    this.cdr.detectChanges();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { userId: null },
+      queryParamsHandling: 'merge'
+    });
+  }
 
   private gridApi!: GridApi;
 
   loading = false;
   users: User[] = [];
+  filteredUsers: User[] = [];
+  searchTerm = '';
   roles: UserRole[] = [];
   showModal = false;
   showImportModal = false;
@@ -44,6 +75,8 @@ export class UserListComponent implements OnInit {
 
   newUser = { name: '', email: '', password: '', roleId: '' };
 
+  isMobile = this.platform.isMobile;
+
   gridIcons = {
     filter: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1; opacity: 0.8;"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
     sortAscending: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1;"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
@@ -57,8 +90,7 @@ export class UserListComponent implements OnInit {
       flex: 2,
       cellClass: 'cursor-pointer font-semibold text-slate-800 hover:underline transition-all',
       onCellClicked: (params: any) => {
-        this.selectedUserId = params.data.id;
-        this.showDetailDialog = true;
+        this.openUserDetail(params.data.id);
       }
     },
     { 
@@ -150,8 +182,7 @@ export class UserListComponent implements OnInit {
         if (target?.closest('.user-delete-btn')) {
           this.deleteUser(params.data.id);
         } else if (target?.closest('.user-view-btn')) {
-          this.selectedUserId = params.data.id;
-          this.showDetailDialog = true;
+          this.openUserDetail(params.data.id);
         }
       }
     }
@@ -163,7 +194,25 @@ export class UserListComponent implements OnInit {
     resizable: true,
   };
 
+  saveTableState() {
+    const state = {
+      searchTerm: this.searchTerm,
+      gridFilterModel: this.gridApi ? this.gridApi.getFilterModel() : null
+    };
+    localStorage.setItem('users_table_state', JSON.stringify(state));
+  }
+
   ngOnInit() {
+    const savedStateStr = localStorage.getItem('users_table_state');
+    if (savedStateStr) {
+      try {
+        const state = JSON.parse(savedStateStr);
+        this.searchTerm = state.searchTerm || '';
+      } catch (e) {
+        console.warn('Could not restore user table state:', e);
+      }
+    }
+
     this.loadUsers();
     this.loadRoles();
     this.checkQueryParams();
@@ -177,22 +226,31 @@ export class UserListComponent implements OnInit {
       if (userId) {
         this.selectedUserId = userId;
         this.showDetailDialog = true;
-      } else if (search && this.gridApi) {
-        this.gridApi.setGridOption('quickFilterText', search);
+      } else if (search) {
+        this.searchTerm = search;
+        this.applyFilter();
+        if (this.gridApi) {
+          this.gridApi.setGridOption('quickFilterText', search);
+        }
+        this.saveTableState();
       }
     });
   }
 
   loadUsers() {
     this.loading = true;
+    this.cdr.markForCheck();
     this.userService.getUsers().subscribe({
       next: (res: User[]) => {
         this.users = res;
+        this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.toastr.error('Failed to load users');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -202,8 +260,12 @@ export class UserListComponent implements OnInit {
       next: (res: UserRole[]) => {
         this.roles = res;
         if (res.length > 0) this.newUser.roleId = res[res.length - 1].id;
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to load roles')
+      error: () => {
+        this.toastr.error('Failed to load roles');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -211,10 +273,19 @@ export class UserListComponent implements OnInit {
     const defaultRoleId = this.roles.length > 0 ? this.roles[this.roles.length - 1].id : '';
     this.newUser = { name: '', email: '', password: '', roleId: defaultRoleId };
     this.showModal = true;
+    this.showDetailDialog = false;
+    this.selectedUserId = null;
+    this.cdr.detectChanges();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { userId: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   closeModal() {
     this.showModal = false;
+    this.cdr.detectChanges();
   }
 
   public deleteSelectedUsers() {
@@ -240,7 +311,6 @@ export class UserListComponent implements OnInit {
   }
 
   executeDelete(force: boolean = false) {
-    console.log('User executeDelete called', { force, deleteType: this.deleteType, userIdToDelete: this.userIdToDelete });
     if (this.deleteType === 'single' && this.userIdToDelete) {
       this.userService.deleteUser(this.userIdToDelete, force).subscribe({
         next: () => {
@@ -249,6 +319,7 @@ export class UserListComponent implements OnInit {
           this.showConfirmDelete = false;
           this.showUnassignConfirm = false;
           this.userIdToDelete = null;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           if (err.status === 409) {
@@ -258,6 +329,7 @@ export class UserListComponent implements OnInit {
             this.toastr.error(err.error?.message || 'Failed to delete user');
             this.showConfirmDelete = false;
           }
+          this.cdr.detectChanges();
         }
       });
     } else if (this.deleteType === 'bulk') {
@@ -287,6 +359,7 @@ export class UserListComponent implements OnInit {
               this.showUnassignConfirm = false;
             }
           }
+          this.cdr.detectChanges();
         },
         error: (err) => {
           if (err.status === 409) {
@@ -295,6 +368,7 @@ export class UserListComponent implements OnInit {
           } else {
             this.toastr.error('Failed to delete users');
           }
+          this.cdr.detectChanges();
         }
       });
     }
@@ -306,29 +380,88 @@ export class UserListComponent implements OnInit {
       return;
     }
     this.saving = true;
+    this.cdr.markForCheck();
     this.http.post(`${environment.apiUrl}/auth/register`, this.newUser).subscribe({
       next: () => {
         this.toastr.success('User created successfully');
         this.showModal = false;
         this.loadUsers();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.toastr.error(err?.error?.message || 'Failed to create user');
+        this.cdr.detectChanges();
       },
-      complete: () => { this.saving = false; }
+      complete: () => {
+        this.saving = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
+    
+    // Restore quick filter text
+    if (this.searchTerm) {
+      this.gridApi.setGridOption('quickFilterText', this.searchTerm);
+    }
+
+    // Restore column filter model
+    const savedStateStr = localStorage.getItem('users_table_state');
+    if (savedStateStr) {
+      try {
+        const state = JSON.parse(savedStateStr);
+        if (state.gridFilterModel && Object.keys(state.gridFilterModel).length > 0) {
+          setTimeout(() => {
+            this.gridApi.setFilterModel(state.gridFilterModel);
+          }, 200);
+        }
+      } catch (e) {
+        console.warn('Could not restore user AG Grid filter model:', e);
+      }
+    }
+  }
+
+  onFilterChanged() {
+    this.saveTableState();
   }
 
   public onSelectionChanged() {
     this.selectedCount = this.gridApi.getSelectedNodes().length;
   }
 
+  async exportToExcel() {
+    const dataToExport = this.users.map(user => ({
+      'Name': user.name,
+      'Email': user.email,
+      'Role': user.role?.name || '',
+      'Status': user.isActive ? 'Active' : 'Inactive',
+      'Assigned Assets (Serials)': user.assets?.map((a: any) => a.serialNumber).join(', ') || 'None'
+    }));
+    await this.excelExportService.exportToExcel(dataToExport, 'users');
+  }
+
+  applyFilter() {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      this.filteredUsers = [...this.users];
+    } else {
+      this.filteredUsers = this.users.filter(user => 
+        (user.name?.toLowerCase().includes(term)) ||
+        (user.email?.toLowerCase().includes(term)) ||
+        (user.role?.name?.toLowerCase().includes(term))
+      );
+    }
+  }
+
   onSearch(event: Event) {
     const target = event.target as HTMLInputElement;
-    this.gridApi.setGridOption('quickFilterText', target.value);
+    this.searchTerm = target.value;
+    this.applyFilter();
+    if (this.gridApi) {
+      this.gridApi.setGridOption('quickFilterText', this.searchTerm);
+    }
+    this.saveTableState();
   }
 }

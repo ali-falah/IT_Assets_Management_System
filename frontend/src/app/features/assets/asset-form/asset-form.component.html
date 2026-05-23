@@ -236,3 +236,14 @@
     </form>
   </div>
 </div>
+
+<!-- Double Laptop Assignment Warning Modal -->
+<app-confirmation-modal
+  [show]="showLaptopWarningModal"
+  title="Laptop Already Assigned"
+  [message]="laptopWarningMessage"
+  confirmText="Proceed"
+  cancelText="Cancel"
+  (confirm)="confirmLaptopAssignment()"
+  (cancel)="cancelLaptopAssignment()">
+</app-confirmation-modal>

@@ -7,6 +7,7 @@ export class OfflineStorageService {
   private readonly DB_NAME = 'it_inventory_offline_db';
   private readonly DB_VERSION = 2;
   private db: IDBDatabase | null = null;
+  private cache = new Map<string, any[]>();
 
   constructor() {
     this.initDb();
@@ -67,7 +68,19 @@ export class OfflineStorageService {
       const transaction = db.transaction([storeName], 'readwrite');
       const store = transaction.objectStore(storeName);
       const request = store.put(item);
-      request.onsuccess = () => resolve();
+      request.onsuccess = () => {
+        // Update cache in-place instead of invalidating
+        if (this.cache.has(storeName)) {
+          const cached = this.cache.get(storeName)!;
+          const idx = cached.findIndex((x: any) => x.id === item.id);
+          if (idx >= 0) {
+            cached[idx] = item;
+          } else {
+            cached.push(item);
+          }
+        }
+        resolve();
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -75,12 +88,15 @@ export class OfflineStorageService {
   /**
    * Generic method to save multiple items to a store
    */
-  async bulkSave(storeName: string, items: any[]): Promise<void> {
+  async bulkSave(storeName: string, items: any[], clear: boolean = true): Promise<void> {
+    this.cache.delete(storeName);
     const db = await this.getDb();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([storeName], 'readwrite');
       const store = transaction.objectStore(storeName);
-      store.clear();
+      if (clear) {
+        store.clear();
+      }
       items.forEach(item => store.put(item));
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
@@ -91,12 +107,18 @@ export class OfflineStorageService {
    * Generic method to get all items from a store
    */
   async getAll<T>(storeName: string): Promise<T[]> {
+    if (this.cache.has(storeName)) {
+      return Promise.resolve(this.cache.get(storeName)! as T[]);
+    }
     const db = await this.getDb();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([storeName], 'readonly');
       const store = transaction.objectStore(storeName);
       const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        this.cache.set(storeName, request.result);
+        resolve(request.result);
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -105,6 +127,12 @@ export class OfflineStorageService {
    * Generic method to get a single item by key
    */
   async getById<T>(storeName: string, id: string): Promise<T> {
+    // If the cache contains the list, we can search in-memory first to be fast!
+    if (this.cache.has(storeName)) {
+      const items = this.cache.get(storeName)!;
+      const found = items.find((x: any) => x.id === id);
+      if (found) return Promise.resolve(found as T);
+    }
     const db = await this.getDb();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([storeName], 'readonly');
@@ -117,4 +145,20 @@ export class OfflineStorageService {
       request.onerror = () => reject(request.error);
     });
   }
+
+  /**
+   * Generic method to delete an item by key
+   */
+  async delete(storeName: string, id: string): Promise<void> {
+    this.cache.delete(storeName);
+    const db = await this.getDb();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
 }
+

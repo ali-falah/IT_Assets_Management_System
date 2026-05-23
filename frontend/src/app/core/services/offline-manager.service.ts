@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
-import { concatMap, finalize, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable } from 'rxjs';
+import { concatMap, finalize } from 'rxjs/operators';
+import { PlatformService } from './platform.service';
 
 export const LAST_SYNCED_KEY = 'offline_last_synced_at';
 
@@ -27,9 +28,32 @@ export class OfflineManagerService {
   private _queueCount = new BehaviorSubject<number>(this.getQueue().length);
   queueCount$ = this._queueCount.asObservable();
 
-  constructor(private http: HttpClient, private toastr: ToastrService) {
-    window.addEventListener('online', () => this.updateOnlineStatus(true));
-    window.addEventListener('offline', () => this.updateOnlineStatus(false));
+  constructor(
+    private http: HttpClient,
+    private toastr: ToastrService,
+    private platform: PlatformService
+  ) {
+    /**
+     * On mobile (Tauri), the WebView `online/offline` window events
+     * are unreliable. Network detection is delegated to the Rust layer
+     * via `PlatformService.isOnline()`. On web, standard browser events
+     * are used as before — no behavioural change for the web portal.
+     */
+    if (!this.platform.isMobile) {
+      window.addEventListener('online', () => this.updateOnlineStatus(true));
+      window.addEventListener('offline', () => this.updateOnlineStatus(false));
+    } else {
+      // Mobile: check immediately and then poll every 20 seconds
+      this.checkMobileConnection();
+      setInterval(() => this.checkMobileConnection(), 20000);
+    }
+  }
+
+  private async checkMobileConnection() {
+    const online = await this.platform.isOnline();
+    if (online !== this.isOnline.getValue()) {
+      this.updateOnlineStatus(online);
+    }
   }
 
   /** Returns the timestamp (ms) of the last successful full sync, or null */

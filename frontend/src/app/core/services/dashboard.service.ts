@@ -1,9 +1,9 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { DashboardOfflineService } from './dashboard-offline.service';
 import { withOfflineFallback } from '../utils/offline-operators';
+import { DashboardOfflineService } from './dashboard-offline.service';
 
 export interface StatusCount {
   id: string;
@@ -30,9 +30,22 @@ export class DashboardService {
   private dashboardOffline = inject(DashboardOfflineService);
   private apiUrl = `${environment.apiUrl}/dashboard`;
 
+  private statsCache$?: Observable<DashboardStats>;
+
   getStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/stats`).pipe(
-      withOfflineFallback(() => this.dashboardOffline.getStats())
-    );
+    if (!this.statsCache$) {
+      this.statsCache$ = this.http.get<DashboardStats>(`${this.apiUrl}/stats`).pipe(
+        tap(res => {
+          this.dashboardOffline.saveStats(res).catch(err => console.error('Failed to cache dashboard stats', err));
+        }),
+        withOfflineFallback(() => this.dashboardOffline.getStats()),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+    }
+    return this.statsCache$;
+  }
+
+  invalidateStatsCache(): void {
+    this.statsCache$ = undefined;
   }
 }

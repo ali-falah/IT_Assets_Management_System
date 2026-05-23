@@ -1,23 +1,25 @@
-import { Component, OnInit, inject, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, TemplateRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Plus, Pencil, Trash2, Check, X, MapPin } from 'lucide-angular';
-import { MasterDataService, Location } from '../../../core/services/master-data.service';
+import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
+import { Location, MasterDataService } from '../../../core/services/master-data.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-locations',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, DataTableComponent, ConfirmationModalComponent],
   templateUrl: './locations.component.html',
-  styleUrls: ['./locations.component.css']
+  styleUrls: ['./locations.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationsComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('actionsTemplate', { static: true }) actionsTemplate!: TemplateRef<any>;
 
@@ -44,14 +46,17 @@ export class LocationsComponent implements OnInit {
 
   loadLocations() {
     this.loading = true;
+    this.cdr.markForCheck();
     this.masterDataService.getLocations().subscribe({
       next: (res) => {
         this.locations = res;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to load locations');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -64,8 +69,12 @@ export class LocationsComponent implements OnInit {
         this.addingLoc = false;
         this.newLoc = { name: '', address: '' };
         this.loadLocations();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to create location')
+      error: () => {
+        this.toastr.error('Failed to create location');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -81,8 +90,12 @@ export class LocationsComponent implements OnInit {
         this.toastr.success('Location updated');
         this.editingLoc = null;
         this.loadLocations();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to update location')
+      error: () => {
+        this.toastr.error('Failed to update location');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -100,10 +113,12 @@ export class LocationsComponent implements OnInit {
         this.loadLocations();
         this.showConfirmDelete = false;
         this.locationToDelete = null;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to delete location. It might be in use by assets.');
         this.showConfirmDelete = false;
+        this.cdr.detectChanges();
       }
     });
   }

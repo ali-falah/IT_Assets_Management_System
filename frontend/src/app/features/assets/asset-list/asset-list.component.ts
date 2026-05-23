@@ -1,19 +1,21 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { LucideAngularModule, Search, Filter, Plus, Download, Trash2, TriangleAlert, Upload, Pencil, Check, X, Copy, Bookmark, BookmarkCheck, MoreHorizontal } from 'lucide-angular';
-import { AgGridAngular, AgGridModule } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, GridApi, ICellRendererParams } from 'ag-grid-community';
-import { ICellRendererAngularComp } from 'ag-grid-angular';
-import { AssetService, Asset } from '../../../core/services/asset.service';
-import { MasterDataService, Status, Location } from '../../../core/services/master-data.service';
-import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader.component';
-import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
-import { ToastrService } from 'ngx-toastr';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, OnInit, ViewChild, NgZone, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AgGridModule, ICellEditorAngularComp, ICellRendererAngularComp } from 'ag-grid-angular';
+import { ColDef, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
+import { LucideAngularModule } from 'lucide-angular';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, Subscription, combineLatest, forkJoin } from 'rxjs';
+import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
+import { Asset, AssetService } from '../../../core/services/asset.service';
+import { Location, MasterDataService, Status } from '../../../core/services/master-data.service';
+import { User, UserService } from '../../../core/services/user.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader.component';
+import { ExcelExportService } from '../../../shared/services/excel-export.service';
 import { AssetImportComponent } from '../asset-import/asset-import.component';
+import { UserDetailDialogComponent } from '../../users/user-detail-dialog/user-detail-dialog.component';
 
 const SAVED_VIEWS_KEY = 'asset_saved_views';
 
@@ -29,37 +31,164 @@ interface SavedView {
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule],
   template: `
-    <div class="flex items-center space-x-3 h-full">
-      <div *ngIf="params?.data?.category" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-{{params.data.category.color || 'slate'}}-50 text-{{params.data.category.color || 'slate'}}-600 border border-{{params.data.category.color || 'slate'}}-100"
-           [title]="params.data.category.name">
-        <lucide-icon [name]="params.data.category.icon || 'package'" [size]="14"></lucide-icon>
+    <div class="flex items-center justify-between w-full h-full group pr-2">
+      <div class="flex items-center space-x-3 truncate">
+        <div *ngIf="params?.data?.category" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-{{params.data.category.color || 'slate'}}-50 text-{{params.data.category.color || 'slate'}}-600 border border-{{params.data.category.color || 'slate'}}-100"
+             [title]="params.data.category.name">
+          <lucide-icon [name]="params.data.category.icon || 'package'" [size]="14"></lucide-icon>
+        </div>
+        <a [routerLink]="['/assets', params.data.id, 'edit']" 
+           class="text-slate-800 hover:underline font-semibold transition-all truncate">
+          {{ params.value }}
+        </a>
       </div>
-      <a [routerLink]="['/assets', params.data.id, 'edit']" 
-         class="text-slate-800 hover:underline font-semibold transition-all truncate">
-        {{ params.value }}
-      </a>
+      <button 
+        (click)="copyName($event)" 
+        class="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2" 
+        title="Copy Name"
+      >
+        <lucide-icon name="copy" [size]="13"></lucide-icon>
+      </button>
     </div>
   `
 })
 export class AssetNameRenderer implements ICellRendererAngularComp {
   params: any;
+  private toastr = inject(ToastrService);
+
   agInit(params: ICellRendererParams): void { this.params = params; }
   refresh(params: ICellRendererParams): boolean { this.params = params; return true; }
+
+  copyName(event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.params?.value) {
+      navigator.clipboard.writeText(this.params.value);
+      this.toastr.success('Asset Name copied to clipboard');
+    }
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, LucideAngularModule],
+  template: `
+    <div class="bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden p-2 w-64 animate-in fade-in zoom-in duration-200"
+         (click)="$event.stopPropagation()">
+      <div class="relative mb-2">
+        <lucide-icon 
+          name="search" 
+          [size]="14" 
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+        ></lucide-icon>
+        <input 
+          #searchInput
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (keydown.enter)="onEnterPressed($event)"
+          [placeholder]="'Search...'" 
+          class="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"
+        >
+      </div>
+      <div class="max-h-48 overflow-y-auto custom-scrollbar py-1">
+        <div 
+          *ngFor="let item of filteredItems" 
+          (click)="selectItem(item)"
+          class="px-3 py-2 text-xs hover:bg-indigo-50/50 cursor-pointer flex items-center justify-between transition-colors rounded-md"
+          [class.bg-indigo-50]="selectedValue === item"
+          [class.text-primary]="selectedValue === item"
+          [class.font-semibold]="selectedValue === item"
+        >
+          <span class="truncate">{{ item }}</span>
+          <lucide-icon *ngIf="selectedValue === item" name="check" [size]="12"></lucide-icon>
+        </div>
+        <div *ngIf="filteredItems.length === 0" class="px-3 py-4 text-center text-xs text-slate-400">
+          No results found
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .animate-in {
+      animation: enter 0.15s ease-out;
+    }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(-5px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  `]
+})
+export class SearchableCellEditorComponent implements ICellEditorAngularComp {
+  params: any;
+  searchTerm = '';
+  values: string[] = [];
+  selectedValue: string = '';
+
+  @ViewChild('searchInput', { static: true }) searchInput!: ElementRef;
+
+  agInit(params: any): void {
+    this.params = params;
+    this.values = params.values || [];
+    this.selectedValue = params.value || '';
+    if (!this.selectedValue && this.values.includes('Unassigned')) {
+      this.selectedValue = 'Unassigned';
+    }
+    setTimeout(() => {
+      if (this.searchInput) {
+        this.searchInput.nativeElement.focus();
+      }
+    }, 50);
+  }
+
+  getValue() {
+    return this.selectedValue;
+  }
+
+  isPopup() {
+    return true;
+  }
+
+  get filteredItems() {
+    if (!this.searchTerm.trim()) return this.values;
+    const term = this.searchTerm.toLowerCase();
+    return this.values.filter(v => v.toLowerCase().includes(term));
+  }
+
+  selectItem(item: string) {
+    this.selectedValue = item;
+    this.params.stopEditing();
+  }
+
+  onEnterPressed(event: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    const filtered = this.filteredItems;
+    if (filtered.length > 0) {
+      this.selectItem(filtered[0]);
+    }
+  }
 }
 
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent, ConfirmationModalComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent, ConfirmationModalComponent, SearchableCellEditorComponent, UserDetailDialogComponent],
   templateUrl: './asset-list.component.html',
-  styleUrls: ['./asset-list.component.css']
+  styleUrls: ['./asset-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AssetListComponent implements OnInit {
+export class AssetListComponent implements OnInit, OnDestroy {
   private assetService = inject(AssetService);
+  private excelExportService = inject(ExcelExportService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toastr = inject(ToastrService);
   private masterDataService = inject(MasterDataService);
+  private userService = inject(UserService);
+  private ngZone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
+  private subs: Subscription[] = [];
+  private assetsSub?: Subscription;
 
   private gridApi!: GridApi;
   private searchSubject = new Subject<string>();
@@ -74,11 +203,17 @@ export class AssetListComponent implements OnInit {
   unassignErrorMsg = '';
   deleteType: 'single' | 'bulk' = 'single';
   assetToDelete: Asset | null = null;
+  showLaptopWarningModal = false;
+  pendingAssignment: { assetId: string; userId: string | null; userName: string } | null = null;
+  laptopWarningMessage = 'This employee already has a laptop assigned. Do you want to proceed?';
+  showUserDetailDialog = false;
+  selectedUserIdForDialog: string | null = null;
   
   loading = false;
   currentFilters: any = {};
   statuses: Status[] = [];
   locations: Location[] = [];
+  users: User[] = [];
   selectedStatusId: string | null = null;
 
   // Saved Views
@@ -97,33 +232,25 @@ export class AssetListComponent implements OnInit {
   };
 
   loadAssets(params: any = {}) {
+    if (this.assetsSub) {
+      this.assetsSub.unsubscribe();
+    }
+
     this.loading = true;
     this.currentFilters = params;
-    this.assetService.getAssets(params).subscribe({
+    this.cdr.markForCheck();
+
+    this.assetsSub = this.assetService.getAssets(params).subscribe({
       next: (res: any) => {
         this.assets = res.data;
         this.loading = false;
-        // Rebuild column defs now that statuses/locations are loaded
-        this.rebuildColumnDefs();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to load assets');
         this.loading = false;
+        this.cdr.detectChanges();
       }
-    });
-  }
-
-  loadStatuses() {
-    this.masterDataService.getStatuses().subscribe(res => {
-      this.statuses = res;
-      this.rebuildColumnDefs();
-    });
-  }
-
-  loadLocations() {
-    this.masterDataService.getLocations().subscribe(res => {
-      this.locations = res;
-      this.rebuildColumnDefs();
     });
   }
 
@@ -132,9 +259,70 @@ export class AssetListComponent implements OnInit {
     this.gridApi.setGridOption('columnDefs', this.buildColumnDefs());
   }
 
+  /** Load all master-data in parallel, then do ONE grid rebuild */
+  private loadMasterData(): void {
+    forkJoin({
+      statuses: this.masterDataService.getStatuses().pipe(take(1)),
+      locations: this.masterDataService.getLocations().pipe(take(1)),
+      users: this.userService.getUsers().pipe(take(1))
+    }).subscribe(({ statuses, locations, users }) => {
+      this.statuses = statuses;
+      this.locations = locations;
+      this.users = users;
+      this.rebuildColumnDefs();
+    });
+  }
+
+  openUserDialog(userId: string) {
+    this.selectedUserIdForDialog = userId;
+    this.showUserDetailDialog = true;
+  }
+
+  saveTableState() {
+    const state = {
+      selectedStatusId: this.selectedStatusId,
+      currentSearchTerm: this.currentSearchTerm,
+      showFloatingFilters: this.showFloatingFilters,
+      gridFilterModel: this.gridApi ? this.gridApi.getFilterModel() : null,
+      currentFilters: this.currentFilters
+    };
+    localStorage.setItem('assets_table_state', JSON.stringify(state));
+  }
+
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
+    
+    // 1. Restore floating filter toggle state
+    const savedStateStr = localStorage.getItem('assets_table_state');
+    if (savedStateStr) {
+      try {
+        const state = JSON.parse(savedStateStr);
+        this.showFloatingFilters = !!state.showFloatingFilters;
+        this.gridApi.setGridOption('floatingFiltersHeight', this.showFloatingFilters ? 50 : 0);
+      } catch (e) {
+        console.warn('Could not restore floating filter state:', e);
+      }
+    }
+    
     this.rebuildColumnDefs();
+
+    // 2. Restore AG Grid column filter model
+    if (savedStateStr) {
+      try {
+        const state = JSON.parse(savedStateStr);
+        if (state.gridFilterModel && Object.keys(state.gridFilterModel).length > 0) {
+          setTimeout(() => {
+            this.gridApi.setFilterModel(state.gridFilterModel);
+          }, 200);
+        }
+      } catch (e) {
+        console.warn('Could not restore AG Grid filter model:', e);
+      }
+    }
+  }
+
+  onFilterChanged() {
+    this.saveTableState();
   }
 
   onSelectionChanged() {
@@ -147,11 +335,21 @@ export class AssetListComponent implements OnInit {
     this.searchSubject.next(term);
   }
 
+  clearSearch() {
+    this.currentSearchTerm = '';
+    this.searchSubject.next('');
+  }
+
   filterByStatus(statusId: string | null) {
     this.selectedStatusId = statusId;
-    const params = { ...this.currentFilters, statusId };
-    if (!statusId) delete params.statusId;
-    this.loadAssets(params);
+    this.currentFilters = { ...this.currentFilters, statusId };
+    if (!statusId) delete this.currentFilters.statusId;
+    
+    const loadParams = { ...this.currentFilters };
+    if (this.currentSearchTerm) loadParams.search = this.currentSearchTerm;
+    
+    this.loadAssets(loadParams);
+    this.saveTableState();
   }
 
   // ── Saved Views ────────────────────────────────────────────────────
@@ -360,6 +558,19 @@ export class AssetListComponent implements OnInit {
     this.confirmDeleteBulk();
   }
 
+  async exportToExcel() {
+    const dataToExport = this.assets.map(asset => ({
+      'Name': asset.name,
+      'Serial Number': asset.serialNumber,
+      'Status': asset.status?.name || '',
+      'Location': asset.location?.name || '',
+      'Assigned To': asset.assignedUser?.name || 'Unassigned',
+      'Category': asset.category?.name || '',
+      'Notes': asset.notes || ''
+    }));
+    await this.excelExportService.exportToExcel(dataToExport, 'assets');
+  }
+
   // ── Clone Asset ────────────────────────────────────────────────────
   cloneAsset(asset: Asset) {
     this.router.navigate(['/assets/new'], {
@@ -444,16 +655,13 @@ export class AssetListComponent implements OnInit {
           const newStatus = this.statuses.find(s => s.name === params.newValue);
           if (!newStatus || params.newValue === params.oldValue) return;
           this.assetService.updateAsset(params.data.id, { statusId: newStatus.id }).subscribe({
-            next: () => {
-              params.data.status = newStatus;
-              params.data.statusId = newStatus.id;
-              // Force re-render so badge color updates immediately
-              params.api.refreshCells({ rowNodes: [params.node], columns: ['status.name'], force: true });
+            next: (updatedAsset: Asset) => {
               this.toastr.success(`Status updated to ${newStatus.name}`);
+              this.updateLocalAsset(updatedAsset);
             },
             error: () => {
               this.toastr.error('Failed to update status');
-              params.node.setDataValue('status.name', params.oldValue);
+              this.loadAssets(this.currentFilters);
             }
           });
         }
@@ -463,8 +671,15 @@ export class AssetListComponent implements OnInit {
         headerName: 'Location', 
         flex: 1.5,
         editable: true,
-        cellEditor: 'agSelectCellEditor',
+        cellEditor: SearchableCellEditorComponent,
         cellEditorParams: { values: this.locations.map(l => l.name) },
+        valueSetter: (params: any) => {
+          if (!params.data.location) {
+            params.data.location = {};
+          }
+          params.data.location.name = params.newValue;
+          return true;
+        },
         cellRenderer: (params: any) => {
           const name = params.value || '-';
           return `<div class="flex items-center gap-1.5 group/loc">
@@ -476,27 +691,137 @@ export class AssetListComponent implements OnInit {
           const newLoc = this.locations.find(l => l.name === params.newValue);
           if (!newLoc || params.newValue === params.oldValue) return;
           this.assetService.updateAsset(params.data.id, { locationId: newLoc.id }).subscribe({
-            next: () => {
-              params.data.location = newLoc;
-              params.data.locationId = newLoc.id;
+            next: (updatedAsset: Asset) => {
               this.toastr.success(`Location updated to ${newLoc.name}`);
+              this.updateLocalAsset(updatedAsset);
             },
             error: () => {
               this.toastr.error('Failed to update location');
-              params.node.setDataValue('location.name', params.oldValue);
+              this.loadAssets(this.currentFilters);
             }
           });
         }
+
       },
       { 
         field: 'assignedUser.name', 
         headerName: 'Assigned To', 
         flex: 1.5,
+        editable: true,
+        cellEditor: SearchableCellEditorComponent,
+        cellEditorParams: { values: ['Unassigned', ...this.users.map(u => u.name)] },
+        valueSetter: (params: any) => {
+          if (!params.data.assignedUser) {
+            params.data.assignedUser = {};
+          }
+          params.data.assignedUser.name = params.newValue;
+          return true;
+        },
         cellRenderer: (params: any) => {
-          if (!params.value) return '<span class="text-slate-400 text-xs">Unassigned</span>';
-          const userId = params.data?.assignedUserId;
-          if (!userId) return params.value;
-          return `<a href="/users?userId=${userId}" class="text-primary hover:underline font-medium">${params.value}</a>`;
+          const name = params.value || 'Unassigned';
+          const isUnassigned = name === 'Unassigned' || !params.data?.assignedUserId;
+          const displayHtml = isUnassigned
+            ? `<span class="text-slate-400 text-xs">Unassigned</span>`
+            : `<span class="user-detail-link text-primary hover:underline font-medium cursor-pointer">${name}</span>`;
+          return `<div class="flex items-center gap-1.5 group/assign">
+            ${displayHtml}
+            <span class="opacity-0 group-hover/assign:opacity-100 text-[10px] text-slate-400 transition-opacity">click to edit</span>
+          </div>`;
+        },
+        onCellClicked: (params: any) => {
+          const target = params.event?.target as HTMLElement;
+          if (target?.closest('.user-detail-link') && params.data?.assignedUserId) {
+            params.event.stopPropagation();
+            params.event.preventDefault();
+            this.ngZone.run(() => {
+              this.selectedUserIdForDialog = params.data.assignedUserId;
+              this.showUserDetailDialog = true;
+            });
+          }
+        },
+        onCellValueChanged: (params: any) => {
+          this.ngZone.run(() => {
+            const newUserName = params.newValue;
+            const oldUserName = params.oldValue || 'Unassigned';
+            if (newUserName === oldUserName) return;
+
+            const catName = params.data.category?.name?.toLowerCase() || '';
+            const isLaptop = catName === 'laptop' || catName === 'laptops' || catName.includes('laptop');
+
+            let newUserId: string | null = null;
+            if (newUserName && newUserName !== 'Unassigned') {
+              const foundUser = this.users.find(u => u.name === newUserName);
+              if (!foundUser) {
+                this.toastr.error('User not found');
+                this.loadAssets(this.currentFilters);
+                return;
+              }
+              newUserId = foundUser.id;
+            }
+
+            // Case A: Block direct transfer of an in-use laptop
+            if (isLaptop && oldUserName !== 'Unassigned' && newUserName !== 'Unassigned' && newUserId) {
+              this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+                next: (res: any) => {
+                  const existingLaptop = res.data.find((a: any) => 
+                    a.id !== params.data.id && 
+                    (a.category?.name?.toLowerCase() === 'laptop' || 
+                     a.category?.name?.toLowerCase() === 'laptops' || 
+                     a.category?.name?.toLowerCase().includes('laptop'))
+                  );
+                  if (existingLaptop) {
+                    this.toastr.error(
+                      `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring. Additionally, ${newUserName} already has a laptop assigned with serial ${existingLaptop.serialNumber || 'N/A'}.`,
+                      'Transfer Blocked',
+                      { timeOut: 8000 }
+                    );
+                  } else {
+                    this.toastr.error(
+                      `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`,
+                      'Transfer Blocked',
+                      { timeOut: 6000 }
+                    );
+                  }
+                  this.loadAssets(this.currentFilters);
+                },
+                error: () => {
+                  this.toastr.error(`This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`);
+                  this.loadAssets(this.currentFilters);
+                }
+              });
+              return;
+            }
+
+            // Case B: Normal assignment flow (laptop is in stock / unassigned)
+            if (isLaptop && newUserId) {
+              this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+                next: (res: any) => {
+                  const existingLaptop = res.data.find((a: any) => 
+                    a.id !== params.data.id && 
+                    (a.category?.name?.toLowerCase() === 'laptop' || 
+                     a.category?.name?.toLowerCase() === 'laptops' || 
+                     a.category?.name?.toLowerCase().includes('laptop'))
+                  );
+                  if (existingLaptop) {
+                    this.pendingAssignment = {
+                      assetId: params.data.id,
+                      userId: newUserId,
+                      userName: newUserName
+                    };
+                    this.laptopWarningMessage = `This employee already has a laptop assigned (Serial: ${existingLaptop.serialNumber || 'N/A'}). Do you want to proceed?`;
+                    this.showLaptopWarningModal = true;
+                  } else {
+                    this.executeAssetAssignment(params.data.id, newUserId);
+                  }
+                },
+                error: () => {
+                  this.executeAssetAssignment(params.data.id, newUserId);
+                }
+              });
+            } else {
+              this.executeAssetAssignment(params.data.id, newUserId);
+            }
+          });
         }
       },
       {
@@ -546,31 +871,71 @@ export class AssetListComponent implements OnInit {
   showFloatingFilters = false;
   
   ngOnInit() {
-    this.loadStatuses();
-    this.loadLocations();
+    // Load master data first (statuses, locations, users) in ONE parallel call
+    this.loadMasterData();
     this.loadSavedViews();
 
-    this.route.queryParams.subscribe(params => {
-      this.currentFilters = {
-        userId: params['userId'] || null,
-        statusId: params['statusId'] || null,
-        categoryId: params['categoryId'] || null
-      };
+    // Restore table state from local storage on load
+    const savedStateStr = localStorage.getItem('assets_table_state');
+    if (savedStateStr) {
+      try {
+        const state = JSON.parse(savedStateStr);
+        this.selectedStatusId = state.selectedStatusId || null;
+        this.currentSearchTerm = state.currentSearchTerm || '';
+        this.showFloatingFilters = !!state.showFloatingFilters;
+        if (state.currentFilters) {
+          this.currentFilters = { ...state.currentFilters };
+        }
+      } catch (e) {
+        console.warn('Could not restore asset table state:', e);
+      }
+    }
+
+    // Subscribe to query params — load assets with any URL-provided filters
+    const qpSub = this.route.queryParams.subscribe(params => {
+      const queryUserId = params['userId'];
+      const queryStatusId = params['statusId'];
+      const queryCategoryId = params['categoryId'];
+
+      if (queryUserId !== undefined || queryStatusId !== undefined || queryCategoryId !== undefined) {
+        this.currentFilters = {
+          userId: queryUserId || null,
+          statusId: queryStatusId || null,
+          categoryId: queryCategoryId || null
+        };
+        this.selectedStatusId = this.currentFilters.statusId;
+      } else {
+        if (!this.currentFilters) {
+          this.currentFilters = {};
+        }
+      }
       
       const loadParams: any = {};
       Object.keys(this.currentFilters).forEach(key => {
         if (this.currentFilters[key]) loadParams[key] = this.currentFilters[key];
       });
+      if (this.currentSearchTerm) {
+        loadParams['search'] = this.currentSearchTerm;
+      }
 
       this.loadAssets(loadParams);
+      this.saveTableState();
     });
+    this.subs.push(qpSub);
     
-    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {
+    const searchSub = this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(searchTerm => {
+      this.currentSearchTerm = searchTerm;
       const params: any = { ...this.currentFilters, search: searchTerm };
       const loadParams: any = {};
       Object.keys(params).forEach(key => { if (params[key]) loadParams[key] = params[key]; });
       this.loadAssets(loadParams);
+      this.saveTableState();
     });
+    this.subs.push(searchSub);
+  }
+
+  ngOnDestroy() {
+    this.subs.forEach(s => s.unsubscribe());
   }
 
   toggleFilters() {
@@ -578,5 +943,51 @@ export class AssetListComponent implements OnInit {
     this.gridApi.setGridOption('floatingFiltersHeight', this.showFloatingFilters ? 50 : 0);
     const newColDefs = this.buildColumnDefs().map(col => ({ ...col, floatingFilter: this.showFloatingFilters }));
     this.gridApi.setGridOption('columnDefs', newColDefs);
+    this.saveTableState();
+  }
+
+  getRowId = (params: any) => params.data.id;
+
+  updateLocalAsset(updatedAsset: Asset) {
+    const idx = this.assets.findIndex(a => a.id === updatedAsset.id);
+    if (idx > -1) {
+      this.assets[idx] = updatedAsset;
+    }
+    if (this.gridApi) {
+      const rowNode = this.gridApi.getRowNode(updatedAsset.id);
+      if (rowNode) {
+        rowNode.setData(updatedAsset);
+        this.gridApi.refreshCells({ rowNodes: [rowNode] });
+      }
+    }
+  }
+
+  executeAssetAssignment(assetId: string, userId: string | null) {
+    this.assetService.updateAsset(assetId, { assignedUserId: userId }).subscribe({
+      next: (updatedAsset: any) => {
+        this.toastr.success(userId ? `Assigned to ${updatedAsset.assignedUser?.name}` : 'Asset unassigned');
+        this.updateLocalAsset(updatedAsset);
+      },
+      error: () => {
+        this.toastr.error('Failed to update assignment');
+        this.loadAssets(this.currentFilters);
+      }
+    });
+  }
+
+
+  confirmLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    if (this.pendingAssignment) {
+      this.executeAssetAssignment(this.pendingAssignment.assetId, this.pendingAssignment.userId);
+      this.pendingAssignment = null;
+    }
+  }
+
+  cancelLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    this.pendingAssignment = null;
+    this.toastr.info('Assignment cancelled');
+    this.loadAssets(this.currentFilters);
   }
 }

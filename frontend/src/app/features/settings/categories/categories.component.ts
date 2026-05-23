@@ -1,23 +1,25 @@
-import { Component, OnInit, inject, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, TemplateRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Plus, Pencil, Trash2, Check, X, Tags } from 'lucide-angular';
-import { MasterDataService, Category } from '../../../core/services/master-data.service';
+import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
+import { Category, MasterDataService } from '../../../core/services/master-data.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-categories',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, DataTableComponent, ConfirmationModalComponent],
   templateUrl: './categories.component.html',
-  styleUrls: ['./categories.component.css']
+  styleUrls: ['./categories.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriesComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('iconTemplate', { static: true }) iconTemplate!: TemplateRef<any>;
   @ViewChild('actionsTemplate', { static: true }) actionsTemplate!: TemplateRef<any>;
@@ -76,14 +78,17 @@ export class CategoriesComponent implements OnInit {
 
   loadCategories() {
     this.loading = true;
+    this.cdr.markForCheck();
     this.masterDataService.getCategories().subscribe({
       next: (res) => {
         this.categories = res;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to load categories');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -96,8 +101,12 @@ export class CategoriesComponent implements OnInit {
         this.addingCat = false;
         this.newCat = { name: '', description: '' };
         this.loadCategories();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to create category')
+      error: () => {
+        this.toastr.error('Failed to create category');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -118,8 +127,12 @@ export class CategoriesComponent implements OnInit {
         this.toastr.success('Category updated');
         this.editingCat = null;
         this.loadCategories();
+        this.cdr.detectChanges();
       },
-      error: () => this.toastr.error('Failed to update category')
+      error: () => {
+        this.toastr.error('Failed to update category');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -137,10 +150,12 @@ export class CategoriesComponent implements OnInit {
         this.loadCategories();
         this.showConfirmDelete = false;
         this.categoryToDelete = null;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to delete category. It might be assigned to existing assets.');
         this.showConfirmDelete = false;
+        this.cdr.detectChanges();
       }
     });
   }

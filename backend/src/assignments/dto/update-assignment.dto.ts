@@ -1,7 +1,6 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateAssignmentDto } from './create-assignment.dto';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsOptional } from 'class-validator';
+import { CreateAssignmentDto } from './create-assignment.dto';
 
 export class UpdateAssignmentDto extends PartialType(CreateAssignmentDto) {
   @ApiPropertyOptional()

@@ -1,35 +1,38 @@
-import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterModule, Router, NavigationEnd } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription, map } from 'rxjs';
+import { LucideAngularModule } from 'lucide-angular';
+import { Observable, Subject, Subscription, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { AuthState } from '../store/auth/auth.reducer';
-import * as AuthActions from '../store/auth/auth.actions';
-import { User } from '../services/user.service';
-import { SearchService, SearchResult } from '../services/search.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
 import { OfflineManagerService } from '../services/offline-manager.service';
+import { PlatformService } from '../services/platform.service';
+import { SearchResult, SearchService } from '../services/search.service';
+import { User } from '../services/user.service';
+import * as AuthActions from '../store/auth/auth.actions';
+import { AuthState } from '../store/auth/auth.reducer';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterModule, LucideAngularModule],
   templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.css']
+  styleUrls: ['./layout.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutComponent implements OnInit, OnDestroy {
   private store = inject(Store<{ auth: AuthState }>);
   private router = inject(Router);
   private searchService = inject(SearchService);
   private offlineManager = inject(OfflineManagerService);
+  private platform = inject(PlatformService);
   private routerSubscription?: Subscription;
   private searchSubscription?: Subscription;
 
   isCollapsed = false;
   isProfileMenuOpen = false;
   isCommandPaletteOpen = false;
+  isMobile = this.platform.isMobile;
 
   // Offline / queue state
   isOnline$: Observable<boolean> = this.offlineManager.getOnlineStatus();

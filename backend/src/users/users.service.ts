@@ -1,15 +1,15 @@
-import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserRole } from '../user-roles/entities/user-role.entity';
 import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
+import { UserRole } from '../user-roles/entities/user-role.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './entities/user.entity';
 
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import { Asset } from '../assets/entities/asset.entity';
 import { Assignment } from '../assignments/entities/assignment.entity';
 import { Status } from '../statuses/entities/status.entity';
-import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 
 @Injectable()
 export class UsersService {

@@ -1,5 +1,5 @@
-import { Component, Input, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, TemplateRef } from '@angular/core';
 
 export interface TableColumn {
   key: string;
@@ -59,7 +59,8 @@ export interface TableColumn {
         </tbody>
       </table>
     </div>
-  `
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataTableComponent {
   @Input() data: any[] = [];

@@ -1,8 +1,8 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column,
-  CreateDateColumn, ManyToOne, JoinColumn
+  Column,
+  CreateDateColumn,
+  Entity, PrimaryGeneratedColumn
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
 
 export type ActivityAction =
   | 'asset_created'

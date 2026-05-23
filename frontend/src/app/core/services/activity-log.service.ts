@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface ActivityLog {
@@ -30,6 +30,8 @@ export class ActivityLogService {
   private api = `${environment.apiUrl}/activity-logs`;
 
   getAll(limit = 200): Observable<ActivityLog[]> {
-    return this.http.get<ActivityLog[]>(`${this.api}?limit=${limit}`);
+    return this.http.get<ActivityLog[]>(`${this.api}?limit=${limit}`).pipe(
+      catchError(() => of([]))
+    );
   }
 }

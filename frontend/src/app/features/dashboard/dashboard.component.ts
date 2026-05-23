@@ -1,14 +1,15 @@
-import { Component, Inject, PLATFORM_ID, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, Download, Plus, Laptop, UserCheck, Wrench, TriangleAlert } from 'lucide-angular';
-import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import { DashboardService, DashboardStats, StatusCount } from '../../core/services/dashboard.service';
-import { ActivityLogService, ActivityLog } from '../../core/services/activity-log.service';
-import { AssignmentService, Assignment } from '../../core/services/assignment.service';
+import { LucideAngularModule } from 'lucide-angular';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { forkJoin } from 'rxjs';
+import { ActivityLogService } from '../../core/services/activity-log.service';
+import { AssignmentService } from '../../core/services/assignment.service';
+import { DashboardService, DashboardStats, StatusCount } from '../../core/services/dashboard.service';
+import { UserService } from '../../core/services/user.service';
+import { UserDetailDialogComponent } from '../users/user-detail-dialog/user-detail-dialog.component';
 
 // Converts Tailwind bg class like "bg-green-500" to a hex for Chart.js
 // Falls back to a palette if the colorClass is a compound badge class
@@ -38,28 +39,45 @@ function tailwindToHex(colorClass: string, index: number): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, BaseChartDirective],
+  imports: [CommonModule, RouterModule, LucideAngularModule, BaseChartDirective, UserDetailDialogComponent],
   providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
   isBrowser: boolean;
   private dashboardService = inject(DashboardService);
   private activityLogService = inject(ActivityLogService);
   private assignmentService = inject(AssignmentService);
+  private userService = inject(UserService);
   private cdr = inject(ChangeDetectorRef);
 
   stats: DashboardStats | null = null;
+  totalUsers = 0;
   loading = true;
+  showUserDetailDialog = false;
+  selectedUserIdForDialog: string | null = null;
 
   /** Unified recent activity feed for the dashboard widget */
   recentActivity: Array<{
     action: string;
     message: string;
     entityId?: string;
+    entityName?: string;
+    secondaryId?: string;
+    secondaryName?: string;
+    assetSerialNumber?: string;
+    ownerName?: string;
     date: Date;
   }> = [];
+
+  openUserDialog(userId: string) {
+    if (!userId) return;
+    this.selectedUserIdForDialog = userId;
+    this.showUserDetailDialog = true;
+    this.cdr.detectChanges();
+  }
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -69,23 +87,45 @@ export class DashboardComponent implements OnInit {
     forkJoin({
       stats: this.dashboardService.getStats(),
       logs: this.activityLogService.getAll(50),
-      assignments: this.assignmentService.getAssignments()
+      assignments: this.assignmentService.getAssignments(),
+      users: this.userService.getUsers(),
     }).subscribe({
-      next: ({ stats, logs, assignments }) => {
+      next: ({ stats, logs, assignments, users }) => {
         this.stats = stats;
+        this.totalUsers = users.length;
         this.buildCharts(stats);
 
-        // Build unified recent-activity feed
+        // Build unified recent-activity feed using data already in logs & assignments
         const fromLogs = logs
           .filter(l => l.action !== 'asset_assigned' && l.action !== 'asset_returned')
-          .map(l => ({ action: l.action, message: l.message, entityId: l.entityId, date: new Date(l.createdAt) }));
+          .map(l => {
+            const serial = l.meta?.['serialNumber'] || '';
+            const owner  = l.meta?.['assignedUser'] || 'Stock';
+            return {
+              action: l.action,
+              message: l.message,
+              entityId: l.entityId,
+              entityName: l.entityName,
+              secondaryId: l.secondaryId,
+              secondaryName: l.secondaryName,
+              assetSerialNumber: serial,
+              ownerName: owner,
+              date: new Date(l.createdAt)
+            };
+          });
 
         const fromAssignments: typeof fromLogs = [];
         for (const a of assignments) {
+          const serial = a.asset?.serialNumber || '';
           fromAssignments.push({
             action: 'asset_assigned',
             message: `"${a.asset?.name || 'Asset'}" assigned to ${a.user?.name || 'user'}`,
             entityId: a.assetId,
+            entityName: a.asset?.name || '',
+            secondaryId: a.userId || '',
+            secondaryName: a.user?.name || '',
+            assetSerialNumber: serial,
+            ownerName: a.user?.name || 'Stock',
             date: new Date(a.assignedAt)
           });
           if (a.returnedAt) {
@@ -93,6 +133,11 @@ export class DashboardComponent implements OnInit {
               action: 'asset_returned',
               message: `"${a.asset?.name || 'Asset'}" returned by ${a.user?.name || 'user'}`,
               entityId: a.assetId,
+              entityName: a.asset?.name || '',
+              secondaryId: a.userId || '',
+              secondaryName: a.user?.name || '',
+              assetSerialNumber: serial,
+              ownerName: 'Stock',
               date: new Date(a.returnedAt)
             });
           }

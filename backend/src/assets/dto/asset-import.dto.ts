@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class AssetImportDto {
   @ApiProperty()
@@ -21,6 +21,11 @@ export class AssetImportDto {
   @IsString()
   @IsOptional()
   location?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  category?: string;
 
   @ApiProperty()
   @IsString()

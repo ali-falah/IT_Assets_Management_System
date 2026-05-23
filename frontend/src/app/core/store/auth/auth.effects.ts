@@ -1,12 +1,11 @@
-import { Injectable, inject } from '@angular/core';
-import { Actions, createEffect } from '@ngrx/effects';
-import { ofType } from '@ngrx/effects';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, map, mergeMap, tap } from 'rxjs/operators';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import * as AuthActions from './auth.actions';
+import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import * as AuthActions from './auth.actions';
 
 @Injectable()
 export class AuthEffects {

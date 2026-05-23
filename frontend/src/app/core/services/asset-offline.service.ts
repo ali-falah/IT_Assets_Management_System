@@ -8,6 +8,26 @@ import { OfflineStorageService } from './offline-storage.service';
 export class AssetOfflineService {
   private offlineStorage = inject(OfflineStorageService);
 
+  private cachedUsers: any[] | null = null;
+  private cachedStatuses: any[] | null = null;
+
+  private async getCachedUsers(): Promise<any[]> {
+    if (this.cachedUsers) return this.cachedUsers;
+    this.cachedUsers = await this.offlineStorage.getAll('users');
+    return this.cachedUsers;
+  }
+
+  private async getCachedStatuses(): Promise<any[]> {
+    if (this.cachedStatuses) return this.cachedStatuses;
+    this.cachedStatuses = await this.offlineStorage.getAll('statuses');
+    return this.cachedStatuses;
+  }
+
+  invalidateCache(): void {
+    this.cachedUsers = null;
+    this.cachedStatuses = null;
+  }
+
   async getAll(): Promise<Asset[]> {
     return this.offlineStorage.getAll('assets');
   }
@@ -26,19 +46,16 @@ export class AssetOfflineService {
     );
   }
 
-  async bulkSave(assets: Asset[]): Promise<void> {
-    return this.offlineStorage.bulkSave('assets', assets);
+  async bulkSave(assets: Asset[], clear: boolean = true): Promise<void> {
+    return this.offlineStorage.bulkSave('assets', assets, clear);
   }
 
   async update(id: string, partialData: Partial<Asset>): Promise<Asset> {
     const asset = await this.getById(id);
     const updatedAsset = { ...asset, ...partialData };
     
-    // Attempt to enrich with user/status data if we have them locally
-    // Note: In a cleaner architecture, this might be handled by the sync layer
-    // but we keep the current logic for parity.
-    const users = await this.offlineStorage.getAll<any>('users');
-    const statuses = await this.offlineStorage.getAll<any>('statuses');
+    const users = await this.getCachedUsers();
+    const statuses = await this.getCachedStatuses();
     
     if (partialData.assignedUserId) {
       updatedAsset.assignedUser = users.find((u: any) => u.id === partialData.assignedUserId);
@@ -53,4 +70,9 @@ export class AssetOfflineService {
     await this.offlineStorage.save('assets', updatedAsset);
     return updatedAsset;
   }
+
+  async delete(id: string): Promise<void> {
+    return this.offlineStorage.delete('assets', id);
+  }
 }
+

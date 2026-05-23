@@ -84,13 +84,30 @@
                 <lucide-icon name="laptop" [size]="12"></lucide-icon>
                 View Asset
               </a>
-              <span *ngIf="activity.secondaryName && activity.action === 'asset_assigned'" class="flex items-center gap-1">
+              <span *ngIf="activity.secondaryName && (activity.action === 'asset_assigned' || activity.action === 'asset_returned')" class="flex items-center gap-1">
                 <lucide-icon name="user" [size]="12"></lucide-icon>
-                {{ activity.secondaryName }}
+                <button (click)="openUserDialog(activity.secondaryId || '')" class="text-primary hover:underline font-medium outline-none text-left">
+                  {{ activity.secondaryName }}
+                </button>
               </span>
-              <span *ngIf="activity.secondaryName && activity.action === 'asset_returned'" class="flex items-center gap-1">
-                <lucide-icon name="user" [size]="12"></lucide-icon>
-                {{ activity.secondaryName }}
+            </div>
+
+            <!-- Enhanced Details Row -->
+            <div *ngIf="activity.assetSerialNumber || activity.ownerName" class="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs">
+              <!-- Serial Number -->
+              <span *ngIf="activity.assetSerialNumber" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
+                <lucide-icon name="hash" [size]="11" class="text-slate-400"></lucide-icon>
+                Serial: <span class="text-slate-800 font-bold select-all">{{ activity.assetSerialNumber }}</span>
+              </span>
+              
+              <!-- Owner / Assignment Status -->
+              <span *ngIf="activity.ownerName" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
+                <lucide-icon name="shield" [size]="11" class="text-slate-400"></lucide-icon>
+                Current Owner: 
+                <span *ngIf="activity.ownerName === 'Stock'" class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded uppercase text-[10px] tracking-wider">Stock</span>
+                <span *ngIf="activity.ownerName !== 'Stock'" class="text-indigo-600 font-bold hover:underline cursor-pointer" (click)="openUserDialog(activity.secondaryId || '')">
+                  {{ activity.ownerName }}
+                </span>
               </span>
             </div>
           </div>
@@ -99,3 +116,11 @@
     </div>
   </div>
 </div>
+
+<!-- User Detail Dialog -->
+<app-user-detail-dialog
+  *ngIf="showUserDetailDialog && selectedUserIdForDialog"
+  [userId]="selectedUserIdForDialog"
+  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null"
+  (updated)="loadActivities()">
+</app-user-detail-dialog>

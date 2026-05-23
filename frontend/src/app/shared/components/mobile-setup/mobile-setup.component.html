@@ -1,0 +1,102 @@
+<div class="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+  <div class="setup-card">
+
+    <!-- Header -->
+    <div class="setup-header">
+      <div class="setup-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+          <path d="M12 18h.01"/>
+        </svg>
+      </div>
+      <h1 id="setup-title" class="setup-title">Welcome to IT Assets</h1>
+      <p class="setup-subtitle">
+        Connect to your server to get started. You can change this anytime in Settings.
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSave()" #setupForm="ngForm" class="setup-form" novalidate>
+
+      <div class="field-group">
+        <label for="serverUrl" class="field-label">Server Address</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
+              <rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+              <line x1="6" x2="6.01" y1="6" y2="6"/>
+              <line x1="6" x2="6.01" y1="18" y2="18"/>
+            </svg>
+          </span>
+          <input
+            id="serverUrl"
+            type="url"
+            [(ngModel)]="serverUrl"
+            name="serverUrl"
+            class="field-input"
+            [class.error]="urlError"
+            placeholder="http://192.168.1.100:3000"
+            autocomplete="url"
+            inputmode="url"
+            required
+            #urlInput="ngModel"
+          />
+        </div>
+        <p *ngIf="urlError" class="field-error">{{ urlError }}</p>
+        <p class="field-hint">
+          Enter your server's local IP or domain (e.g. <code>http://192.168.1.100:3000</code>)
+        </p>
+      </div>
+
+      <!-- Connection History -->
+      <div *ngIf="history.length > 0" class="history-section" style="margin-bottom: 1.5rem;">
+        <p class="field-label" style="font-size: 0.8rem; margin-bottom: 0.5rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Recent Connections</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <button
+            *ngFor="let url of history"
+            type="button"
+            (click)="selectHistory(url)"
+            style="text-align: left; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #334155; font-family: monospace; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;"
+          >
+            {{ url }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Test Connection -->
+      <div *ngIf="testStatus" class="test-result" [class.success]="testStatus === 'success'" [class.fail]="testStatus === 'fail'">
+        <span *ngIf="testStatus === 'success'">✓ Connection successful</span>
+        <span *ngIf="testStatus === 'fail'">✗ Could not reach server — check the address and ensure the server is running</span>
+        <span *ngIf="testStatus === 'testing'">Testing connection…</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="setup-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="onTest()"
+          [disabled]="isTesting || !serverUrl"
+          id="test-connection-btn"
+        >
+          <span *ngIf="!isTesting">Test Connection</span>
+          <span *ngIf="isTesting">Testing…</span>
+        </button>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="!serverUrl"
+          id="save-server-config-btn"
+        >
+          Connect &amp; Continue
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ActivityLog, ActivityAction } from './entities/activity-log.entity';
+import { ActivityAction, ActivityLog } from './entities/activity-log.entity';
 
 export interface LogActivityDto {
   action: ActivityAction;

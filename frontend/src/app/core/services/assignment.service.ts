@@ -1,9 +1,9 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AssignmentOfflineService } from './assignment-offline.service';
 import { withOfflineFallback } from '../utils/offline-operators';
+import { AssignmentOfflineService } from './assignment-offline.service';
 
 export interface Assignment {
   id: string;
@@ -31,13 +31,28 @@ export class AssignmentService {
   private http = inject(HttpClient);
   private assignmentOffline = inject(AssignmentOfflineService);
 
+  private assignmentsCache$?: Observable<Assignment[]>;
+
   getAssignments(assetId?: string): Observable<Assignment[]> {
-    const url = assetId 
-      ? `${environment.apiUrl}/assignments?assetId=${assetId}`
-      : `${environment.apiUrl}/assignments`;
-    return this.http.get<Assignment[]>(url).pipe(
-      withOfflineFallback(() => this.assignmentOffline.getAll())
-    );
+    if (assetId) {
+      const url = `${environment.apiUrl}/assignments?assetId=${assetId}`;
+      return this.http.get<Assignment[]>(url);
+    }
+
+    if (!this.assignmentsCache$) {
+      this.assignmentsCache$ = this.http.get<Assignment[]>(`${environment.apiUrl}/assignments`).pipe(
+        tap(res => {
+          this.assignmentOffline.bulkSave(res).catch(err => console.error('Failed to cache assignments', err));
+        }),
+        withOfflineFallback(() => this.assignmentOffline.getAll()),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+    }
+    return this.assignmentsCache$;
+  }
+
+  invalidateAssignmentsCache(): void {
+    this.assignmentsCache$ = undefined;
   }
 
   getAssignmentById(id: string): Observable<Assignment> {

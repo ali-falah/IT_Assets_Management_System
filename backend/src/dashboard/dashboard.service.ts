@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Asset } from '../assets/entities/asset.entity';
-import { Status } from '../statuses/entities/status.entity';
 import { Assignment } from '../assignments/entities/assignment.entity';
 import { Maintenance } from '../maintenance/entities/maintenance.entity';
+import { Status } from '../statuses/entities/status.entity';
 
 @Injectable()
 export class DashboardService {

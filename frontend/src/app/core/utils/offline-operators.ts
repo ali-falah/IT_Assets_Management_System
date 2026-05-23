@@ -1,4 +1,4 @@
-import { Observable, catchError, from, throwError, OperatorFunction } from 'rxjs';
+import { Observable, OperatorFunction, catchError, from, throwError } from 'rxjs';
 
 /**
  * Custom RxJS operator to handle offline fallbacks gracefully.

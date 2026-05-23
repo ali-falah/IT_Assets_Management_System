@@ -26,11 +26,13 @@
       <div class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Location Name</label>
-          <input type="text" [(ngModel)]="addingLoc ? newLoc.name : editLocData.name" placeholder="e.g. Headquarters" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="addingLoc" type="text" [(ngModel)]="newLoc.name" placeholder="e.g. Headquarters" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
+          <input *ngIf="!addingLoc" type="text" [(ngModel)]="editLocData.name" placeholder="e.g. Headquarters" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Full Address</label>
-          <textarea [(ngModel)]="addingLoc ? newLoc.address : editLocData.address" rows="3" placeholder="Full physical address" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none"></textarea>
+          <textarea *ngIf="addingLoc" [(ngModel)]="newLoc.address" rows="3" placeholder="Full physical address" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none"></textarea>
+          <textarea *ngIf="!addingLoc" [(ngModel)]="editLocData.address" rows="3" placeholder="Full physical address" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none"></textarea>
         </div>
       </div>
 

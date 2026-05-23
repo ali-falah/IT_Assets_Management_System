@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Status, Category, Location } from './master-data.service';
+import { Category, Location, Status } from './master-data.service';
 import { OfflineStorageService } from './offline-storage.service';
 
 @Injectable({

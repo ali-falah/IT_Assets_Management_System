@@ -1,33 +1,36 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { LucideAngularModule, TriangleAlert, CheckCircle, Package, Scan, Trash2, X, Plus, SearchCode, ZapOff } from 'lucide-angular';
-import { ZXingScannerModule } from '@zxing/ngx-scanner';
-import { BarcodeFormat } from '@zxing/library';
-import { AssetService, Asset } from '../../core/services/asset.service';
-import { UserService } from '../../core/services/user.service';
-import { MasterDataService, Status } from '../../core/services/master-data.service';
-import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
-import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ChangeDetectorRef, NgZone, OnDestroy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { OfflineManagerService } from '../../core/services/offline-manager.service';
+import { Router, RouterModule } from '@angular/router';
+import { BarcodeFormat } from '@zxing/library';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
+import { LucideAngularModule } from 'lucide-angular';
+import { ToastrService } from 'ngx-toastr';
 import { map } from 'rxjs';
+import { Asset, AssetService } from '../../core/services/asset.service';
+import { Location, MasterDataService, Status } from '../../core/services/master-data.service';
+import { OfflineManagerService } from '../../core/services/offline-manager.service';
+import { UserService } from '../../core/services/user.service';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, ZXingScannerModule, SearchableSelectComponent, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, ZXingScannerModule, SearchableSelectComponent, ConfirmationModalComponent, FormsModule, ReactiveFormsModule],
   templateUrl: './scanner.component.html',
-  styleUrls: ['./scanner.component.css']
+  styleUrls: ['./scanner.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScannerComponent implements OnInit {
+export class ScannerComponent implements OnInit, OnDestroy {
   private assetService = inject(AssetService);
   private userService = inject(UserService);
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
   private router = inject(Router);
   private offlineManager = inject(OfflineManagerService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   isOffline$ = this.offlineManager.getOnlineStatus().pipe(map(online => !online));
 
@@ -39,6 +42,14 @@ export class ScannerComponent implements OnInit {
   statuses: Status[] = [];
   availableStatusId: string | null = null;
   assignedStatusId: string | null = null;
+
+  locations: any[] = [];
+  selectedLocationId: string | null = null;
+  selectedStatusId: string | null = null;
+
+  showLaptopWarningModal = false;
+  laptopWarningMessage = '';
+  pendingSavePayload: any = null;
 
   formatsEnabled: BarcodeFormat[] = [
     BarcodeFormat.CODE_128,
@@ -93,6 +104,18 @@ export class ScannerComponent implements OnInit {
   ngOnInit() {
     this.loadEmployees();
     this.loadStatuses();
+    this.loadLocations();
+  }
+
+  ngOnDestroy() {}
+
+  loadLocations() {
+    this.masterDataService.getLocations().subscribe(res => {
+      this.locations = res.map((l: any) => ({
+        id: l.id,
+        name: l.name
+      }));
+    });
   }
 
   loadEmployees() {
@@ -136,13 +159,8 @@ export class ScannerComponent implements OnInit {
     this.lastScannedCode = resultString;
     this.lastScannedTime = now;
 
-    if (this.batchMode) {
-      this.isScanningPaused = true;
-      this.searchAsset(resultString);
-    } else {
-      this.scannerEnabled = false;
-      this.searchAsset(resultString);
-    }
+    this.isScanningPaused = true;
+    this.searchAsset(resultString);
   }
 
   searchAsset(term: string) {
@@ -167,6 +185,9 @@ export class ScannerComponent implements OnInit {
             this.resumeScanning();
           } else {
             this.scannedAsset = asset;
+            this.selectedEmployeeId = asset.assignedUserId || null;
+            this.selectedLocationId = asset.locationId || null;
+            this.selectedStatusId = asset.statusId || null;
           }
         } else {
           this.playBeep('error');
@@ -177,10 +198,11 @@ export class ScannerComponent implements OnInit {
             this.resumeScanning();
           } else {
             this.notFoundCode = normalizedTerm;
-            this.scannerEnabled = false;
+            this.isScanningPaused = true;
           }
         }
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Error searching for asset');
@@ -188,8 +210,9 @@ export class ScannerComponent implements OnInit {
         if (this.batchMode) {
           this.resumeScanning();
         } else {
-          this.scannerEnabled = true;
+          this.isScanningPaused = false;
         }
+        this.cdr.detectChanges();
       }
     });
   }
@@ -197,6 +220,7 @@ export class ScannerComponent implements OnInit {
   private resumeScanning() {
     setTimeout(() => {
       this.isScanningPaused = false;
+      this.cdr.detectChanges();
     }, 2000);
   }
 
@@ -267,10 +291,12 @@ export class ScannerComponent implements OnInit {
         this.toastr.success(`Assigned ${ids.length} assets successfully`);
         this.clearBatch();
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Bulk assignment failed');
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -287,10 +313,12 @@ export class ScannerComponent implements OnInit {
         this.toastr.success(`Returned ${ids.length} assets to stock`);
         this.clearBatch();
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Bulk return failed');
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -310,10 +338,12 @@ export class ScannerComponent implements OnInit {
         this.toastr.success(`Marked ${ids.length} assets for maintenance`);
         this.clearBatch();
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Bulk update failed');
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -341,7 +371,6 @@ export class ScannerComponent implements OnInit {
       const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
       this.currentDevice = backCamera || devices[0];
     }
-    // Give some time for the stream to initialize
     setTimeout(() => this.checkZoomCapabilities(), 2000);
   }
 
@@ -378,7 +407,6 @@ export class ScannerComponent implements OnInit {
           advanced: [{ zoom: value }]
         };
 
-        // Try to add image stabilization if supported
         const capabilities = this.videoTrack.getCapabilities() as any;
         if (capabilities.imageStabilizationMode) {
           constraints.advanced.push({ imageStabilizationMode: 'cinematic' });
@@ -416,48 +444,138 @@ export class ScannerComponent implements OnInit {
     this.scannedAsset = null;
     this.notFoundCode = null;
     this.selectedEmployeeId = null;
+    this.selectedLocationId = null;
+    this.selectedStatusId = null;
     this.scannerEnabled = true;
     this.isScanningPaused = false;
+    this.lastScannedCode = null;
+    this.cdr.detectChanges();
   }
 
-  async quickAssign() {
-    if (!this.scannedAsset || !this.selectedEmployeeId || !this.assignedStatusId) return;
-    this.isActionLoading = true;
-    this.assetService.updateAsset(this.scannedAsset.id, {
+  saveScannedAssetChanges() {
+    if (!this.scannedAsset) return;
+
+    const payload = {
       assignedUserId: this.selectedEmployeeId,
-      statusId: this.assignedStatusId || undefined
-    }).subscribe({
-      next: () => {
-        this.toastr.success('Asset assigned successfully');
-        this.reloadAsset();
-      },
-      error: () => {
-        this.toastr.error('Assignment failed');
-        this.isActionLoading = false;
-      }
-    });
+      locationId: this.selectedLocationId,
+      statusId: this.selectedStatusId
+    };
+
+    const catName = this.scannedAsset.category?.name?.toLowerCase() || '';
+    const isLaptop = catName === 'laptop' || catName === 'laptops' || catName.includes('laptop');
+    const newUserId = this.selectedEmployeeId;
+    const oldUserId = this.scannedAsset.assignedUserId;
+    const oldUserName = this.scannedAsset.assignedUser?.name || 'Unassigned';
+    const newUserName = this.employees.find(u => u.id === newUserId)?.name || 'Unassigned';
+
+    if (isLaptop && oldUserId && newUserId && newUserId !== oldUserId) {
+      this.isActionLoading = true;
+      this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+        next: (res: any) => {
+          this.ngZone.run(() => {
+            this.isActionLoading = false;
+            const existingLaptop = res.data.find((a: any) => 
+              a.id !== this.scannedAsset!.id && 
+              (a.category?.name?.toLowerCase() === 'laptop' || 
+               a.category?.name?.toLowerCase() === 'laptops' || 
+               a.category?.name?.toLowerCase().includes('laptop'))
+            );
+            if (existingLaptop) {
+              this.toastr.error(
+                `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring. Additionally, ${newUserName} already has a laptop assigned with serial ${existingLaptop.serialNumber || 'N/A'}.`,
+                'Transfer Blocked',
+                { timeOut: 8000 }
+              );
+            } else {
+              this.toastr.error(
+                `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`,
+                'Transfer Blocked',
+                { timeOut: 6000 }
+              );
+            }
+            this.cdr.detectChanges();
+          });
+        },
+        error: () => {
+          this.ngZone.run(() => {
+            this.isActionLoading = false;
+            this.toastr.error(`This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`);
+            this.cdr.detectChanges();
+          });
+        }
+      });
+      return;
+    }
+
+    if (isLaptop && newUserId && !oldUserId) {
+      this.isActionLoading = true;
+      this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
+        next: (res: any) => {
+          this.ngZone.run(() => {
+            this.isActionLoading = false;
+            const existingLaptop = res.data.find((a: any) => 
+              a.id !== this.scannedAsset!.id && 
+              (a.category?.name?.toLowerCase() === 'laptop' || 
+               a.category?.name?.toLowerCase() === 'laptops' || 
+               a.category?.name?.toLowerCase().includes('laptop'))
+            );
+            if (existingLaptop) {
+              this.pendingSavePayload = payload;
+              this.laptopWarningMessage = `This employee already has a laptop assigned (Serial: ${existingLaptop.serialNumber || 'N/A'}). Do you want to proceed?`;
+              this.showLaptopWarningModal = true;
+              this.cdr.detectChanges();
+            } else {
+              this.executeSaveScannedAssetChanges(payload);
+            }
+          });
+        },
+        error: () => {
+          this.ngZone.run(() => {
+            this.isActionLoading = false;
+            this.executeSaveScannedAssetChanges(payload);
+          });
+        }
+      });
+      return;
+    }
+
+    this.executeSaveScannedAssetChanges(payload);
   }
 
-  quickUnassign() {
-    if (!this.scannedAsset || !this.availableStatusId) return;
+  private executeSaveScannedAssetChanges(payload: any) {
+    if (!this.scannedAsset) return;
     this.isActionLoading = true;
-    this.assetService.updateAsset(this.scannedAsset.id, {
-      assignedUserId: null,
-      statusId: this.availableStatusId || undefined
-    }).subscribe({
+    this.assetService.updateAsset(this.scannedAsset.id, payload).subscribe({
       next: () => {
-        this.toastr.success('Assignment removed');
-        this.reloadAsset();
+        this.ngZone.run(() => {
+          this.toastr.success('Asset updated successfully');
+          this.reloadAsset();
+        });
       },
-      error: () => {
-        this.toastr.error('Failed to remove assignment');
-        this.isActionLoading = false;
+      error: (err: any) => {
+        this.ngZone.run(() => {
+          this.toastr.error(err.error?.message || 'Failed to update asset');
+          this.isActionLoading = false;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
 
-  async quickTransfer() {
-    this.quickAssign();
+  confirmLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    this.cdr.detectChanges();
+    if (this.pendingSavePayload) {
+      this.executeSaveScannedAssetChanges(this.pendingSavePayload);
+      this.pendingSavePayload = null;
+    }
+  }
+
+  cancelLaptopAssignment() {
+    this.showLaptopWarningModal = false;
+    this.cdr.detectChanges();
+    this.pendingSavePayload = null;
+    this.toastr.info('Assignment cancelled');
   }
 
   markMaintenance() {
@@ -477,10 +595,12 @@ export class ScannerComponent implements OnInit {
         this.scannedAsset = asset;
         this.selectedEmployeeId = null;
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         console.warn('Could not reload asset after action, using existing local data.');
         this.isActionLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

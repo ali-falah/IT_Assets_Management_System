@@ -1,16 +1,16 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Asset } from './entities/asset.entity';
+import { IsNull, Repository } from 'typeorm';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import { Assignment } from '../assignments/entities/assignment.entity';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { RedisService } from '../redis/redis.service';
-import { AssetImportDto } from './dto/asset-import.dto';
 import { CategoriesService } from '../categories/categories.service';
 import { LocationsService } from '../locations/locations.service';
+import { RedisService } from '../redis/redis.service';
 import { StatusesService } from '../statuses/statuses.service';
-import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import { AssetImportDto } from './dto/asset-import.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import { Asset } from './entities/asset.entity';
 
 @Injectable()
 export class AssetsService {
@@ -52,8 +52,13 @@ export class AssetsService {
           continue;
         }
 
-        // 2. Get or create Category (Smart identification from asset name)
-        const category = await this.categoriesService.identifyAndGetCategory(item.name);
+        // 2. Get or create Category
+        let category;
+        if (item.category) {
+          category = await this.categoriesService.getOrCreate(item.category);
+        } else {
+          category = await this.categoriesService.identifyAndGetCategory(item.name);
+        }
 
         // 3. Get or create Location
         const location = item.location
@@ -144,7 +149,7 @@ export class AssetsService {
     if (query.assignedUserId) qb.andWhere('asset.assignedUserId = :assignedUserId', { assignedUserId: query.assignedUserId });
 
     if (query.search) {
-      qb.andWhere('(asset.name ILIKE :search OR asset.serialNumber ILIKE :search)', { search: `%${query.search}%` });
+      qb.andWhere('(asset.name ILIKE :search OR asset.serialNumber ILIKE :search OR assignedUser.name ILIKE :search)', { search: `%${query.search}%` });
     }
 
     qb.skip((page - 1) * limit).take(limit);

@@ -37,4 +37,9 @@ export class UserOfflineService {
   async save(user: User): Promise<void> {
     return this.offlineStorage.save('users', user);
   }
+
+  async delete(id: string): Promise<void> {
+    return this.offlineStorage.delete('users', id);
+  }
 }
+

@@ -1,12 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { ActivityLogService, ActivityLog } from '../../../core/services/activity-log.service';
-import { AssignmentService, Assignment } from '../../../core/services/assignment.service';
-import { forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { forkJoin, from } from 'rxjs';
+import { ActivityLogService } from '../../../core/services/activity-log.service';
+import { AssignmentService } from '../../../core/services/assignment.service';
+import { Asset, AssetService } from '../../../core/services/asset.service';
+import { AssetOfflineService } from '../../../core/services/asset-offline.service';
+import { UserDetailDialogComponent } from '../../users/user-detail-dialog/user-detail-dialog.component';
+
 
 export interface UnifiedActivity {
   id: string;
@@ -16,6 +20,8 @@ export interface UnifiedActivity {
   entityName?: string;
   secondaryId?: string;
   secondaryName?: string;
+  assetSerialNumber?: string;
+  ownerName?: string;
   date: Date;
   isAssignment?: boolean;
 }
@@ -23,21 +29,33 @@ export interface UnifiedActivity {
 @Component({
   selector: 'app-activity-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, UserDetailDialogComponent],
   templateUrl: './activity-list.component.html',
-  styleUrls: ['./activity-list.component.css']
+  styleUrls: ['./activity-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityListComponent implements OnInit {
   private activityLogService = inject(ActivityLogService);
   private assignmentService = inject(AssignmentService);
+  private assetService = inject(AssetService);
+  private assetOffline = inject(AssetOfflineService);
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   activities: UnifiedActivity[] = [];
   loading = true;
   searchTerm = '';
+  showUserDetailDialog = false;
+  selectedUserIdForDialog: string | null = null;
 
   ngOnInit() {
     this.loadActivities();
+  }
+
+  openUserDialog(userId: string) {
+    if (!userId) return;
+    this.selectedUserIdForDialog = userId;
+    this.showUserDetailDialog = true;
   }
 
   get filteredActivities(): UnifiedActivity[] {
@@ -47,34 +65,75 @@ export class ActivityListComponent implements OnInit {
       a.message.toLowerCase().includes(term) ||
       (a.entityName || '').toLowerCase().includes(term) ||
       (a.secondaryName || '').toLowerCase().includes(term) ||
+      (a.assetSerialNumber || '').toLowerCase().includes(term) ||
+      (a.ownerName || '').toLowerCase().includes(term) ||
       this.actionLabel(a.action).toLowerCase().includes(term)
     );
   }
 
   loadActivities() {
     this.loading = true;
+    this.cdr.markForCheck();
 
     forkJoin({
       logs: this.activityLogService.getAll(300),
-      assignments: this.assignmentService.getAssignments()
+      assignments: this.assignmentService.getAssignments(),
+      assets: from(this.assetOffline.getAll())
     }).subscribe({
-      next: ({ logs, assignments }) => {
+      next: ({ logs, assignments, assets }) => {
+        const assetMap = new Map<string, Asset>();
+        assets.forEach(asset => {
+          assetMap.set(asset.id, asset);
+        });
+
+
         // Build unified list from ActivityLog table
-        const fromLogs: UnifiedActivity[] = logs.map(l => ({
-          id: l.id,
-          action: l.action,
-          message: l.message,
-          entityId: l.entityId,
-          entityName: l.entityName,
-          secondaryId: l.secondaryId,
-          secondaryName: l.secondaryName,
-          date: new Date(l.createdAt),
-        }));
+        const fromLogs: UnifiedActivity[] = logs.map(l => {
+          let serial = '';
+          let owner = 'Stock';
+          let secondaryId = l.secondaryId;
+          let secondaryName = l.secondaryName;
+
+          if (l.action.startsWith('asset_')) {
+            const asset = assetMap.get(l.entityId);
+            if (asset) {
+              serial = asset.serialNumber || '';
+              owner = asset.assignedUser?.name || 'Stock';
+              if (!secondaryId && asset.assignedUserId) {
+                secondaryId = asset.assignedUserId;
+                secondaryName = asset.assignedUser?.name;
+              }
+            }
+          }
+
+          if (l.meta && l.meta['serialNumber']) {
+            serial = l.meta['serialNumber'];
+          }
+          if (l.meta && l.meta['assignedUser']) {
+            owner = l.meta['assignedUser'];
+          }
+
+          return {
+            id: l.id,
+            action: l.action,
+            message: l.message,
+            entityId: l.entityId,
+            entityName: l.entityName,
+            secondaryId: secondaryId,
+            secondaryName: secondaryName,
+            assetSerialNumber: serial,
+            ownerName: owner,
+            date: new Date(l.createdAt),
+          };
+        });
 
         // Build unified list from Assignments (assign/return events)
         const fromAssignments: UnifiedActivity[] = [];
         for (const a of assignments) {
-          // Assignment event
+          const asset = assetMap.get(a.assetId);
+          const serial = asset?.serialNumber || a.asset?.serialNumber || '';
+          const owner = asset?.assignedUser?.name || a.user?.name || 'Stock';
+
           fromAssignments.push({
             id: `assign-${a.id}`,
             action: 'asset_assigned',
@@ -83,10 +142,12 @@ export class ActivityListComponent implements OnInit {
             entityName: a.asset?.name,
             secondaryId: a.userId,
             secondaryName: a.user?.name,
+            assetSerialNumber: serial,
+            ownerName: owner,
             date: new Date(a.assignedAt),
             isAssignment: true,
           });
-          // Return event
+
           if (a.returnedAt) {
             fromAssignments.push({
               id: `return-${a.id}`,
@@ -96,15 +157,14 @@ export class ActivityListComponent implements OnInit {
               entityName: a.asset?.name,
               secondaryId: a.userId,
               secondaryName: a.user?.name,
+              assetSerialNumber: serial,
+              ownerName: 'Stock',
               date: new Date(a.returnedAt),
               isAssignment: true,
             });
           }
         }
 
-        // Deduplicate: ActivityLog already contains asset_assigned/asset_returned from the
-        // assignment service call, but we prefer the enriched assignment name. Keep only
-        // assignment-derived records for those two actions.
         const nonAssignmentLogs = fromLogs.filter(
           l => l.action !== 'asset_assigned' && l.action !== 'asset_returned'
         );
@@ -113,10 +173,12 @@ export class ActivityListComponent implements OnInit {
           .sort((a, b) => b.date.getTime() - a.date.getTime());
 
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toastr.error('Failed to load activity history');
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
