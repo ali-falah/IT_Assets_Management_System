@@ -5,15 +5,22 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', sans-serif;
   background-color: theme('colors.background');
 }
 
-app-asset-list, app-user-list, app-dashboard, app-scanner, 
-app-locations, app-statuses, app-categories, app-settings {
+app-asset-list,
+app-user-list,
+app-dashboard,
+app-scanner,
+app-locations,
+app-statuses,
+app-categories,
+app-settings {
   display: flex;
   flex-direction: column;
   flex: 1 1 0%;
@@ -35,4 +42,8 @@ app-locations, app-statuses, app-categories, app-settings {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
+}
+
+.lucide-icon-search-translate-x {
+  translate: -70% 0;
 }

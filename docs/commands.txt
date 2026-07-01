@@ -1,0 +1,27 @@
+# 1. Set the correct Java & Android environment variables
+export JAVA_HOME=/home/ali/jdk21
+export ANDROID_HOME=/home/ali/Android/Sdk
+export NDK_HOME=/home/ali/Android/Sdk/ndk/29.0.13846066
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# 2. Go to the project and build the Production Release (No --debug flag)
+cd "/home/ali/Desktop/MyActiveCodes/IT Assets Inventory/frontend"
+npm run tauri:build
+
+# 3. Find your Android apksigner tool
+APKSIGNER=$(ls -1d /home/ali/Android/Sdk/build-tools/*/apksigner | tail -n 1)
+
+# 4. Sign the Production Release APK using your local dev key
+$APKSIGNER sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android "src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
+
+# 5. Install the new Production App (Note: This installs as a brand new app without the .debug suffix!)
+adb install -r "src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk"
+
+# 6. Launch the Production App on your screen
+adb shell monkey -p com.icc.itassets -c android.intent.category.LAUNCHER 1
+
+
+minio server ~/minio_data --console-address ":9001"
+
+
+

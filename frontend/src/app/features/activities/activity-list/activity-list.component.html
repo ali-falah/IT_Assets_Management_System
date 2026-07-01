@@ -8,15 +8,13 @@
 
     <div class="flex items-center space-x-3">
       <div class="relative flex-1 sm:w-72">
-        <lucide-icon name="search" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          placeholder="Search activity..."
-          class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm text-sm"
-        >
+        <lucide-icon name="search" [size]="16"
+          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Search activity..."
+          class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm text-sm">
       </div>
-      <button (click)="loadActivities()" class="p-2 text-slate-400 hover:text-primary transition-colors bg-white rounded-xl border border-slate-200 shadow-sm shrink-0">
+      <button (click)="loadActivities()"
+        class="p-2 text-slate-400 hover:text-primary transition-colors bg-white rounded-xl border border-slate-200 shadow-sm shrink-0">
         <lucide-icon name="refresh-cw" [size]="18" [class.animate-spin]="loading"></lucide-icon>
       </button>
     </div>
@@ -43,7 +41,8 @@
     </div>
 
     <!-- No search results -->
-    <div *ngIf="!loading && activities.length > 0 && filteredActivities.length === 0" class="flex flex-col items-center justify-center py-20 space-y-4">
+    <div *ngIf="!loading && activities.length > 0 && filteredActivities.length === 0"
+      class="flex flex-col items-center justify-center py-20 space-y-4">
       <div class="p-4 bg-slate-50 rounded-full text-slate-300">
         <lucide-icon name="search" [size]="32"></lucide-icon>
       </div>
@@ -52,13 +51,12 @@
 
     <!-- Activity feed -->
     <div *ngIf="!loading && filteredActivities.length > 0" class="divide-y divide-slate-50">
-      <div *ngFor="let activity of filteredActivities"
-           class="p-4 hover:bg-slate-50/60 transition-colors group">
+      <div *ngFor="let activity of filteredActivities" class="p-4 hover:bg-slate-50/60 transition-colors group">
         <div class="flex items-start space-x-4">
 
           <!-- Icon badge -->
           <div [ngClass]="actionColor(activity.action)"
-               class="p-2.5 rounded-xl shrink-0 transition-transform group-hover:scale-105">
+            class="p-2.5 rounded-xl shrink-0 transition-transform group-hover:scale-105">
             <lucide-icon [name]="actionIcon(activity.action)" [size]="18"></lucide-icon>
           </div>
 
@@ -66,10 +64,11 @@
           <div class="flex-1 min-w-0">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-1">
               <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    [ngClass]="actionColor(activity.action)">
+                [ngClass]="actionColor(activity.action)">
                 {{ actionLabel(activity.action) }}
               </span>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+              <span
+                class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
                 {{ formatDate(activity.date) }}
               </span>
             </div>
@@ -79,33 +78,42 @@
             <!-- Links row -->
             <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-500">
               <a *ngIf="activity.entityId && (activity.action.startsWith('asset'))"
-                 [routerLink]="['/assets', activity.entityId, 'edit']"
-                 class="flex items-center gap-1 text-primary hover:underline font-medium">
+                [routerLink]="['/assets', activity.entityId, 'edit']"
+                class="flex items-center gap-1 text-primary hover:underline font-medium">
                 <lucide-icon name="laptop" [size]="12"></lucide-icon>
                 View Asset
               </a>
-              <span *ngIf="activity.secondaryName && (activity.action === 'asset_assigned' || activity.action === 'asset_returned')" class="flex items-center gap-1">
+              <span
+                *ngIf="activity.secondaryName && (activity.action === 'asset_assigned' || activity.action === 'asset_returned')"
+                class="flex items-center gap-1">
                 <lucide-icon name="user" [size]="12"></lucide-icon>
-                <button (click)="openUserDialog(activity.secondaryId || '')" class="text-primary hover:underline font-medium outline-none text-left">
+                <button (click)="openUserDialog(activity.secondaryId || '')"
+                  class="text-primary hover:underline font-medium outline-none text-left">
                   {{ activity.secondaryName }}
                 </button>
               </span>
             </div>
 
             <!-- Enhanced Details Row -->
-            <div *ngIf="activity.assetSerialNumber || activity.ownerName" class="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs">
+            <div *ngIf="activity.assetSerialNumber || activity.ownerName"
+              class="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs">
               <!-- Serial Number -->
-              <span *ngIf="activity.assetSerialNumber" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
+              <span *ngIf="activity.assetSerialNumber"
+                class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
                 <lucide-icon name="hash" [size]="11" class="text-slate-400"></lucide-icon>
                 Serial: <span class="text-slate-800 font-bold select-all">{{ activity.assetSerialNumber }}</span>
               </span>
-              
+
               <!-- Owner / Assignment Status -->
-              <span *ngIf="activity.ownerName" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
+              <span *ngIf="activity.ownerName"
+                class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
                 <lucide-icon name="shield" [size]="11" class="text-slate-400"></lucide-icon>
-                Current Owner: 
-                <span *ngIf="activity.ownerName === 'Stock'" class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded uppercase text-[10px] tracking-wider">Stock</span>
-                <span *ngIf="activity.ownerName !== 'Stock'" class="text-indigo-600 font-bold hover:underline cursor-pointer" (click)="openUserDialog(activity.secondaryId || '')">
+                Current Owner:
+                <span *ngIf="activity.ownerName === 'Stock'"
+                  class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded uppercase text-[10px] tracking-wider">Stock</span>
+                <span *ngIf="activity.ownerName !== 'Stock'"
+                  class="text-indigo-600 font-bold hover:underline cursor-pointer"
+                  (click)="openUserDialog(activity.secondaryId || '')">
                   {{ activity.ownerName }}
                 </span>
               </span>
@@ -118,9 +126,6 @@
 </div>
 
 <!-- User Detail Dialog -->
-<app-user-detail-dialog
-  *ngIf="showUserDetailDialog && selectedUserIdForDialog"
-  [userId]="selectedUserIdForDialog"
-  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null"
-  (updated)="loadActivities()">
+<app-user-detail-dialog *ngIf="showUserDetailDialog && selectedUserIdForDialog" [userId]="selectedUserIdForDialog"
+  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null" (updated)="loadActivities()">
 </app-user-detail-dialog>

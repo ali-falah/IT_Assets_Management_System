@@ -7,7 +7,8 @@
     <div class="flex items-center justify-between gap-3">
       <div>
         <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">IT Assets</h1>
-        <p class="hidden sm:block text-slate-500 mt-0.5 text-xs lg:text-sm font-medium">Manage and track your company's physical equipment</p>
+        <p class="hidden sm:block text-slate-500 mt-0.5 text-xs lg:text-sm font-medium">Manage and track your company's
+          physical equipment</p>
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
@@ -23,19 +24,21 @@
         <div class="hidden lg:flex items-center gap-2">
           <!-- Save View -->
           <div class="relative">
-            <button (click)="showSaveViewInput = !showSaveViewInput"
-              [class.bg-indigo-50]="showSaveViewInput" [class.text-primary]="showSaveViewInput"
+            <button (click)="showSaveViewInput = !showSaveViewInput" [class.bg-indigo-50]="showSaveViewInput"
+              [class.text-primary]="showSaveViewInput"
               class="bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95"
               title="Save View">
               <lucide-icon name="bookmark" [size]="15"></lucide-icon>
               Save View
             </button>
-            <div *ngIf="showSaveViewInput" class="absolute right-0 top-full mt-2 z-20 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-64 animate-slide-in">
+            <div *ngIf="showSaveViewInput"
+              class="absolute right-0 top-full mt-2 z-20 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-64 animate-slide-in">
               <p class="text-xs font-bold text-slate-600 mb-2">Name this view</p>
               <div class="flex items-center gap-2">
                 <input [(ngModel)]="newViewName" placeholder="e.g. Broken Laptops" (keydown.enter)="saveCurrentView()"
                   class="flex-1 min-w-0 text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                <button (click)="saveCurrentView()" class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
+                <button (click)="saveCurrentView()"
+                  class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
               </div>
             </div>
           </div>
@@ -72,17 +75,13 @@
     <!-- Row 2: Search + mobile icon buttons -->
     <div class="flex items-center gap-2 mt-3">
       <div class="relative flex-1">
-        <lucide-icon name="search" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
-        <input type="text" (input)="onSearch($event)"
-          [value]="currentSearchTerm"
-          placeholder="Search assets..."
+        <lucide-icon name="search" [size]="15"
+          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
+        <input type="text" (input)="onSearch($event)" [value]="currentSearchTerm" placeholder="Search assets..."
           class="w-full pl-8 pr-9 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none placeholder:text-slate-400">
-        <button 
-          *ngIf="currentSearchTerm" 
-          (click)="clearSearch()"
+        <button *ngIf="currentSearchTerm" (click)="clearSearch()"
           class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-all active:scale-90"
-          title="Clear search"
-        >
+          title="Clear search">
           <lucide-icon name="x" [size]="14"></lucide-icon>
         </button>
       </div>
@@ -94,18 +93,20 @@
           <lucide-icon name="upload" [size]="16"></lucide-icon>
         </button>
         <div class="relative">
-          <button (click)="showSaveViewInput = !showSaveViewInput"
-            [class.bg-indigo-50]="showSaveViewInput" [class.text-primary]="showSaveViewInput"
+          <button (click)="showSaveViewInput = !showSaveViewInput" [class.bg-indigo-50]="showSaveViewInput"
+            [class.text-primary]="showSaveViewInput"
             class="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-colors"
             title="Save View">
             <lucide-icon name="bookmark" [size]="16"></lucide-icon>
           </button>
-          <div *ngIf="showSaveViewInput" class="absolute right-0 top-full mt-2 z-30 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-60 animate-slide-in">
+          <div *ngIf="showSaveViewInput"
+            class="absolute right-0 top-full mt-2 z-30 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-60 animate-slide-in">
             <p class="text-xs font-bold text-slate-600 mb-2">Name this view</p>
             <div class="flex items-center gap-2">
               <input [(ngModel)]="newViewName" placeholder="e.g. Broken Laptops" (keydown.enter)="saveCurrentView()"
                 class="flex-1 min-w-0 text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-              <button (click)="saveCurrentView()" class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
+              <button (click)="saveCurrentView()"
+                class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
             </div>
           </div>
         </div>
@@ -115,30 +116,38 @@
     <!-- Row 3: Filter pills — horizontally scrollable on mobile -->
     <div class="filter-pills custom-scrollbar mt-3">
       <button (click)="filterByStatus(null)" class="filter-pill" [class.active]="!selectedStatusId">All Assets</button>
-      <button *ngFor="let status of statuses" (click)="filterByStatus(status.id)"
-        class="filter-pill" [class.active]="selectedStatusId === status.id">{{ status.name }}</button>
+      <button *ngFor="let status of statuses" (click)="filterByStatus(status.id)" class="filter-pill"
+        [class.active]="selectedStatusId === status.id">{{ status.name }}</button>
 
       <div *ngIf="savedViews.length > 0" class="h-6 w-px bg-slate-200 self-center shrink-0 mx-1"></div>
 
       <button *ngFor="let view of savedViews" (click)="applyView(view)"
         class="saved-view-pill flex items-center gap-1.5">
-        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+        </svg>
         {{ view.name }}
-        <span *ngIf="view.searchTerm" class="text-[9px] font-mono bg-violet-200/60 text-violet-800 px-1.5 py-0.5 rounded-full">
+        <span *ngIf="view.searchTerm"
+          class="text-[9px] font-mono bg-violet-200/60 text-violet-800 px-1.5 py-0.5 rounded-full">
           "{{ view.searchTerm }}"
         </span>
-        <span (click)="deleteView(view, $event)" class="ml-0.5 hover:bg-violet-300/50 rounded-full p-0.5 transition-colors" title="Remove">×</span>
+        <span (click)="deleteView(view, $event)"
+          class="ml-0.5 hover:bg-violet-300/50 rounded-full p-0.5 transition-colors" title="Remove">×</span>
       </button>
     </div>
   </div>
 
-  <app-asset-import *ngIf="showImportModal" (close)="showImportModal = false" (imported)="loadAssets()"></app-asset-import>
+  <app-asset-import *ngIf="showImportModal" (close)="showImportModal = false"
+    (imported)="loadAssets()"></app-asset-import>
 
   <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
-  <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0" style="min-height: 400px;">
+  <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0"
+    style="min-height: 400px;">
 
     <!-- Refresh spinner overlay -->
-    <div *ngIf="loading && assets.length > 0" class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
+    <div *ngIf="loading && assets.length > 0"
+      class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
       <div class="w-8 h-8 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>
 
@@ -168,24 +177,12 @@
         </div>
       </div>
 
-      <ag-grid-angular
-        *ngIf="!loading || assets.length > 0"
-        class="ag-theme-quartz w-full flex-1"
-        [rowData]="assets"
-        [columnDefs]="columnDefs"
-        [defaultColDef]="defaultColDef"
-        [rowSelection]="{ mode: 'multiRow', enableClickSelection: false }"
-        [pagination]="true"
-        [paginationPageSize]="50"
-        [enableCellTextSelection]="true"
-        [ensureDomOrder]="true"
-        [stopEditingWhenCellsLoseFocus]="true"
-        [getRowId]="getRowId"
-        (gridReady)="onGridReady($event)"
-        (filterChanged)="onFilterChanged()"
-        (selectionChanged)="onSelectionChanged()"
-        [icons]="gridIcons"
-      ></ag-grid-angular>
+      <ag-grid-angular *ngIf="!loading || assets.length > 0" class="ag-theme-quartz w-full flex-1" [rowData]="assets"
+        [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+        [rowSelection]="{ mode: 'multiRow', enableClickSelection: false }" [pagination]="true" [paginationPageSize]="50"
+        [enableCellTextSelection]="true" [ensureDomOrder]="true" [stopEditingWhenCellsLoseFocus]="true"
+        [getRowId]="getRowId" (gridReady)="onGridReady($event)" (filterChanged)="onFilterChanged()"
+        (selectionChanged)="onSelectionChanged()" [icons]="gridIcons"></ag-grid-angular>
 
     </div>
 
@@ -215,7 +212,8 @@
         <lucide-icon name="package" [size]="48" class="mx-auto mb-4 text-slate-200"></lucide-icon>
         <p class="text-slate-400 font-semibold text-base">No assets found</p>
         <p class="text-slate-400 text-sm mt-1">Try a different filter or add a new asset</p>
-        <button routerLink="/assets/new" class="mt-5 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-md shadow-indigo-100 active:scale-95">
+        <button routerLink="/assets/new"
+          class="mt-5 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-md shadow-indigo-100 active:scale-95">
           + Add Asset
         </button>
       </div>
@@ -223,14 +221,15 @@
       <!-- Asset Cards -->
       <div *ngIf="assets.length > 0" class="space-y-3">
         <div *ngFor="let asset of assets"
-             class="asset-card bg-white rounded-2xl border border-slate-100 shadow-sm p-4 transition-all">
+          class="asset-card bg-white rounded-2xl border border-slate-100 shadow-sm p-4 transition-all">
 
           <!-- Card top row -->
           <div class="flex items-start justify-between gap-2 mb-3">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                   style="background: #f1f5f9; border: 1px solid #e2e8f0;">
-                <lucide-icon [name]="asset.category?.icon || 'package'" [size]="20" class="text-slate-500"></lucide-icon>
+                style="background: #f1f5f9; border: 1px solid #e2e8f0;">
+                <lucide-icon [name]="asset.category?.icon || 'package'" [size]="20"
+                  class="text-slate-500"></lucide-icon>
               </div>
               <div class="min-w-0">
                 <h3 class="font-bold text-slate-800 text-sm leading-tight truncate">{{ asset.name }}</h3>
@@ -239,8 +238,7 @@
             </div>
 
             <!-- Inline status badge / selector -->
-            <select
-              [value]="asset.status?.id || asset.statusId"
+            <select [value]="asset.status?.id || asset.statusId"
               (change)="onMobileStatusChange(asset, $any($event).target.value)"
               class="shrink-0 text-[11px] font-bold rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer ml-1"
               [ngStyle]="{'background': '#f1f5f9', 'color': '#64748b'}">
@@ -256,8 +254,10 @@
             </div>
             <div>
               <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Assigned To</p>
-              <p *ngIf="!asset.assignedUserId" class="text-xs font-semibold text-slate-700 mt-0.5 truncate">Unassigned</p>
-              <button *ngIf="asset.assignedUserId" (click)="openUserDialog(asset.assignedUserId)" class="text-xs font-semibold text-primary hover:underline mt-0.5 truncate outline-none text-left block w-full">
+              <p *ngIf="!asset.assignedUserId" class="text-xs font-semibold text-slate-700 mt-0.5 truncate">Unassigned
+              </p>
+              <button *ngIf="asset.assignedUserId" (click)="openUserDialog(asset.assignedUserId)"
+                class="text-xs font-semibold text-primary hover:underline mt-0.5 truncate outline-none text-left block w-full">
                 {{ asset.assignedUser?.name }}
               </button>
             </div>
@@ -270,7 +270,7 @@
           <!-- Card actions -->
           <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
             <a [routerLink]="['/assets', asset.id, 'edit']"
-               class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
+              class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
               <lucide-icon name="pencil" [size]="13"></lucide-icon>
               Edit
             </a>
@@ -279,7 +279,7 @@
               <lucide-icon name="copy" [size]="13"></lucide-icon>
               Clone
             </button>
-            <button (click)="deleteAsset(asset)"
+            <button type="button" (click)="$event.stopPropagation(); confirmDeleteSingle(asset)"
               class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
               <lucide-icon name="trash-2" [size]="13"></lucide-icon>
               Delete
@@ -292,42 +292,24 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<app-confirmation-modal
-  [show]="showConfirmDelete && !showUnassignConfirm"
-  title="Delete Asset?"
-  [message]="deleteType === 'single'
+<app-confirmation-modal [show]="showConfirmDelete && !showUnassignConfirm" title="Delete Asset?" [message]="deleteType === 'single'
     ? 'Are you sure you want to delete <strong>' + (assetToDelete?.name || 'this asset') + '</strong>? This action is permanent and cannot be undone.'
     : 'Are you sure you want to delete the ' + selectedCount + ' selected assets? This action is permanent.'"
-  confirmText="Yes, Delete"
-  (confirm)="executeDelete(false)"
-  (cancel)="cancelDelete()">
+  confirmText="Yes, Delete" (confirm)="executeDelete(false)" (cancel)="cancelDelete()">
 </app-confirmation-modal>
 
 <!-- Unassign & Delete Confirmation (409 Conflict) -->
-<app-confirmation-modal
-  [show]="showUnassignConfirm"
-  title="Asset is Assigned"
-  [message]="unassignErrorMsg + ' Do you want to unassign it and delete it anyway?'"
-  confirmText="Unassign & Delete"
-  (confirm)="executeDelete(true)"
-  (cancel)="showUnassignConfirm = false; showConfirmDelete = false">
+<app-confirmation-modal [show]="showUnassignConfirm" title="Asset is Assigned"
+  [message]="unassignErrorMsg + ' Do you want to unassign it and delete it anyway?'" confirmText="Unassign & Delete"
+  (confirm)="executeDelete(true)" (cancel)="showUnassignConfirm = false; showConfirmDelete = false">
 </app-confirmation-modal>
 
 <!-- Double Laptop Assignment Warning Modal -->
-<app-confirmation-modal
-  [show]="showLaptopWarningModal"
-  title="Laptop Already Assigned"
-  [message]="laptopWarningMessage"
-  confirmText="Proceed"
-  cancelText="Cancel"
-  (confirm)="confirmLaptopAssignment()"
-  (cancel)="cancelLaptopAssignment()">
+<app-confirmation-modal [show]="showLaptopWarningModal" title="Laptop Already Assigned" [message]="laptopWarningMessage"
+  confirmText="Proceed" cancelText="Cancel" (confirm)="confirmLaptopAssignment()" (cancel)="cancelLaptopAssignment()">
 </app-confirmation-modal>
 
 <!-- User Detail Dialog -->
-<app-user-detail-dialog
-  *ngIf="showUserDetailDialog && selectedUserIdForDialog"
-  [userId]="selectedUserIdForDialog"
-  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null"
-  (updated)="loadAssets(currentFilters)">
+<app-user-detail-dialog *ngIf="showUserDetailDialog && selectedUserIdForDialog" [userId]="selectedUserIdForDialog"
+  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null" (updated)="loadAssets(currentFilters)">
 </app-user-detail-dialog>

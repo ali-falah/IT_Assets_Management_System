@@ -79,7 +79,7 @@ export class AssetNameRenderer implements ICellRendererAngularComp {
         <lucide-icon 
           name="search" 
           [size]="14" 
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
         ></lucide-icon>
         <input 
           #searchInput
@@ -196,7 +196,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   assets: Asset[] = [];
   selectedCount = 0;
   showImportModal = false;
-  
+
   // Modal states
   showConfirmDelete = false;
   showUnassignConfirm = false;
@@ -208,7 +208,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   laptopWarningMessage = 'This employee already has a laptop assigned. Do you want to proceed?';
   showUserDetailDialog = false;
   selectedUserIdForDialog: string | null = null;
-  
+
   loading = false;
   currentFilters: any = {};
   statuses: Status[] = [];
@@ -291,7 +291,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
-    
+
     // 1. Restore floating filter toggle state
     const savedStateStr = localStorage.getItem('assets_table_state');
     if (savedStateStr) {
@@ -303,7 +303,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         console.warn('Could not restore floating filter state:', e);
       }
     }
-    
+
     this.rebuildColumnDefs();
 
     // 2. Restore AG Grid column filter model
@@ -344,10 +344,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.selectedStatusId = statusId;
     this.currentFilters = { ...this.currentFilters, statusId };
     if (!statusId) delete this.currentFilters.statusId;
-    
+
     const loadParams = { ...this.currentFilters };
     if (this.currentSearchTerm) loadParams.search = this.currentSearchTerm;
-    
+
     this.loadAssets(loadParams);
     this.saveTableState();
   }
@@ -417,6 +417,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.assetToDelete = asset;
     this.deleteType = 'single';
     this.showConfirmDelete = true;
+    this.cdr.detectChanges();
   }
 
   /** Mobile card: optimistic remove + 6s undo toast */
@@ -488,6 +489,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     if (this.selectedCount === 0) return;
     this.deleteType = 'bulk';
     this.showConfirmDelete = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
@@ -519,7 +521,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     } else if (this.deleteType === 'bulk') {
       const selectedNodes = this.gridApi.getSelectedNodes();
       const ids = selectedNodes.map(node => node.data.id);
-      
+
       this.assetService.bulkDeleteAssets(ids, force).subscribe({
         next: (res: any) => {
           if (res.errors && res.errors.length > 0 && !force) {
@@ -606,15 +608,15 @@ export class AssetListComponent implements OnInit, OnDestroy {
   // ── Column Definitions ─────────────────────────────────────────────
   buildColumnDefs(): ColDef[] {
     return [
-      { 
-        field: 'name', 
-        headerName: 'Asset Name', 
+      {
+        field: 'name',
+        headerName: 'Asset Name',
         flex: 2.5,
         cellRenderer: AssetNameRenderer
       },
-      { 
-        field: 'serialNumber', 
-        headerName: 'Serial No.', 
+      {
+        field: 'serialNumber',
+        headerName: 'Serial No.',
         flex: 1.8,
         cellRenderer: (params: any) => {
           if (!params.value) return '-';
@@ -635,9 +637,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
         }
       },
       { field: 'category.name', headerName: 'Category', flex: 1, cellClass: 'text-slate-500 font-medium' },
-      { 
-        field: 'status.name', 
-        headerName: 'Status', 
+      {
+        field: 'status.name',
+        headerName: 'Status',
         flex: 1.2,
         editable: (params: any) => !params.data?.assignedUserId,
         cellEditor: 'agSelectCellEditor',
@@ -666,9 +668,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           });
         }
       },
-      { 
-        field: 'location.name', 
-        headerName: 'Location', 
+      {
+        field: 'location.name',
+        headerName: 'Location',
         flex: 1.5,
         editable: true,
         cellEditor: SearchableCellEditorComponent,
@@ -703,9 +705,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
         }
 
       },
-      { 
-        field: 'assignedUser.name', 
-        headerName: 'Assigned To', 
+      {
+        field: 'assignedUser.name',
+        headerName: 'Assigned To',
         flex: 1.5,
         editable: true,
         cellEditor: SearchableCellEditorComponent,
@@ -763,11 +765,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
             if (isLaptop && oldUserName !== 'Unassigned' && newUserName !== 'Unassigned' && newUserId) {
               this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
                 next: (res: any) => {
-                  const existingLaptop = res.data.find((a: any) => 
-                    a.id !== params.data.id && 
-                    (a.category?.name?.toLowerCase() === 'laptop' || 
-                     a.category?.name?.toLowerCase() === 'laptops' || 
-                     a.category?.name?.toLowerCase().includes('laptop'))
+                  const existingLaptop = res.data.find((a: any) =>
+                    a.id !== params.data.id &&
+                    (a.category?.name?.toLowerCase() === 'laptop' ||
+                      a.category?.name?.toLowerCase() === 'laptops' ||
+                      a.category?.name?.toLowerCase().includes('laptop'))
                   );
                   if (existingLaptop) {
                     this.toastr.error(
@@ -796,11 +798,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
             if (isLaptop && newUserId) {
               this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
                 next: (res: any) => {
-                  const existingLaptop = res.data.find((a: any) => 
-                    a.id !== params.data.id && 
-                    (a.category?.name?.toLowerCase() === 'laptop' || 
-                     a.category?.name?.toLowerCase() === 'laptops' || 
-                     a.category?.name?.toLowerCase().includes('laptop'))
+                  const existingLaptop = res.data.find((a: any) =>
+                    a.id !== params.data.id &&
+                    (a.category?.name?.toLowerCase() === 'laptop' ||
+                      a.category?.name?.toLowerCase() === 'laptops' ||
+                      a.category?.name?.toLowerCase().includes('laptop'))
                   );
                   if (existingLaptop) {
                     this.pendingAssignment = {
@@ -869,7 +871,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   rowSelection: 'single' | 'multiple' = 'multiple';
   showFloatingFilters = false;
-  
+
   ngOnInit() {
     // Load master data first (statuses, locations, users) in ONE parallel call
     this.loadMasterData();
@@ -909,7 +911,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           this.currentFilters = {};
         }
       }
-      
+
       const loadParams: any = {};
       Object.keys(this.currentFilters).forEach(key => {
         if (this.currentFilters[key]) loadParams[key] = this.currentFilters[key];
@@ -922,7 +924,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       this.saveTableState();
     });
     this.subs.push(qpSub);
-    
+
     const searchSub = this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(searchTerm => {
       this.currentSearchTerm = searchTerm;
       const params: any = { ...this.currentFilters, search: searchTerm };
