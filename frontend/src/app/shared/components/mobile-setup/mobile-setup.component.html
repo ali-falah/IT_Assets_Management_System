@@ -38,7 +38,7 @@
             name="serverUrl"
             class="field-input"
             [class.error]="urlError"
-            placeholder="http://192.168.1.100:3000"
+            placeholder="http://192.168.0.102/api"
             autocomplete="url"
             inputmode="url"
             required
@@ -47,7 +47,7 @@
         </div>
         <p *ngIf="urlError" class="field-error">{{ urlError }}</p>
         <p class="field-hint">
-          Enter your server's local IP or domain (e.g. <code>http://192.168.1.100:3000</code>)
+          Enter your server's local IP (e.g. <code>http://192.168.0.102/api</code> or <code>http://192.168.0.102</code>)
         </p>
       </div>
 

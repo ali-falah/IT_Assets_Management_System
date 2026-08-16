@@ -83,7 +83,10 @@ export class ServerConfigService {
   setApiUrl(url: string): void {
     if (!this.platform.isMobile) return;
 
-    const normalized = url.trim().replace(/\/+$/, '');
+    let normalized = url.trim().replace(/\/+$/, '');
+    if (!normalized.endsWith('/api') && !normalized.includes(':3000')) {
+      normalized = `${normalized}/api`;
+    }
     localStorage.setItem(this.STORAGE_KEY, normalized);
     this.addHistory(normalized);
     this._apiUrl$.next(normalized);

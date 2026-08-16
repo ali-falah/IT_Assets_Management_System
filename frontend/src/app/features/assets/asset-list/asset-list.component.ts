@@ -837,11 +837,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
         cellRenderer: (params: any) => {
           return `
             <div class="flex items-center gap-1 h-full">
-              <a href="/assets/${params.data.id}/edit"
-                 class="action-edit-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-primary rounded-lg transition-all"
-                 title="Edit">
+              <button class="action-edit-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-primary rounded-lg transition-all"
+                      title="Edit">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-              </a>
+              </button>
               <button class="action-clone-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-500 rounded-lg transition-all" title="Duplicate">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
               </button>
@@ -853,7 +852,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
         },
         onCellClicked: (params: any) => {
           const target = params.event?.target as HTMLElement;
-          if (target?.closest('.action-delete-btn')) this.confirmDeleteSingle(params.data);
+          if (target?.closest('.action-edit-btn')) this.router.navigate(['/assets', params.data.id, 'edit']);
+          else if (target?.closest('.action-delete-btn')) this.confirmDeleteSingle(params.data);
           else if (target?.closest('.action-clone-btn')) this.cloneAsset(params.data);
         }
       }

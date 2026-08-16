@@ -55,23 +55,31 @@ export class MobileSetupComponent {
 
     try {
       const controller = new AbortController();
-      // 8-second timeout (LAN can be slow on first connect)
       const timeout = setTimeout(() => controller.abort(), 8000);
 
-      const normalizedUrl = this.serverUrl.trim().replace(/\/+$/, '');
+      let targetUrl = this.serverUrl.trim().replace(/\/+$/, '');
+      if (!targetUrl.endsWith('/api') && !targetUrl.includes(':3000')) {
+        targetUrl = `${targetUrl}/api`;
+      }
 
-      // Use no-cors so we don't need the server to set CORS headers.
-      // Any response (even 404/500) means the server is reachable.
-      await fetch(`${normalizedUrl}/api`, {
+      await fetch(`${targetUrl}/`, {
         method: 'GET',
         signal: controller.signal,
-        mode: 'no-cors',
       });
 
       clearTimeout(timeout);
       this.testStatus = 'success';
-    } catch (e: any) {
-      this.testStatus = 'fail';
+    } catch {
+      try {
+        let fallbackUrl = this.serverUrl.trim().replace(/\/+$/, '');
+        if (!fallbackUrl.endsWith('/api') && !fallbackUrl.includes(':3000')) {
+          fallbackUrl = `${fallbackUrl}/api`;
+        }
+        await fetch(fallbackUrl, { method: 'GET', mode: 'no-cors' });
+        this.testStatus = 'success';
+      } catch {
+        this.testStatus = 'fail';
+      }
     } finally {
       this.isTesting = false;
     }

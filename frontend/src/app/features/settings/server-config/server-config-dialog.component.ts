@@ -67,19 +67,30 @@ export class ServerConfigDialogComponent implements OnInit {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const normalizedUrl = this.newUrl.trim().replace(/\/+$/, '');
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      let targetUrl = this.newUrl.trim().replace(/\/+$/, '');
+      if (!targetUrl.endsWith('/api') && !targetUrl.includes(':3000')) {
+        targetUrl = `${targetUrl}/api`;
+      }
 
-      await fetch(`${normalizedUrl}/health`, {
+      await fetch(`${targetUrl}/`, {
         method: 'GET',
         signal: controller.signal,
-        mode: 'no-cors',
       });
 
       clearTimeout(timeout);
       this.testStatus = 'success';
     } catch {
-      this.testStatus = 'fail';
+      try {
+        let fallbackUrl = this.newUrl.trim().replace(/\/+$/, '');
+        if (!fallbackUrl.endsWith('/api') && !fallbackUrl.includes(':3000')) {
+          fallbackUrl = `${fallbackUrl}/api`;
+        }
+        await fetch(fallbackUrl, { method: 'GET', mode: 'no-cors' });
+        this.testStatus = 'success';
+      } catch {
+        this.testStatus = 'fail';
+      }
     } finally {
       this.isTesting = false;
     }

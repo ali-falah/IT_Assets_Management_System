@@ -14,9 +14,9 @@ export const environment = {
   platform: 'mobile' as const,
 
   /**
-   * Point this to your NestJS backend.
-   * For local development/testing: use your machine's LAN IP.
-   * For production: use your deployed server URL.
+   * Point this to your NestJS backend (via Nginx reverse proxy).
+   * For local development/testing: use your machine's LAN IP + /api.
    */
-  apiUrl: 'http://192.168.1.100:3000',
+  apiUrl: 'http://192.168.0.102/api',
 };
+

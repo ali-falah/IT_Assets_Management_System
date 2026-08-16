@@ -103,8 +103,13 @@ export class OfflineManagerService {
   }
 
   private getQueue(): QueuedRequest[] {
-    const data = localStorage.getItem(this.QUEUE_KEY);
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = localStorage.getItem(this.QUEUE_KEY);
+      if (!data || data === 'undefined' || data === 'null') return [];
+      return JSON.parse(data);
+    } catch {
+      return [];
+    }
   }
 
   private saveQueue(queue: QueuedRequest[]): void {

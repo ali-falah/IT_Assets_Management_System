@@ -15,12 +15,17 @@ export const authGuard: CanActivateFn = (route, state) => {
 
 export const adminGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const userStr = localStorage.getItem('user');
+  const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
   
-  if (userStr) {
-    const user = JSON.parse(userStr);
-    if (user.role === 'admin') {
-      return true;
+  if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+    try {
+      const user = JSON.parse(userStr);
+      const roleName = typeof user.role === 'object' ? user.role?.name : user.role;
+      if (roleName === 'admin') {
+        return true;
+      }
+    } catch {
+      // ignore JSON parse error
     }
   }
 
