@@ -375,16 +375,25 @@ export class UserListComponent implements OnInit {
   }
 
   createUser() {
-    if (!this.newUser.name.trim() || !this.newUser.email.trim() || !this.newUser.password.trim()) {
-      this.toastr.warning('Please fill in all required fields');
+    if (!this.newUser.name.trim() || !this.newUser.password.trim()) {
+      this.toastr.warning('Please fill in Name and Password');
       return;
+    }
+    const payload: any = {
+      name: this.newUser.name.trim(),
+      password: this.newUser.password.trim(),
+      roleId: this.newUser.roleId || undefined,
+    };
+    if (this.newUser.email?.trim()) {
+      payload.email = this.newUser.email.trim();
     }
     this.saving = true;
     this.cdr.markForCheck();
-    this.http.post(`${environment.apiUrl}/auth/register`, this.newUser).subscribe({
+    this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe({
       next: () => {
         this.toastr.success('User created successfully');
         this.showModal = false;
+        this.newUser = { name: '', email: '', password: '', roleId: '' };
         this.loadUsers();
         this.cdr.detectChanges();
       },

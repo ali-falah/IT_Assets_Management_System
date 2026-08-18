@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { ServerConfigService } from '../../../core/services/server-config.service';
@@ -39,7 +39,8 @@ export class ServerConfigDialogComponent implements OnInit {
 
   constructor(
     private serverConfig: ServerConfigService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
   ) {
     this.history = this.serverConfig.getHistory();
   }
@@ -55,15 +56,20 @@ export class ServerConfigDialogComponent implements OnInit {
     this.newUrl = url;
     this.urlError = null;
     this.testStatus = null;
+    this.cdr.detectChanges();
   }
 
   // ---------------------------------------------------------------------------
 
   async onTest(): Promise<void> {
-    if (!this.validate()) return;
+    if (!this.validate()) {
+      this.cdr.detectChanges();
+      return;
+    }
 
     this.isTesting = true;
     this.testStatus = 'testing';
+    this.cdr.detectChanges();
 
     try {
       const controller = new AbortController();
@@ -80,6 +86,7 @@ export class ServerConfigDialogComponent implements OnInit {
 
       clearTimeout(timeout);
       this.testStatus = 'success';
+      this.toastr.success('Connected to backend server successfully!', 'Server Online');
     } catch {
       try {
         let fallbackUrl = this.newUrl.trim().replace(/\/+$/, '');
@@ -88,16 +95,22 @@ export class ServerConfigDialogComponent implements OnInit {
         }
         await fetch(fallbackUrl, { method: 'GET', mode: 'no-cors' });
         this.testStatus = 'success';
+        this.toastr.success('Connected to backend server successfully!', 'Server Online');
       } catch {
         this.testStatus = 'fail';
+        this.toastr.error('Unable to reach server. Please check IP address, port, and Wi-Fi.', 'Connection Failed');
       }
     } finally {
       this.isTesting = false;
+      this.cdr.detectChanges();
     }
   }
 
   onSave(): void {
-    if (!this.validate()) return;
+    if (!this.validate()) {
+      this.cdr.detectChanges();
+      return;
+    }
     this.serverConfig.setApiUrl(this.newUrl);
     this.currentUrl = this.serverConfig.getApiUrl();
     this.toastr.success('Server address updated. Changes apply immediately.', 'Saved');
@@ -109,6 +122,7 @@ export class ServerConfigDialogComponent implements OnInit {
     this.newUrl = this.serverConfig.getApiUrl();
     this.currentUrl = this.newUrl;
     this.testStatus = null;
+    this.cdr.detectChanges();
     this.toastr.info('Server address reset to default.', 'Reset');
   }
 

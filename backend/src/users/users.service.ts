@@ -28,9 +28,12 @@ export class UsersService {
   ) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findByEmail(createUserDto.email);
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+    const email = createUserDto.email?.trim() || null;
+    if (email) {
+      const existingUser = await this.findByEmail(email);
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists');
+      }
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -48,7 +51,12 @@ export class UsersService {
       roleId = viewer?.id;
     }
 
-    const user = this.usersRepository.create({ name: createUserDto.name, email: createUserDto.email, passwordHash, roleId });
+    const user = this.usersRepository.create({
+      name: createUserDto.name.trim(),
+      email: email || undefined,
+      passwordHash,
+      roleId
+    });
     const saved = await this.usersRepository.save(user);
 
     this.activityLogs.log({
@@ -82,15 +90,25 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
+    if (!email) return null;
     return this.usersRepository.findOne({ where: { email }, relations: ['role'] });
+  }
+
+  async findByName(name: string): Promise<User | null> {
+    if (!name) return null;
+    return this.usersRepository.findOne({ where: { name }, relations: ['role'] });
   }
 
   async update(id: string, updateUserDto: any): Promise<User> {
     const user = await this.findById(id);
 
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existing = await this.findByEmail(updateUserDto.email);
-      if (existing) throw new ConflictException('Email already in use');
+    if (updateUserDto.email !== undefined) {
+      const trimmedEmail = updateUserDto.email ? updateUserDto.email.trim() : null;
+      if (trimmedEmail && trimmedEmail !== user.email) {
+        const existing = await this.findByEmail(trimmedEmail);
+        if (existing) throw new ConflictException('Email already in use');
+      }
+      updateUserDto.email = trimmedEmail;
     }
 
     if (updateUserDto.password) {

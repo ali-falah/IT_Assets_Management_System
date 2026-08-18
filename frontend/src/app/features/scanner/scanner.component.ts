@@ -34,7 +34,7 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   isOffline$ = this.offlineManager.getOnlineStatus().pipe(map(online => !online));
 
-  hasPermission = false;
+  hasPermission = true;
   cameras: MediaDeviceInfo[] = [];
   currentDevice: MediaDeviceInfo | undefined = undefined;
   scannerEnabled = true;
@@ -105,6 +105,21 @@ export class ScannerComponent implements OnInit, OnDestroy {
     this.loadEmployees();
     this.loadStatuses();
     this.loadLocations();
+    this.initCamera();
+  }
+
+  private initCamera() {
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          this.hasPermission = true;
+          this.cdr.detectChanges();
+          stream.getTracks().forEach(t => t.stop());
+        })
+        .catch((err) => {
+          console.warn('Initial camera query:', err);
+        });
+    }
   }
 
   ngOnDestroy() {}
@@ -358,20 +373,42 @@ export class ScannerComponent implements OnInit, OnDestroy {
 
   onPermissionResponse(result: boolean) {
     this.hasPermission = result;
+    this.cdr.detectChanges();
   }
 
   requestPermission() {
-    this.hasPermission = true;
-    this.scannerEnabled = true;
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          this.hasPermission = true;
+          this.scannerEnabled = true;
+          this.cdr.detectChanges();
+          stream.getTracks().forEach(t => t.stop());
+        })
+        .catch(err => {
+          console.error('Camera permission request failed:', err);
+          this.hasPermission = false;
+          this.cdr.detectChanges();
+          this.toastr.error('Camera permission was denied. Please allow camera access in device settings.');
+        });
+    } else {
+      this.hasPermission = true;
+      this.scannerEnabled = true;
+      this.cdr.detectChanges();
+    }
   }
 
   onCamerasFound(devices: MediaDeviceInfo[]) {
     this.cameras = devices;
-    if (devices && devices.length > 0 && !this.currentDevice) {
-      const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
-      this.currentDevice = backCamera || devices[0];
+    if (devices && devices.length > 0) {
+      this.hasPermission = true;
+      if (!this.currentDevice) {
+        const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
+        this.currentDevice = backCamera || devices[0];
+      }
     }
-    setTimeout(() => this.checkZoomCapabilities(), 2000);
+    this.cdr.detectChanges();
+    setTimeout(() => this.checkZoomCapabilities(), 1000);
   }
 
   onDeviceChange(device: MediaDeviceInfo) {

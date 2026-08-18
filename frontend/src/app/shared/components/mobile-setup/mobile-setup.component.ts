@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 import { ServerConfigService } from '../../../core/services/server-config.service';
 
 type TestStatus = 'testing' | 'success' | 'fail' | null;
@@ -35,7 +36,11 @@ export class MobileSetupComponent {
   isTesting = false;
   history: string[] = [];
 
-  constructor(private serverConfig: ServerConfigService) {
+  constructor(
+    private serverConfig: ServerConfigService,
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
+  ) {
     this.history = this.serverConfig.getHistory();
   }
 
@@ -45,13 +50,18 @@ export class MobileSetupComponent {
     this.serverUrl = url;
     this.urlError = null;
     this.testStatus = null;
+    this.cdr.detectChanges();
   }
 
   async onTest(): Promise<void> {
-    if (!this.validate()) return;
+    if (!this.validate()) {
+      this.cdr.detectChanges();
+      return;
+    }
 
     this.isTesting = true;
     this.testStatus = 'testing';
+    this.cdr.detectChanges();
 
     try {
       const controller = new AbortController();
@@ -69,6 +79,7 @@ export class MobileSetupComponent {
 
       clearTimeout(timeout);
       this.testStatus = 'success';
+      this.toastr.success('Connected to backend server successfully!', 'Server Online');
     } catch {
       try {
         let fallbackUrl = this.serverUrl.trim().replace(/\/+$/, '');
@@ -77,16 +88,22 @@ export class MobileSetupComponent {
         }
         await fetch(fallbackUrl, { method: 'GET', mode: 'no-cors' });
         this.testStatus = 'success';
+        this.toastr.success('Connected to backend server successfully!', 'Server Online');
       } catch {
         this.testStatus = 'fail';
+        this.toastr.error('Unable to reach server. Please check IP address, port, and Wi-Fi.', 'Connection Failed');
       }
     } finally {
       this.isTesting = false;
+      this.cdr.detectChanges();
     }
   }
 
   onSave(): void {
-    if (!this.validate()) return;
+    if (!this.validate()) {
+      this.cdr.detectChanges();
+      return;
+    }
     this.serverConfig.setApiUrl(this.serverUrl);
     this.configured.emit();
   }
@@ -116,3 +133,4 @@ export class MobileSetupComponent {
     return true;
   }
 }
+

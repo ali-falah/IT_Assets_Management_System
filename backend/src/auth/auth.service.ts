@@ -12,8 +12,11 @@ export class AuthService {
     private redisService: RedisService,
   ) { }
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
+  async validateUser(identifier: string, pass: string): Promise<any> {
+    let user = await this.usersService.findByEmail(identifier);
+    if (!user) {
+      user = await this.usersService.findByName(identifier);
+    }
     if (user && await bcrypt.compare(pass, user.passwordHash)) {
       const roleName = user.role?.name ?? user.role;
       if (roleName === 'employee') {

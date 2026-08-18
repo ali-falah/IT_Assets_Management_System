@@ -79,7 +79,7 @@ export class UserDetailDialogComponent implements OnInit, OnChanges {
   initForm() {
     this.userForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.email]],
       roleId: ['', Validators.required],
       isActive: [true],
       password: [''] // Optional

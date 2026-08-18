@@ -7,9 +7,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
+
 
   @ApiProperty()
   @IsString()
