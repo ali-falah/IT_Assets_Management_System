@@ -163,14 +163,17 @@ export class AssetFormComponent implements OnInit, OnDestroy {
     if (file && file.type.startsWith('image/')) {
       this.processFile(file);
     } else if (file) {
-      this.toastr.warning('Only image files are supported for asset photos');
+      this.notifyWarning('Only image files are supported for asset photos');
     }
   }
 
   private processFile(file: File) {
     this.selectedFile = file;
     const reader = new FileReader();
-    reader.onload = () => { this.imageUrl = reader.result as string; };
+    reader.onload = () => { 
+      this.imageUrl = reader.result as string; 
+      this.cdr.markForCheck();
+    };
     reader.readAsDataURL(file);
   }
 
@@ -193,15 +196,25 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   }
 
   loadMasterData() {
-    this.masterDataService.getCategories().subscribe(res => this.categories = res);
-    this.masterDataService.getLocations().subscribe(res => this.locations = res);
+    this.masterDataService.getCategories().subscribe(res => {
+      this.categories = res;
+      this.cdr.markForCheck();
+    });
+    this.masterDataService.getLocations().subscribe(res => {
+      this.locations = res;
+      this.cdr.markForCheck();
+    });
     this.masterDataService.getStatuses().subscribe(res => {
       this.statuses = res;
       if (!this.isEditMode && this.statuses.length > 0) {
         this.assetForm.patchValue({ statusId: this.statuses[0].id });
       }
+      this.cdr.markForCheck();
     });
-    this.userService.getUsers().subscribe(res => this.users = res);
+    this.userService.getUsers().subscribe(res => {
+      this.users = res;
+      this.cdr.markForCheck();
+    });
   }
 
   loadAssetData(id: string) {
@@ -226,9 +239,10 @@ export class AssetFormComponent implements OnInit, OnDestroy {
         if (asset.imageUrl) {
           this.imageUrl = asset.imageUrl;
         }
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.toastr.error('Failed to load asset details');
+        this.notifyError('Failed to load asset details');
         this.router.navigate(['/assets']);
       }
     });
@@ -242,6 +256,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   removeImage() {
     this.selectedFile = null;
     this.imageUrl = null;
+    this.cdr.markForCheck();
   }
 
   async uploadImage(): Promise<string | null> {
@@ -255,7 +270,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       const response = await this.http.post<{url: string}>(`${environment.apiUrl}/files/upload`, formData).toPromise();
       return response?.url || null;
     } catch (error) {
-      this.toastr.error('Image upload failed');
+      this.notifyError('Image upload failed');
       return null;
     }
   }
@@ -275,6 +290,22 @@ export class AssetFormComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  private notifySuccess(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.success(msg, title, opts), 0);
+  }
+
+  private notifyError(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.error(msg, title, opts), 0);
+  }
+
+  private notifyWarning(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.warning(msg, title, opts), 0);
+  }
+
+  private notifyInfo(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.info(msg, title, opts), 0);
   }
 
   async onSubmit() {
@@ -301,6 +332,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       
       if (isLaptop && oldUserId && newUserId && newUserId !== oldUserId) {
         this.loading = true;
+        this.cdr.markForCheck();
         this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
           next: (res: any) => {
             this.ngZone.run(() => {
@@ -312,26 +344,26 @@ export class AssetFormComponent implements OnInit, OnDestroy {
                  a.category?.name?.toLowerCase().includes('laptop'))
               );
               if (existingLaptop) {
-                this.toastr.error(
+                this.notifyError(
                   `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring. Additionally, ${newUserName} already has a laptop assigned with serial ${existingLaptop.serialNumber || 'N/A'}.`,
                   'Transfer Blocked',
                   { timeOut: 8000 }
                 );
               } else {
-                this.toastr.error(
+                this.notifyError(
                   `This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`,
                   'Transfer Blocked',
                   { timeOut: 6000 }
                 );
               }
-              this.cdr.detectChanges();
+              this.cdr.markForCheck();
             });
           },
           error: () => {
             this.ngZone.run(() => {
               this.loading = false;
-              this.toastr.error(`This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`);
-              this.cdr.detectChanges();
+              this.notifyError(`This laptop is currently assigned to ${oldUserName} and must be returned to stock before transferring.`);
+              this.cdr.markForCheck();
             });
           }
         });
@@ -342,6 +374,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
     // Case B: Normal assignment flow (laptop is in stock / unassigned)
     if (isLaptop && newUserId) {
       this.loading = true;
+      this.cdr.markForCheck();
       this.assetService.getAssets({ assignedUserId: newUserId }).subscribe({
         next: (res: any) => {
           this.ngZone.run(() => {
@@ -356,7 +389,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
               this.laptopWarningMessage = `This employee already has a laptop assigned (Serial: ${existingLaptop.serialNumber || 'N/A'}). Do you want to proceed?`;
               this.showLaptopWarningModal = true;
               this.loading = false;
-              this.cdr.detectChanges();
+              this.cdr.markForCheck();
             } else {
               this.executeFormSubmit(formValue);
             }
@@ -375,6 +408,7 @@ export class AssetFormComponent implements OnInit, OnDestroy {
 
   async executeFormSubmit(formValue: any) {
     this.loading = true;
+    this.cdr.markForCheck();
     try {
       if (this.selectedFile) {
         const uploadedUrl = await this.uploadImage();
@@ -385,23 +419,24 @@ export class AssetFormComponent implements OnInit, OnDestroy {
 
       if (this.isEditMode && this.assetId) {
         await this.assetService.updateAsset(this.assetId, formValue).toPromise();
-        this.toastr.success('Asset updated successfully');
+        this.notifySuccess('Asset updated successfully');
       } else {
         await this.assetService.createAsset(formValue).toPromise();
-        this.toastr.success('Asset created successfully');
+        this.notifySuccess('Asset created successfully');
       }
       this.clearDraft();
       this.router.navigate(['/assets']);
     } catch (error) {
-      this.toastr.error(this.isEditMode ? 'Failed to update asset' : 'Failed to create asset');
+      this.notifyError(this.isEditMode ? 'Failed to update asset' : 'Failed to create asset');
     } finally {
       this.loading = false;
+      this.cdr.markForCheck();
     }
   }
 
   confirmLaptopAssignment() {
     this.showLaptopWarningModal = false;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
     if (this.pendingSubmission) {
       this.executeFormSubmit(this.pendingSubmission);
       this.pendingSubmission = null;
@@ -410,9 +445,9 @@ export class AssetFormComponent implements OnInit, OnDestroy {
 
   cancelLaptopAssignment() {
     this.showLaptopWarningModal = false;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
     this.pendingSubmission = null;
-    this.toastr.info('Assignment cancelled');
+    this.notifyInfo('Assignment cancelled');
   }
 
   createNewCategory(name: string) {
@@ -420,9 +455,9 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       next: (category) => {
         this.categories = [...this.categories, category];
         this.assetForm.patchValue({ categoryId: category.id });
-        this.toastr.success(`Category "${name}" created`);
+        this.notifySuccess(`Category "${name}" created`);
       },
-      error: () => this.toastr.error('Failed to create category')
+      error: () => this.notifyError('Failed to create category')
     });
   }
 
@@ -431,9 +466,9 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       next: (location) => {
         this.locations = [...this.locations, location];
         this.assetForm.patchValue({ locationId: location.id });
-        this.toastr.success(`Location "${name}" created`);
+        this.notifySuccess(`Location "${name}" created`);
       },
-      error: () => this.toastr.error('Failed to create location')
+      error: () => this.notifyError('Failed to create location')
     });
   }
 }

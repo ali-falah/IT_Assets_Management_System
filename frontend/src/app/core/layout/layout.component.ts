@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { LucideAngularModule } from 'lucide-angular';
@@ -26,10 +26,14 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   private offlineManager = inject(OfflineManagerService);
   private platform = inject(PlatformService);
+  private cdr = inject(ChangeDetectorRef);
   private routerSubscription?: Subscription;
   private searchSubscription?: Subscription;
 
-  isCollapsed = false;
+  isCollapsed = localStorage.getItem('sidebar_collapsed') !== null
+    ? localStorage.getItem('sidebar_collapsed') === 'true'
+    : true; // Default closed
+
   isProfileMenuOpen = false;
   isCommandPaletteOpen = false;
   isMobile = this.platform.isMobile;
@@ -107,15 +111,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   private checkScreenSize() {
-    if (window.innerWidth < 1024) {
-      this.isCollapsed = true;
+    const saved = localStorage.getItem('sidebar_collapsed');
+    if (saved !== null) {
+      this.isCollapsed = saved === 'true';
     } else {
-      this.isCollapsed = false;
+      this.isCollapsed = true; // Default closed
     }
   }
 
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;
+    localStorage.setItem('sidebar_collapsed', String(this.isCollapsed));
+    this.cdr.markForCheck();
   }
 
   toggleProfileMenu(event?: MouseEvent) {

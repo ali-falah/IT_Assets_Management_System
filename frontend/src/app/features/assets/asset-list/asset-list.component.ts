@@ -231,11 +231,26 @@ export class AssetListComponent implements OnInit, OnDestroy {
     sortDescending: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1;"><path d="m19 12-7 7-7-7"/><path d="M12 5v14"/></svg>'
   };
 
+  private notifySuccess(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.success(msg, title, opts), 0);
+  }
+
+  private notifyError(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.error(msg, title, opts), 0);
+  }
+
+  private notifyWarning(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.warning(msg, title, opts), 0);
+  }
+
+  private notifyInfo(msg: string, title?: string, opts?: any) {
+    setTimeout(() => this.toastr.info(msg, title, opts), 0);
+  }
+
   loadAssets(params: any = {}) {
     if (this.assetsSub) {
       this.assetsSub.unsubscribe();
     }
-
     this.loading = true;
     this.currentFilters = params;
     this.cdr.markForCheck();
@@ -244,12 +259,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         this.assets = res.data;
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.toastr.error('Failed to load assets');
+        this.notifyError('Failed to load assets');
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -641,16 +656,16 @@ export class AssetListComponent implements OnInit, OnDestroy {
         field: 'status.name',
         headerName: 'Status',
         flex: 1.2,
+        headerClass: 'ag-header-center',
+        cellClass: 'flex items-center justify-center text-center',
         editable: (params: any) => !params.data?.assignedUserId,
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: { values: this.statuses.map(s => s.name) },
         cellRenderer: (params: any) => {
           const colorClass = params.data?.status?.colorClass || 'bg-slate-100 text-slate-700';
           const name = params.value || 'Unknown';
-          const editable = !params.data?.assignedUserId;
-          return `<div class="flex items-center gap-1.5 group/status">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${name}</span>
-            ${editable ? '<span class="opacity-0 group-hover/status:opacity-100 text-[10px] text-slate-400 transition-opacity">click to edit</span>' : ''}
+          return `<div class="flex items-center justify-center w-full">
+            <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${colorClass} tracking-wide shadow-xs">${name}</span>
           </div>`;
         },
         onCellValueChanged: (params: any) => {

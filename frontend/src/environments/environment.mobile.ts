@@ -17,6 +17,7 @@ export const environment = {
    * Point this to your NestJS backend (via Nginx reverse proxy).
    * For local development/testing: use your machine's LAN IP + /api.
    */
-  apiUrl: 'http://192.168.0.102/api',
+  apiUrl: 'http://192.168.0.103/api',
 };
+
 

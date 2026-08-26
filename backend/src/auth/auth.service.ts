@@ -17,7 +17,7 @@ export class AuthService {
     if (!user) {
       user = await this.usersService.findByName(identifier);
     }
-    if (user && await bcrypt.compare(pass, user.passwordHash)) {
+    if (user && user.passwordHash && await bcrypt.compare(pass, user.passwordHash)) {
       const roleName = user.role?.name ?? user.role;
       if (roleName === 'employee') {
         throw new UnauthorizedException('Employees do not have system access');

@@ -36,8 +36,11 @@ export class UsersService {
       }
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(createUserDto.password, salt);
+    let passwordHash: string | null = null;
+    if (createUserDto.password && createUserDto.password.trim()) {
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(createUserDto.password.trim(), salt);
+    }
 
     // Resolve roleId — accept either roleId (uuid) or role name string
     let roleId: string | undefined = (createUserDto as any).roleId;
@@ -46,15 +49,17 @@ export class UsersService {
       roleId = found?.id;
     }
     if (!roleId) {
-      // Default to 'viewer'
-      const viewer = await this.rolesRepository.findOne({ where: { name: 'viewer' } });
-      roleId = viewer?.id;
+      // Default to employee if no password, or viewer if password is set
+      const defaultRoleName = passwordHash ? 'viewer' : 'employee';
+      const defaultRole = await this.rolesRepository.findOne({ where: { name: defaultRoleName } })
+        || await this.rolesRepository.findOne({ where: { name: 'viewer' } });
+      roleId = defaultRole?.id;
     }
 
     const user = this.usersRepository.create({
       name: createUserDto.name.trim(),
       email: email || undefined,
-      passwordHash,
+      passwordHash: passwordHash || undefined,
       roleId
     });
     const saved = await this.usersRepository.save(user);

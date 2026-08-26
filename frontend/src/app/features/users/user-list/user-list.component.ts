@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -31,6 +31,7 @@ export class UserListComponent implements OnInit {
   private toastr = inject(ToastrService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   openUserDetail(userId: string) {
     this.selectedUserId = userId;
@@ -136,23 +137,29 @@ export class UserListComponent implements OnInit {
       field: 'role',
       headerName: 'Role',
       flex: 1,
+      headerClass: 'ag-header-center',
+      cellClass: 'flex items-center justify-center text-center',
       valueGetter: (params: any) => params.data.role?.name,
       cellRenderer: (params: any) => {
         const role = params.data.role;
         if (!role) return '';
         const colorClass = role.colorClass || 'bg-slate-100 text-slate-700';
-        return `<span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${colorClass}">${role.name}</span>`;
+        return `<div class="flex items-center justify-center w-full">
+          <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${colorClass}">${role.name}</span>
+        </div>`;
       }
     },
     {
       field: 'isActive',
       headerName: 'Status',
       flex: 1,
+      headerClass: 'ag-header-center',
+      cellClass: 'flex items-center justify-center text-center',
       cellRenderer: (params: any) => {
         return `
-          <div class="flex items-center">
-            <span class="h-2 w-2 rounded-full mr-2 ${params.value ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'}"></span>
-            <span class="text-xs font-medium ${params.value ? 'text-green-700' : 'text-red-700'}">${params.value ? 'Active' : 'Inactive'}</span>
+          <div class="flex items-center justify-center gap-1.5 w-full">
+            <span class="h-2 w-2 rounded-full ${params.value ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'}"></span>
+            <span class="text-xs font-semibold ${params.value ? 'text-green-700' : 'text-red-700'}">${params.value ? 'Active' : 'Inactive'}</span>
           </div>
         `;
       }
@@ -180,9 +187,13 @@ export class UserListComponent implements OnInit {
       onCellClicked: (params: any) => {
         const target = params.event?.target as HTMLElement;
         if (target?.closest('.user-delete-btn')) {
-          this.deleteUser(params.data.id);
+          this.ngZone.run(() => {
+            this.deleteUser(params.data.id);
+          });
         } else if (target?.closest('.user-view-btn')) {
-          this.openUserDetail(params.data.id);
+          this.ngZone.run(() => {
+            this.openUserDetail(params.data.id);
+          });
         }
       }
     }
@@ -237,6 +248,18 @@ export class UserListComponent implements OnInit {
     });
   }
 
+  private notifySuccess(msg: string) {
+    setTimeout(() => this.toastr.success(msg), 0);
+  }
+
+  private notifyError(msg: string) {
+    setTimeout(() => this.toastr.error(msg), 0);
+  }
+
+  private notifyWarning(msg: string) {
+    setTimeout(() => this.toastr.warning(msg), 0);
+  }
+
   loadUsers() {
     this.loading = true;
     this.cdr.markForCheck();
@@ -245,12 +268,12 @@ export class UserListComponent implements OnInit {
         this.users = res;
         this.applyFilter();
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.toastr.error('Failed to load users');
+        this.notifyError('Failed to load users');
         this.loading = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -260,11 +283,11 @@ export class UserListComponent implements OnInit {
       next: (res: UserRole[]) => {
         this.roles = res;
         if (res.length > 0) this.newUser.roleId = res[res.length - 1].id;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.toastr.error('Failed to load roles');
-        this.cdr.detectChanges();
+        this.notifyError('Failed to load roles');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -275,7 +298,7 @@ export class UserListComponent implements OnInit {
     this.showModal = true;
     this.showDetailDialog = false;
     this.selectedUserId = null;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { userId: null },
@@ -285,22 +308,24 @@ export class UserListComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   public deleteSelectedUsers() {
     if (this.selectedCount === 0) {
-      this.toastr.warning('Please select users to delete');
+      this.notifyWarning('Please select users to delete');
       return;
     }
     this.deleteType = 'bulk';
     this.showConfirmDelete = true;
+    this.cdr.detectChanges();
   }
 
   deleteUser(id: string) {
     this.userIdToDelete = id;
     this.deleteType = 'single';
     this.showConfirmDelete = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
@@ -308,13 +333,14 @@ export class UserListComponent implements OnInit {
     this.showUnassignConfirm = false;
     this.userIdToDelete = null;
     this.unassignErrorMsg = '';
+    this.cdr.detectChanges();
   }
 
   executeDelete(force: boolean = false) {
     if (this.deleteType === 'single' && this.userIdToDelete) {
       this.userService.deleteUser(this.userIdToDelete, force).subscribe({
         next: () => {
-          this.toastr.success('User deleted successfully');
+          this.notifySuccess('User deleted successfully');
           this.loadUsers();
           this.showConfirmDelete = false;
           this.showUnassignConfirm = false;
@@ -326,7 +352,7 @@ export class UserListComponent implements OnInit {
             this.unassignErrorMsg = err.error.message;
             this.showUnassignConfirm = true;
           } else {
-            this.toastr.error(err.error?.message || 'Failed to delete user');
+            this.notifyError(err.error?.message || 'Failed to delete user');
             this.showConfirmDelete = false;
           }
           this.cdr.detectChanges();
@@ -345,11 +371,11 @@ export class UserListComponent implements OnInit {
             const errorCount = res.errors?.length || 0;
             
             if (deletedCount > 0) {
-              this.toastr.success(`${deletedCount} users deleted successfully`);
+              this.notifySuccess(`${deletedCount} users deleted successfully`);
             }
             
             if (errorCount > 0) {
-              this.toastr.error(`${errorCount} users failed to delete (Check if admin or self).`);
+              this.notifyError(`${errorCount} users failed to delete (Check if admin or self).`);
             }
 
             if (deletedCount > 0 || errorCount === 0) {
@@ -366,7 +392,7 @@ export class UserListComponent implements OnInit {
             this.unassignErrorMsg = err.error.message;
             this.showUnassignConfirm = true;
           } else {
-            this.toastr.error('Failed to delete users');
+            this.notifyError('Failed to delete users');
           }
           this.cdr.detectChanges();
         }
@@ -375,35 +401,37 @@ export class UserListComponent implements OnInit {
   }
 
   createUser() {
-    if (!this.newUser.name.trim() || !this.newUser.password.trim()) {
-      this.toastr.warning('Please fill in Name and Password');
+    if (!this.newUser.name.trim()) {
+      this.notifyWarning('Please enter Full Name');
       return;
     }
     const payload: any = {
       name: this.newUser.name.trim(),
-      password: this.newUser.password.trim(),
       roleId: this.newUser.roleId || undefined,
     };
     if (this.newUser.email?.trim()) {
       payload.email = this.newUser.email.trim();
     }
+    if (this.newUser.password?.trim()) {
+      payload.password = this.newUser.password.trim();
+    }
     this.saving = true;
     this.cdr.markForCheck();
     this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe({
       next: () => {
-        this.toastr.success('User created successfully');
+        this.notifySuccess('User created successfully');
         this.showModal = false;
         this.newUser = { name: '', email: '', password: '', roleId: '' };
         this.loadUsers();
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
-        this.toastr.error(err?.error?.message || 'Failed to create user');
-        this.cdr.detectChanges();
+        this.notifyError(err?.error?.message || 'Failed to create user');
+        this.cdr.markForCheck();
       },
       complete: () => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }

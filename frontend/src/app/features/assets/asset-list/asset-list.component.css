@@ -104,6 +104,10 @@
   color: #475569;
 }
 
+::ng-deep .ag-theme-quartz .ag-header-cell.ag-header-center .ag-header-cell-label {
+  justify-content: center;
+}
+
 /* Custom Filter Icon Polish */
 ::ng-deep .ag-theme-quartz .ag-header-cell-menu-button {
   opacity: 0.3;

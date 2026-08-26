@@ -73,10 +73,12 @@ export class OfflineManagerService {
       this.offlineNotificationShown = false;
       this.syncQueue();
     } else if (!this.offlineNotificationShown) {
-      this.toastr.warning('Could not contact the backend server', 'Offline Mode', {
-        timeOut: 5000,
-        progressBar: true
-      });
+      setTimeout(() => {
+        this.toastr.warning('Could not contact the backend server', 'Offline Mode', {
+          timeOut: 5000,
+          progressBar: true
+        });
+      }, 0);
       this.offlineNotificationShown = true;
     }
   }
@@ -95,9 +97,11 @@ export class OfflineManagerService {
     this._queueCount.next(queue.length);
     
     if (!this.offlineNotificationShown) {
-      this.toastr.warning('Could not contact the backend server', 'Changes will be synced when online', {
-        timeOut: 5000
-      });
+      setTimeout(() => {
+        this.toastr.warning('Could not contact the backend server', 'Changes will be synced when online', {
+          timeOut: 5000
+        });
+      }, 0);
       this.offlineNotificationShown = true;
     }
   }
@@ -143,7 +147,9 @@ export class OfflineManagerService {
         this._queueCount.next(remaining.length);
         if (remaining.length === 0) {
           this.recordSyncTime();
-          this.toastr.success('Back online, all your staged operations has been sent successfully to backend', 'Sync Complete');
+          setTimeout(() => {
+            this.toastr.success('Back online, all your staged operations has been sent successfully to backend', 'Sync Complete');
+          }, 0);
         }
       })
     ).subscribe({

@@ -13,10 +13,11 @@ export class CreateUserDto {
   email?: string;
 
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   @MinLength(6)
-  password: string;
+  password?: string;
 
   @ApiPropertyOptional({ description: 'Role name (e.g. admin, technician, viewer) or roleId (uuid)' })
   @IsOptional()

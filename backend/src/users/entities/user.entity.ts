@@ -18,9 +18,9 @@ export class User {
 
 
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   @Exclude()
-  passwordHash: string;
+  passwordHash?: string | null;
 
   @Column({ default: true })
   isActive: boolean;
