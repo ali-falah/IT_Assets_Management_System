@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, forwardRef, HostListener, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -43,20 +43,41 @@ import { LucideAngularModule } from 'lucide-angular';
            [class.mb-1.5]="direction === 'up'">
         <div class="p-2.5 border-b border-slate-100 bg-slate-50/50">
           <div class="relative">
-            <lucide-icon 
-              name="search" 
-              [size]="14" 
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            ></lucide-icon>
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <lucide-icon 
+                name="search" 
+                [size]="14" 
+              ></lucide-icon>
+            </div>
             <input 
               #searchInput
-              type="text" 
+              type="search" 
               [(ngModel)]="searchTerm" 
               (click)="$event.stopPropagation()"
               (keydown.enter)="onKeyDownEnter($event)"
-              [placeholder]="'Search ' + label + '...'" 
-              class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              [placeholder]="searchPlaceholder" 
+              [name]="searchControlName"
+              [id]="searchControlName"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
+              inputmode="search"
+              role="searchbox"
+              aria-autocomplete="list"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
+              class="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             >
+            <button 
+              *ngIf="searchTerm" 
+              type="button"
+              (click)="$event.stopPropagation(); searchTerm = ''" 
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 transition-colors cursor-pointer"
+              title="Clear search">
+              <lucide-icon name="x" [size]="13"></lucide-icon>
+            </button>
           </div>
         </div>
         
@@ -113,10 +134,16 @@ import { LucideAngularModule } from 'lucide-angular';
       from { opacity: 0; transform: translateY(-10px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration {
+      -webkit-appearance: none;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchableSelectComponent implements ControlValueAccessor {
+export class SearchableSelectComponent implements ControlValueAccessor, OnChanges {
   @Input() items: any[] = [];
   @Input() placeholder: string = 'Select item';
   @Input() label: string = 'item';
@@ -126,6 +153,19 @@ export class SearchableSelectComponent implements ControlValueAccessor {
 
   @Output() add = new EventEmitter<string>();
 
+  private cdr = inject(ChangeDetectorRef);
+  private elementRef = inject(ElementRef);
+
+  searchControlName = 'select_search_' + Math.random().toString(36).substring(2, 9);
+
+  get searchPlaceholder(): string {
+    const clean = (this.label || '').toLowerCase();
+    if (clean === 'user' || clean === 'employee') {
+      return 'Search assignee or staff...';
+    }
+    return `Search ${this.label}...`;
+  }
+
   isOpen = false;
   searchTerm = '';
   value: any = null;
@@ -133,33 +173,41 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   onChange: any = () => {};
   onTouched: any = () => {};
 
-  constructor(private elementRef: ElementRef) {}
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['items'] || changes['placeholder']) {
+      this.cdr.markForCheck();
+    }
+  }
 
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isOpen = false;
+      if (this.isOpen) {
+        this.isOpen = false;
+        this.cdr.markForCheck();
+      }
     }
   }
 
   get filteredItems() {
     if (!this.searchTerm.trim()) return this.items;
     const term = this.searchTerm.toLowerCase();
-    return this.items.filter(item => item.name.toLowerCase().includes(term));
+    return this.items.filter(item => item.name?.toLowerCase().includes(term));
   }
 
   get exactMatch() {
     if (!this.searchTerm.trim()) return true;
     const term = this.searchTerm.toLowerCase();
-    return this.items.some(item => item.name.toLowerCase() === term);
+    return this.items.some(item => item.name?.toLowerCase() === term);
   }
 
   get selectedItem() {
-    return this.items.find(i => i.id === this.value);
+    return this.items.find(i => String(i.id) === String(this.value));
   }
 
   toggleDropdown() {
     this.isOpen = !this.isOpen;
+    this.cdr.markForCheck();
     if (this.isOpen) {
       this.searchTerm = '';
       setTimeout(() => {
@@ -173,12 +221,14 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     this.value = item.id;
     this.onChange(this.value);
     this.isOpen = false;
+    this.cdr.markForCheck();
   }
 
   addNew() {
     if (this.searchTerm.trim()) {
       this.add.emit(this.searchTerm.trim());
       this.isOpen = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -196,6 +246,7 @@ export class SearchableSelectComponent implements ControlValueAccessor {
 
   writeValue(value: any): void {
     this.value = value;
+    this.cdr.markForCheck();
   }
 
   registerOnChange(fn: any): void {

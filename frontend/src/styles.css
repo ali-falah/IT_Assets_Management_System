@@ -44,6 +44,13 @@ app-settings {
   background: #cbd5e1;
 }
 
-.lucide-icon-search-translate-x {
-  translate: -70% 0;
+
+
+/* Hide scrollbar for mobile horizontal pill strips */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

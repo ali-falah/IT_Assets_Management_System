@@ -1,11 +1,100 @@
-<div class="max-w-4xl mx-auto space-y-6">
-  <div class="flex items-center space-x-4">
-    <button (click)="goBack()" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors active:scale-95">
-      <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
-    </button>
-    <h1 class="text-2xl font-bold text-slate-800">{{ isEditMode ? 'Edit Asset' : 'New Asset' }}</h1>
-    <span *ngIf="!isEditMode" class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">Draft auto-saves</span>
+<div class="space-y-4">
+
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <div class="flex items-center gap-2">
+      <button type="button" routerLink="/assets"
+        class="px-3 py-1.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 rounded-lg text-xs font-semibold transition-colors shadow-2xs active:scale-95 cursor-pointer">
+        Cancel
+      </button>
+
+      <!-- Duplicate (Edit Mode Only) -->
+      <button *ngIf="isEditMode" type="button" (click)="duplicateAsset()"
+        class="px-3 py-1.5 border border-indigo-200 text-primary bg-indigo-50 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
+        title="Duplicate Asset">
+        <lucide-icon name="copy" [size]="14"></lucide-icon>
+        <span>Duplicate</span>
+      </button>
+
+      <!-- Primary Top Submit Button (Saves and stays on edit page) -->
+      <button type="button" (click)="onSubmit(false)" [disabled]="assetForm.invalid || loading"
+        class="px-3.5 py-1.5 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition-colors shadow-2xs shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 active:scale-95 cursor-pointer"
+        title="Save changes and stay on this page">
+        <ng-container *ngIf="loading">
+          <lucide-icon name="loader" [size]="14" class="animate-spin"></lucide-icon>
+          <span>Saving...</span>
+        </ng-container>
+        <ng-container *ngIf="!loading">
+          <lucide-icon name="save" [size]="14"></lucide-icon>
+          <span>{{ isEditMode ? 'Save Changes' : 'Create Asset' }}</span>
+        </ng-container>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Sticky Solid Top Header & Action Bar (Mobile/Tablet Only) -->
+  <div class="sticky -top-3 sm:-top-4 md:-top-5 z-30 pt-3 sm:pt-4 md:pt-5 pb-3 bg-slate-50 border-b border-slate-200 shadow-2xs md:hidden">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      
+      <!-- Left: Back Button + Title & Asset Status -->
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" 
+          class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors shadow-2xs active:scale-95"
+          title="Go Back">
+          <lucide-icon name="arrow-left" [size]="18"></lucide-icon>
+        </button>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+              {{ isEditMode ? 'Edit Asset' : 'New Asset' }}
+            </h1>
+            <span *ngIf="isEditMode && fullAsset?.name" class="hidden md:inline-block text-xs font-semibold text-slate-600 bg-white px-2.5 py-0.5 rounded-md border border-slate-200 shadow-2xs max-w-xs truncate">
+              {{ fullAsset.name }}
+            </span>
+            <span *ngIf="!isEditMode" class="text-[11px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+              Draft auto-saves
+            </span>
+          </div>
+          <p *ngIf="isEditMode && fullAsset?.serialNumber" class="text-xs text-slate-500 mt-0.5 font-mono">
+            Serial: <span class="font-bold text-slate-700">{{ fullAsset.serialNumber }}</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Top Action Controls (Save Changes [Stays on Page] / Cancel / Duplicate) -->
+      <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+        <button type="button" routerLink="/assets"
+          class="px-3.5 py-1.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 rounded-lg text-xs font-semibold transition-colors shadow-2xs active:scale-95">
+          Cancel
+        </button>
+
+        <!-- Duplicate (Edit Mode Only) -->
+        <button *ngIf="isEditMode" type="button" (click)="duplicateAsset()"
+          class="px-3 py-1.5 border border-indigo-200 text-primary bg-indigo-50 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95"
+          title="Duplicate Asset">
+          <lucide-icon name="copy" [size]="14"></lucide-icon>
+          <span>Duplicate</span>
+        </button>
+
+        <!-- Primary Top Submit Button (Saves and stays on edit page) -->
+        <button type="button" (click)="onSubmit(false)" [disabled]="assetForm.invalid || loading"
+          class="px-4 py-1.5 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 active:scale-95"
+          title="Save changes and stay on this page">
+          <ng-container *ngIf="loading">
+            <lucide-icon name="loader" [size]="14" class="animate-spin"></lucide-icon>
+            <span>Saving...</span>
+          </ng-container>
+          <ng-container *ngIf="!loading">
+            <lucide-icon name="save" [size]="14"></lucide-icon>
+            <span>{{ isEditMode ? 'Save Changes' : 'Create Asset' }}</span>
+          </ng-container>
+        </button>
+      </div>
+
+    </div>
   </div>
+
+  <div class="max-w-4xl mx-auto space-y-5">
 
   <!-- Draft Restore Banner -->
   <div *ngIf="showDraftBanner && draftInfo"
@@ -30,7 +119,7 @@
   </div>
 
   <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-    <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="space-y-8">
+    <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" autocomplete="off" class="space-y-8">
       
       <!-- Basic Details -->
       <div>
@@ -93,7 +182,7 @@
               [items]="users" 
               placeholder="Unassigned" 
               nullLabel="Unassigned"
-              label="user"
+              label="assignee"
             ></app-searchable-select>
           </div>
         </div>
@@ -212,29 +301,30 @@
       <div class="flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-slate-100">
         <div class="flex items-center gap-2">
           <button type="button" routerLink="/assets"
-                  class="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors active:scale-95">
+                  class="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-2xs active:scale-95">
             Cancel
           </button>
           <!-- Duplicate button (edit mode) -->
           <button *ngIf="isEditMode" type="button" (click)="duplicateAsset()"
-                  class="px-4 py-2.5 border border-indigo-200 text-primary bg-indigo-50 hover:bg-indigo-100 rounded-lg font-medium transition-colors flex items-center gap-2 active:scale-95">
-            <lucide-icon name="copy" [size]="16"></lucide-icon>
+                  class="px-3.5 py-2 border border-indigo-200 text-primary bg-indigo-50 hover:bg-indigo-100 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95">
+            <lucide-icon name="copy" [size]="15"></lucide-icon>
             Duplicate
           </button>
         </div>
         <button type="submit" [disabled]="assetForm.invalid || loading"
-                class="px-5 py-2.5 bg-primary hover:bg-indigo-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center active:scale-95">
+                class="px-5 py-2 bg-primary hover:bg-indigo-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-xs shadow-indigo-100 active:scale-95">
           @if (loading) {
-            <lucide-icon name="loader" [size]="18" class="animate-spin mr-2"></lucide-icon>
+            <lucide-icon name="loader" [size]="16" class="animate-spin mr-1"></lucide-icon>
             Saving...
           } @else {
-            <lucide-icon name="save" [size]="18" class="mr-2"></lucide-icon>
-            Save Asset
+            <lucide-icon [name]="isEditMode ? 'check' : 'save'" [size]="16" class="mr-1"></lucide-icon>
+            {{ isEditMode ? 'Done' : 'Create Asset' }}
           }
         </button>
       </div>
     </form>
   </div>
+</div>
 </div>
 
 <!-- Double Laptop Assignment Warning Modal -->

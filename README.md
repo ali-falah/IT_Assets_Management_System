@@ -83,6 +83,11 @@ Make sure you have the following installed on your machine:
    ```
    *The web app will be available at `http://localhost:4200`*
 
+### 3. Android Mobile App (Tauri 2)
+
+To build and deploy the Android app (`.apk`) for debug testing or production release, see the complete step-by-step guide:
+👉 **[Android Build & Deployment Guide](docs/ANDROID_DEPLOYMENT.md)**
+
 ---
 
 ## 📝 Design Decisions

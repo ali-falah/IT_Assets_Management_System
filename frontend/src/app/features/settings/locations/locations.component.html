@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto space-y-6 flex-1 flex flex-col w-full">
-  <div class="flex items-center space-x-4">
+  <div class="flex items-center space-x-4 md:hidden">
     <a routerLink="/settings" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">
       <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
     </a>
@@ -12,39 +12,19 @@
     </div>
   </div>
 
-  <div class="flex justify-end">
-    <button *ngIf="!addingLoc" (click)="addingLoc = true" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center shadow-md active:scale-95">
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <button (click)="startAddLocation()" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs shadow-indigo-200 active:scale-95 cursor-pointer">
+      <lucide-icon name="plus" [size]="14"></lucide-icon>
+      <span>Add Location</span>
+    </button>
+  </ng-template>
+
+  <!-- Mobile-only Add button -->
+  <div class="flex justify-end md:hidden">
+    <button (click)="startAddLocation()" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center shadow-md active:scale-95 cursor-pointer">
       <lucide-icon name="plus" [size]="18" class="mr-2"></lucide-icon> Add New Location
     </button>
-  </div>
-
-  <!-- Add/Edit Form -->
-  <div *ngIf="addingLoc || editingLoc" class="bg-white rounded-2xl shadow-lg border border-teal-100 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-    <div class="p-6 space-y-4">
-      <h3 class="text-lg font-bold text-slate-800">{{ addingLoc ? 'New Location' : 'Edit Location' }}</h3>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Location Name</label>
-          <input *ngIf="addingLoc" type="text" [(ngModel)]="newLoc.name" placeholder="e.g. Headquarters" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-          <input *ngIf="!addingLoc" type="text" [(ngModel)]="editLocData.name" placeholder="e.g. Headquarters" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Full Address</label>
-          <textarea *ngIf="addingLoc" [(ngModel)]="newLoc.address" rows="3" placeholder="Full physical address" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none"></textarea>
-          <textarea *ngIf="!addingLoc" [(ngModel)]="editLocData.address" rows="3" placeholder="Full physical address" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none"></textarea>
-        </div>
-      </div>
-
-      <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-        <button (click)="addingLoc = false; editingLoc = null" class="px-6 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm transition-all">Cancel</button>
-        <button (click)="addingLoc ? saveNewLocation() : saveLocation()" 
-          [disabled]="addingLoc ? !newLoc.name : !editLocData.name" 
-          class="px-8 py-2.5 bg-primary text-white rounded-xl hover:bg-indigo-600 font-bold text-sm transition-all shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95">
-          {{ addingLoc ? 'Save Location' : 'Update Location' }}
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- Reusable Data Table -->
@@ -55,6 +35,33 @@
     [actionsTemplate]="actionsTemplate">
   </app-data-table>
 </div>
+
+<!-- Location Dialog (Using shared reusable DialogComponent) -->
+<app-dialog
+  *ngIf="showLocationModal"
+  [title]="selectedLocation ? 'Edit Location' : 'New Location'"
+  icon="map-pin"
+  iconClass="text-teal-600"
+  iconBgClass="bg-teal-50"
+  maxWidth="lg"
+  [primaryButtonText]="selectedLocation ? 'Update Location' : 'Save Location'"
+  [primaryButtonDisabled]="!locationName.trim() || savingLocation"
+  [primaryButtonLoading]="savingLocation"
+  (close)="closeLocationModal()"
+  (primaryAction)="saveLocation()">
+  <div class="space-y-4">
+    <div>
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Location Name</label>
+      <input type="text" [(ngModel)]="locationName" placeholder="e.g. Headquarters"
+        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Full Address</label>
+      <textarea [(ngModel)]="locationAddress" rows="3" placeholder="Full physical address"
+        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none text-sm"></textarea>
+    </div>
+  </div>
+</app-dialog>
 
 <!-- Actions Template -->
 <ng-template #actionsTemplate let-loc>
@@ -75,5 +82,5 @@
   [message]="'Are you sure you want to delete ' + locationToDelete?.name + '? This might affect assets assigned to this location.'"
   confirmText="Delete Location"
   (confirm)="executeDelete()"
-  (cancel)="showConfirmDelete = false">
+  (cancel)="cancelDelete()">
 </app-confirmation-modal>

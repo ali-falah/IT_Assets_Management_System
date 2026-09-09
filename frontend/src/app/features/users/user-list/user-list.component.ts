@@ -13,16 +13,20 @@ import { User, UserRole, UserService } from '../../../core/services/user.service
 import { ExcelExportService } from '../../../shared/services/excel-export.service';
 import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dialog.component';
 import { UserImportComponent } from '../user-import/user-import.component';
+import { PageHeaderService } from '../../../core/services/page-header.service';
+import { PageHeaderActionsDirective } from '../../../shared/directives/page-header-actions.directive';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, AgGridAngular, UserImportComponent, UserDetailDialogComponent],
+  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, AgGridAngular, UserImportComponent, UserDetailDialogComponent, PageHeaderActionsDirective, DialogComponent],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent implements OnInit {
+  private pageHeaderService = inject(PageHeaderService);
   private userService = inject(UserService);
   private excelExportService = inject(ExcelExportService);
   private platform = inject(PlatformService);
@@ -61,7 +65,40 @@ export class UserListComponent implements OnInit {
   users: User[] = [];
   filteredUsers: User[] = [];
   searchTerm = '';
+  mobileSearchOpen = false;
+  selectedRoleId: string | null = null;
   roles: UserRole[] = [];
+
+  toggleMobileSearch(): void {
+    this.mobileSearchOpen = !this.mobileSearchOpen;
+    this.cdr.markForCheck();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilter();
+    if (this.gridApi) {
+      this.gridApi.setGridOption('quickFilterText', '');
+    }
+    this.saveTableState();
+  }
+
+  filterByRole(roleId: string | null): void {
+    this.selectedRoleId = roleId;
+    this.applyFilter();
+    this.saveTableState();
+  }
+
+  getUserCountByRole(roleId: string): number {
+    return this.users.filter(u => u.role?.id === roleId).length;
+  }
+
+  getRoleIcon(roleName?: string): string {
+    const name = (roleName || '').toLowerCase();
+    if (name.includes('admin')) return 'shield';
+    if (name.includes('tech')) return 'wrench';
+    return 'user';
+  }
   showModal = false;
   showImportModal = false;
   showDetailDialog = false;
@@ -103,17 +140,31 @@ export class UserListComponent implements OnInit {
         return `
           <div class="flex items-center justify-between group">
             <span class="truncate">${params.value}</span>
-            <button class="copy-btn opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2" 
+            <button class="copy-btn opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2 flex items-center justify-center cursor-pointer" 
                     title="Copy to clipboard">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <svg class="check-icon hidden text-emerald-600" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
           </div>
         `;
       },
       onCellClicked: (event: any) => {
-        if (event.event.target.closest('.copy-btn')) {
+        const btn = event.event.target.closest('.copy-btn') as HTMLElement;
+        if (btn) {
           navigator.clipboard.writeText(event.value);
           this.toastr.success('Copied to clipboard');
+          const copyIcon = btn.querySelector('.copy-icon');
+          const checkIcon = btn.querySelector('.check-icon');
+          if (copyIcon && checkIcon) {
+            copyIcon.classList.add('hidden');
+            checkIcon.classList.remove('hidden');
+            btn.classList.add('bg-emerald-50', 'text-emerald-600');
+            setTimeout(() => {
+              copyIcon.classList.remove('hidden');
+              checkIcon.classList.add('hidden');
+              btn.classList.remove('bg-emerald-50', 'text-emerald-600');
+            }, 2000);
+          }
         }
       }
     },
@@ -142,10 +193,25 @@ export class UserListComponent implements OnInit {
       valueGetter: (params: any) => params.data.role?.name,
       cellRenderer: (params: any) => {
         const role = params.data.role;
-        if (!role) return '';
-        const colorClass = role.colorClass || 'bg-slate-100 text-slate-700';
+        if (!role?.name) return '<span class="text-slate-300 font-medium text-xs">—</span>';
+        const name = role.name.toLowerCase().trim();
+        const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+        let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200/70';
+
+        if (name.includes('admin')) {
+          badgeStyle = 'bg-indigo-50 text-indigo-700 border-indigo-200/70';
+        } else if (name.includes('manager') || name.includes('lead')) {
+          badgeStyle = 'bg-purple-50 text-purple-700 border-purple-200/70';
+        } else if (name.includes('it') || name.includes('tech') || name.includes('support')) {
+          badgeStyle = 'bg-sky-50 text-sky-700 border-sky-200/70';
+        } else if (name.includes('view') || name.includes('audit')) {
+          badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200/70';
+        }
+
         return `<div class="flex items-center justify-center w-full">
-          <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${colorClass}">${role.name}</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${badgeStyle}">
+            ${displayName}
+          </span>
         </div>`;
       }
     },
@@ -214,6 +280,11 @@ export class UserListComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.pageHeaderService.setHeader({
+      title: 'Users & Staff',
+      subtitle: 'Manage system access and asset assignees'
+    });
+
     const savedStateStr = localStorage.getItem('users_table_state');
     if (savedStateStr) {
       try {
@@ -227,6 +298,24 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
     this.loadRoles();
     this.checkQueryParams();
+  }
+
+  getRoleBadgeConfig(roleName?: string): { badgeClass: string; displayName: string } {
+    const name = (roleName || '').toLowerCase().trim();
+    const displayName = name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Unassigned';
+    if (name.includes('admin')) {
+      return { badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200/70', displayName };
+    }
+    if (name.includes('manager') || name.includes('lead')) {
+      return { badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/70', displayName };
+    }
+    if (name.includes('it') || name.includes('tech') || name.includes('support')) {
+      return { badgeClass: 'bg-sky-50 text-sky-700 border-sky-200/70', displayName };
+    }
+    if (name.includes('view') || name.includes('audit')) {
+      return { badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/70', displayName };
+    }
+    return { badgeClass: 'bg-slate-100 text-slate-600 border-slate-200/70', displayName };
   }
 
   checkQueryParams() {
@@ -481,15 +570,22 @@ export class UserListComponent implements OnInit {
 
   applyFilter() {
     const term = this.searchTerm.trim().toLowerCase();
-    if (!term) {
-      this.filteredUsers = [...this.users];
-    } else {
-      this.filteredUsers = this.users.filter(user => 
+    let list = this.users;
+
+    if (this.selectedRoleId) {
+      list = list.filter(user => user.role?.id === this.selectedRoleId);
+    }
+
+    if (term) {
+      list = list.filter(user => 
         (user.name?.toLowerCase().includes(term)) ||
         (user.email?.toLowerCase().includes(term)) ||
         (user.role?.name?.toLowerCase().includes(term))
       );
     }
+
+    this.filteredUsers = list;
+    this.cdr.markForCheck();
   }
 
   onSearch(event: Event) {

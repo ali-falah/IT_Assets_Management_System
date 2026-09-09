@@ -16,48 +16,63 @@ import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loa
 import { ExcelExportService } from '../../../shared/services/excel-export.service';
 import { AssetImportComponent } from '../asset-import/asset-import.component';
 import { UserDetailDialogComponent } from '../../users/user-detail-dialog/user-detail-dialog.component';
-
-const SAVED_VIEWS_KEY = 'asset_saved_views';
-
-interface SavedView {
-  id: string;
-  name: string;
-  filters: Record<string, string | null>;  // status/location/etc pill filters
-  searchTerm?: string;                      // search bar keyword
-  gridFilterModel?: Record<string, any>;    // AG Grid column filter state
-}
+import { AssetDrawerComponent } from '../../../shared/components/asset-drawer/asset-drawer.component';
+import { UserHoverCardComponent } from '../../../shared/components/user-hover-card/user-hover-card.component';
 
 @Component({
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule],
   template: `
     <div class="flex items-center justify-between w-full h-full group pr-2">
-      <div class="flex items-center space-x-3 truncate">
-        <div *ngIf="params?.data?.category" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-{{params.data.category.color || 'slate'}}-50 text-{{params.data.category.color || 'slate'}}-600 border border-{{params.data.category.color || 'slate'}}-100"
+      <div class="flex items-center space-x-2.5 truncate">
+        <div *ngIf="params?.data?.category" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs"
              [title]="params.data.category.name">
-          <lucide-icon [name]="params.data.category.icon || 'package'" [size]="14"></lucide-icon>
+          <lucide-icon [name]="params.data.category.icon || 'laptop'" [size]="14"></lucide-icon>
         </div>
-        <a [routerLink]="['/assets', params.data.id, 'edit']" 
-           class="text-slate-800 hover:underline font-semibold transition-all truncate">
+        <a [routerLink]="['/assets', params?.data?.id, 'edit']"
+           class="text-slate-800 hover:text-primary hover:underline font-bold transition-all truncate text-left cursor-pointer outline-none"
+           title="Edit Asset">
           {{ params.value }}
         </a>
       </div>
-      <button 
-        (click)="copyName($event)" 
-        class="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2" 
-        title="Copy Name"
-      >
-        <lucide-icon name="copy" [size]="13"></lucide-icon>
-      </button>
+      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button 
+          type="button"
+          (click)="openDrawer($event)"
+          class="p-1 hover:bg-indigo-50 rounded text-slate-400 hover:text-primary transition-all cursor-pointer"
+          title="Quick Inspect Drawer">
+          <lucide-icon name="panel-right" [size]="13"></lucide-icon>
+        </button>
+        <button 
+          type="button"
+          (click)="copyName($event)" 
+          class="p-1 rounded transition-all cursor-pointer" 
+          [ngClass]="copied ? 'bg-emerald-50 text-emerald-600' : 'hover:bg-slate-100 text-slate-400 hover:text-primary'"
+          [title]="copied ? 'Copied!' : 'Copy Name'"
+        >
+          <lucide-icon [name]="copied ? 'check' : 'copy'" [size]="13"></lucide-icon>
+        </button>
+      </div>
     </div>
   `
 })
 export class AssetNameRenderer implements ICellRendererAngularComp {
   params: any;
+  copied = false;
+  private copyTimeout: any;
   private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
   agInit(params: ICellRendererParams): void { this.params = params; }
   refresh(params: ICellRendererParams): boolean { this.params = params; return true; }
+
+  openDrawer(event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.params?.data?.id && this.params?.context?.componentParent) {
+      this.params.context.componentParent.openAssetDrawer(this.params.data.id);
+    }
+  }
 
   copyName(event: MouseEvent) {
     event.stopPropagation();
@@ -65,6 +80,58 @@ export class AssetNameRenderer implements ICellRendererAngularComp {
     if (this.params?.value) {
       navigator.clipboard.writeText(this.params.value);
       this.toastr.success('Asset Name copied to clipboard');
+      this.copied = true;
+      this.cdr.detectChanges();
+      if (this.copyTimeout) clearTimeout(this.copyTimeout);
+      this.copyTimeout = setTimeout(() => {
+        this.copied = false;
+        this.cdr.detectChanges();
+      }, 2000);
+    }
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule],
+  template: `
+    <div class="flex items-center gap-1.5 group/assign w-full h-full">
+      <span *ngIf="!params?.data?.assignedUserId" class="text-slate-400 text-xs font-medium">Unassigned</span>
+      <button *ngIf="params?.data?.assignedUserId" 
+        data-user-hover="true"
+        (click)="openDetail($event)"
+        (mouseenter)="onHover($event)"
+        (mouseleave)="onLeave()"
+        class="text-primary hover:underline font-semibold cursor-pointer text-left truncate outline-none"
+        title="View User Details">
+        {{ params.value }}
+      </button>
+      <span class="opacity-0 group-hover/assign:opacity-100 text-[10px] text-slate-400 transition-opacity ml-auto">double-click to edit</span>
+    </div>
+  `
+})
+export class AssignedUserRenderer implements ICellRendererAngularComp {
+  params: any;
+
+  agInit(params: ICellRendererParams): void { this.params = params; }
+  refresh(params: ICellRendererParams): boolean { this.params = params; return true; }
+
+  openDetail(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.params?.data?.assignedUserId && this.params?.context?.componentParent) {
+      this.params.context.componentParent.openUserDialog(this.params.data.assignedUserId);
+    }
+  }
+
+  onHover(event: MouseEvent) {
+    if (this.params?.data?.assignedUserId && this.params?.context?.componentParent) {
+      this.params.context.componentParent.onUserHover(this.params.data.assignedUserId, event);
+    }
+  }
+
+  onLeave() {
+    if (this.params?.context?.componentParent) {
+      this.params.context.componentParent.onUserHoverLeave();
     }
   }
 }
@@ -72,19 +139,22 @@ export class AssetNameRenderer implements ICellRendererAngularComp {
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden p-2 w-64 animate-in fade-in zoom-in duration-200"
          (click)="$event.stopPropagation()">
       <div class="relative mb-2">
-        <lucide-icon 
-          name="search" 
-          [size]="14" 
-          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-        ></lucide-icon>
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <lucide-icon 
+            name="search" 
+            [size]="14" 
+          ></lucide-icon>
+        </div>
         <input 
           #searchInput
           type="text" 
           [(ngModel)]="searchTerm" 
+          (ngModelChange)="onSearchChange()"
           (keydown.enter)="onEnterPressed($event)"
           [placeholder]="'Search...'" 
           class="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"
@@ -124,17 +194,31 @@ export class SearchableCellEditorComponent implements ICellEditorAngularComp {
   values: string[] = [];
   selectedValue: string = '';
 
-  @ViewChild('searchInput', { static: true }) searchInput!: ElementRef;
+  private cdr = inject(ChangeDetectorRef);
+  @ViewChild('searchInput', { static: false }) searchInput?: ElementRef;
 
   agInit(params: any): void {
     this.params = params;
-    this.values = params.values || [];
+    let vals: string[] = [];
+    if (Array.isArray(params.values)) {
+      vals = params.values;
+    } else if (typeof params.values === 'function') {
+      const res = params.values(params);
+      vals = Array.isArray(res) ? res : (res?.values || []);
+    } else if (typeof params.colDef?.cellEditorParams === 'function') {
+      const res = params.colDef.cellEditorParams(params);
+      vals = Array.isArray(res) ? res : (res?.values || []);
+    } else if (Array.isArray(params.colDef?.cellEditorParams?.values)) {
+      vals = params.colDef.cellEditorParams.values;
+    }
+    this.values = vals;
     this.selectedValue = params.value || '';
     if (!this.selectedValue && this.values.includes('Unassigned')) {
       this.selectedValue = 'Unassigned';
     }
+    this.cdr.markForCheck();
     setTimeout(() => {
-      if (this.searchInput) {
+      if (this.searchInput?.nativeElement) {
         this.searchInput.nativeElement.focus();
       }
     }, 50);
@@ -154,8 +238,13 @@ export class SearchableCellEditorComponent implements ICellEditorAngularComp {
     return this.values.filter(v => v.toLowerCase().includes(term));
   }
 
+  onSearchChange() {
+    this.cdr.markForCheck();
+  }
+
   selectItem(item: string) {
     this.selectedValue = item;
+    this.cdr.markForCheck();
     this.params.stopEditing();
   }
 
@@ -169,15 +258,20 @@ export class SearchableCellEditorComponent implements ICellEditorAngularComp {
   }
 }
 
+import { PageHeaderService } from '../../../core/services/page-header.service';
+import { PageHeaderActionsDirective } from '../../../shared/directives/page-header-actions.directive';
+import { AssetLabelModalComponent } from '../../../shared/components/asset-label-modal/asset-label-modal.component';
+
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent, ConfirmationModalComponent, SearchableCellEditorComponent, UserDetailDialogComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, AgGridModule, FormsModule, AssetImportComponent, SkeletonLoaderComponent, ConfirmationModalComponent, SearchableCellEditorComponent, UserDetailDialogComponent, AssetDrawerComponent, UserHoverCardComponent, PageHeaderActionsDirective, AssetLabelModalComponent],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetListComponent implements OnInit, OnDestroy {
+  private pageHeaderService = inject(PageHeaderService);
   private assetService = inject(AssetService);
   private excelExportService = inject(ExcelExportService);
   private router = inject(Router);
@@ -191,11 +285,23 @@ export class AssetListComponent implements OnInit, OnDestroy {
   private assetsSub?: Subscription;
 
   private gridApi!: GridApi;
+  gridContext = { componentParent: this };
   private searchSubject = new Subject<string>();
 
   assets: Asset[] = [];
   selectedCount = 0;
   showImportModal = false;
+
+  // Asset Inspection Drawer State
+  selectedAssetIdForDrawer: string | null = null;
+  showAssetDrawer = false;
+
+  // Assignee Hover Card State
+  hoverUser: User | null = null;
+  showHoverCard = false;
+  hoverCardPosition = { x: 0, y: 0, triggerTop: 0, triggerBottom: 0 };
+  private hoverEnterTimeout: any;
+  private hoverTimeout: any;
 
   // Modal states
   showConfirmDelete = false;
@@ -214,13 +320,132 @@ export class AssetListComponent implements OnInit, OnDestroy {
   statuses: Status[] = [];
   locations: Location[] = [];
   users: User[] = [];
-  selectedStatusId: string | null = null;
 
-  // Saved Views
-  savedViews: SavedView[] = [];
-  showSaveViewInput = false;
-  newViewName = '';
+  openAssetDrawer(id: string): void {
+    this.ngZone.run(() => {
+      this.selectedAssetIdForDrawer = id;
+      this.showAssetDrawer = true;
+      this.cdr.markForCheck();
+    });
+  }
+
+  closeAssetDrawer(): void {
+    this.showAssetDrawer = false;
+    this.selectedAssetIdForDrawer = null;
+    this.cdr.markForCheck();
+  }
+
+  // Asset Label Modal State & Methods
+  showPrintLabelModal = false;
+  assetForLabel: any = null;
+
+  openPrintLabel(asset: any): void {
+    this.ngZone.run(() => {
+      this.assetForLabel = asset;
+      this.showPrintLabelModal = true;
+      this.cdr.markForCheck();
+    });
+  }
+
+  closePrintLabelModal(): void {
+    this.showPrintLabelModal = false;
+    this.assetForLabel = null;
+    this.cdr.markForCheck();
+  }
+
+  onDrawerAssetUpdated(): void {
+    this.loadAssets(this.currentFilters);
+  }
+
+  onCardHoverChange(isHovered: boolean): void {
+    if (isHovered) {
+      if (this.hoverTimeout) clearTimeout(this.hoverTimeout);
+    } else {
+      if (this.hoverEnterTimeout) clearTimeout(this.hoverEnterTimeout);
+      if (this.hoverTimeout) clearTimeout(this.hoverTimeout);
+      this.hoverTimeout = setTimeout(() => {
+        this.ngZone.run(() => {
+          this.showHoverCard = false;
+          this.hoverUser = null;
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        });
+      }, 50);
+    }
+  }
+
+  openUserDialog(userIdentifier?: string): void {
+    if (!userIdentifier) return;
+    if (this.hoverEnterTimeout) clearTimeout(this.hoverEnterTimeout);
+    if (this.hoverTimeout) clearTimeout(this.hoverTimeout);
+    this.showHoverCard = false;
+    this.hoverUser = null;
+    const user = this.users.find(u => u.id === userIdentifier || u.name.toLowerCase() === userIdentifier.toLowerCase());
+    this.selectedUserIdForDialog = user ? user.id : userIdentifier;
+    this.showUserDetailDialog = true;
+    this.cdr.detectChanges();
+  }
+
+  onUserHover(userIdentifier: string, event: MouseEvent): void {
+    if (!userIdentifier) return;
+    if (this.hoverEnterTimeout) clearTimeout(this.hoverEnterTimeout);
+
+    const target = (event.target as HTMLElement).closest('[data-user-hover]') as HTMLElement || (event.target as HTMLElement);
+    const rect = target.getBoundingClientRect();
+
+    this.hoverEnterTimeout = setTimeout(() => {
+      const user = this.users.find(u => u.id === userIdentifier || u.name.toLowerCase() === userIdentifier.toLowerCase());
+      if (user) {
+        if (this.hoverTimeout) clearTimeout(this.hoverTimeout);
+        this.ngZone.run(() => {
+          this.hoverUser = user;
+          this.hoverCardPosition = {
+            x: Math.min(rect.left, window.innerWidth - 300),
+            y: rect.bottom,
+            triggerTop: rect.top,
+            triggerBottom: rect.bottom
+          };
+          this.showHoverCard = true;
+          this.cdr.detectChanges();
+        });
+      }
+    }, 90);
+  }
+
+  onUserHoverLeave(): void {
+    if (this.hoverEnterTimeout) {
+      clearTimeout(this.hoverEnterTimeout);
+      this.hoverEnterTimeout = null;
+    }
+    if (this.hoverTimeout) clearTimeout(this.hoverTimeout);
+    this.hoverTimeout = setTimeout(() => {
+      this.ngZone.run(() => {
+        this.showHoverCard = false;
+        this.hoverUser = null;
+        this.cdr.detectChanges();
+      });
+    }, 60);
+  }
+  selectedStatusId: string | null = null;
   currentSearchTerm = '';   // tracks the live search keyword
+  mobileSearchOpen = false;
+  totalAssetsCount = 0;
+  searchLoading = false;
+
+  toggleMobileSearch(): void {
+    this.mobileSearchOpen = !this.mobileSearchOpen;
+    this.cdr.markForCheck();
+  }
+
+  getStatusDotColor(statusName?: string): string {
+    const name = (statusName || '').toLowerCase();
+    if (name.includes('stock') || name.includes('ready') || name.includes('available')) return 'bg-emerald-400';
+    if (name.includes('assigned') || name.includes('deploy')) return 'bg-blue-400';
+    if (name.includes('maint') || name.includes('repair')) return 'bg-amber-400';
+    if (name.includes('damag') || name.includes('lost')) return 'bg-rose-400';
+    if (name.includes('retir') || name.includes('dispos')) return 'bg-slate-400';
+    return 'bg-indigo-400';
+  }
 
   // Inline edit state
   editingCellId: string | null = null;
@@ -252,18 +477,28 @@ export class AssetListComponent implements OnInit, OnDestroy {
       this.assetsSub.unsubscribe();
     }
     this.loading = true;
+    if (params.search) {
+      this.searchLoading = true;
+    }
     this.currentFilters = params;
     this.cdr.markForCheck();
 
     this.assetsSub = this.assetService.getAssets(params).subscribe({
       next: (res: any) => {
         this.assets = res.data;
+        if (!params.statusId && !params.search) {
+          this.totalAssetsCount = res.total || res.data.length;
+        } else if (this.totalAssetsCount === 0 && res.data) {
+          this.totalAssetsCount = res.total || res.data.length;
+        }
         this.loading = false;
+        this.searchLoading = false;
         this.cdr.markForCheck();
       },
       error: () => {
         this.notifyError('Failed to load assets');
         this.loading = false;
+        this.searchLoading = false;
         this.cdr.markForCheck();
       }
     });
@@ -288,11 +523,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
     });
   }
 
-  openUserDialog(userId: string) {
-    this.selectedUserIdForDialog = userId;
-    this.showUserDetailDialog = true;
-  }
-
   saveTableState() {
     const state = {
       selectedStatusId: this.selectedStatusId,
@@ -306,6 +536,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
+    this.gridApi.setGridOption('overlayNoRowsTemplate', '<div class="py-12 text-center"><p class="text-slate-500 font-semibold text-sm">No assets match your search criteria</p><p class="text-slate-400 text-xs mt-1">Try searching by name, serial, category, location, or assignee</p></div>');
 
     // 1. Restore floating filter toggle state
     const savedStateStr = localStorage.getItem('assets_table_state');
@@ -345,14 +576,36 @@ export class AssetListComponent implements OnInit, OnDestroy {
   }
 
   onSearch(event: any) {
-    const term = event.target.value as string;
+    const term = (event?.target?.value || '') as string;
     this.currentSearchTerm = term;
+    if (term.trim()) {
+      this.searchLoading = true;
+    } else {
+      this.searchLoading = false;
+    }
+    this.cdr.markForCheck();
     this.searchSubject.next(term);
+  }
+
+  onSearchEnter() {
+    this.searchLoading = true;
+    this.cdr.markForCheck();
+    const params: any = { ...this.currentFilters, search: this.currentSearchTerm.trim() };
+    const loadParams: any = {};
+    Object.keys(params).forEach(key => { if (params[key]) loadParams[key] = params[key]; });
+    this.loadAssets(loadParams);
+    this.saveTableState();
   }
 
   clearSearch() {
     this.currentSearchTerm = '';
+    this.searchLoading = false;
     this.searchSubject.next('');
+    const loadParams = { ...this.currentFilters };
+    delete loadParams.search;
+    this.loadAssets(loadParams);
+    this.saveTableState();
+    this.cdr.markForCheck();
   }
 
   filterByStatus(statusId: string | null) {
@@ -365,64 +618,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
     this.loadAssets(loadParams);
     this.saveTableState();
-  }
-
-  // ── Saved Views ────────────────────────────────────────────────────
-
-  loadSavedViews() {
-    try {
-      const raw = localStorage.getItem(SAVED_VIEWS_KEY);
-      this.savedViews = raw ? JSON.parse(raw) : [];
-    } catch { this.savedViews = []; }
-  }
-
-  saveSavedViews() {
-    localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(this.savedViews));
-  }
-
-  saveCurrentView() {
-    if (!this.newViewName.trim()) return;
-    const view: SavedView = {
-      id: Date.now().toString(),
-      name: this.newViewName.trim(),
-      filters: { ...this.currentFilters, statusId: this.selectedStatusId },
-      searchTerm: this.currentSearchTerm || '',
-      gridFilterModel: this.gridApi ? this.gridApi.getFilterModel() : {},
-    };
-    this.savedViews = [...this.savedViews, view];
-    this.saveSavedViews();
-    this.newViewName = '';
-    this.showSaveViewInput = false;
-    this.toastr.success(`View "${view.name}" saved`);
-  }
-
-  applyView(view: SavedView) {
-    // 1. Restore status pill
-    this.selectedStatusId = view.filters['statusId'] || null;
-
-    // 2. Restore search term
-    this.currentSearchTerm = view.searchTerm || '';
-    // Push search into the input element via a shared signal
-    // (We'll update the input value via a ViewChild alternative — use searchSubject directly)
-    this.searchSubject.next(this.currentSearchTerm);
-
-    // 3. Build reload params (pill filters + search keyword)
-    const loadParams: any = {};
-    const merged: Record<string, any> = { ...view.filters, search: this.currentSearchTerm };
-    Object.keys(merged).forEach(k => { if (merged[k]) loadParams[k] = merged[k]; });
-    this.currentFilters = { ...merged };
-    this.loadAssets(loadParams);
-
-    // 4. Restore AG Grid column filter model (after grid has data)
-    if (view.gridFilterModel && Object.keys(view.gridFilterModel).length > 0 && this.gridApi) {
-      setTimeout(() => this.gridApi.setFilterModel(view.gridFilterModel!), 200);
-    }
-  }
-
-  deleteView(view: SavedView, event: Event) {
-    event.stopPropagation();
-    this.savedViews = this.savedViews.filter(v => v.id !== view.id);
-    this.saveSavedViews();
   }
 
   // ── Delete with Undo ───────────────────────────────────────────────
@@ -638,16 +833,30 @@ export class AssetListComponent implements OnInit, OnDestroy {
           return `
             <div class="flex items-center justify-between group">
               <span class="truncate font-mono text-xs">${params.value}</span>
-              <button class="copy-btn opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2" title="Copy">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <button class="copy-btn opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-primary transition-all ml-2 flex items-center justify-center cursor-pointer" title="Copy">
+                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <svg class="check-icon hidden text-emerald-600" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
             </div>
           `;
         },
         onCellClicked: (event: any) => {
-          if (event.event?.target?.closest('.copy-btn')) {
+          const btn = event.event?.target?.closest('.copy-btn') as HTMLElement;
+          if (btn) {
             navigator.clipboard.writeText(event.value);
             this.toastr.success('Copied to clipboard');
+            const copyIcon = btn.querySelector('.copy-icon');
+            const checkIcon = btn.querySelector('.check-icon');
+            if (copyIcon && checkIcon) {
+              copyIcon.classList.add('hidden');
+              checkIcon.classList.remove('hidden');
+              btn.classList.add('bg-emerald-50', 'text-emerald-600');
+              setTimeout(() => {
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+                btn.classList.remove('bg-emerald-50', 'text-emerald-600');
+              }, 2000);
+            }
           }
         }
       },
@@ -655,17 +864,40 @@ export class AssetListComponent implements OnInit, OnDestroy {
       {
         field: 'status.name',
         headerName: 'Status',
-        flex: 1.2,
+        flex: 1.25,
         headerClass: 'ag-header-center',
         cellClass: 'flex items-center justify-center text-center',
         editable: (params: any) => !params.data?.assignedUserId,
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: { values: this.statuses.map(s => s.name) },
         cellRenderer: (params: any) => {
-          const colorClass = params.data?.status?.colorClass || 'bg-slate-100 text-slate-700';
           const name = params.value || 'Unknown';
+          const lower = name.toLowerCase();
+          let badgeCls = 'bg-purple-50 text-purple-700 border-purple-200/80';
+          let dotCls = 'bg-purple-500';
+
+          if (lower.includes('stock') || lower.includes('available')) {
+            badgeCls = 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
+            dotCls = 'bg-emerald-500 ring-2 ring-emerald-200 animate-pulse';
+          } else if (lower.includes('use') || lower.includes('assigned')) {
+            badgeCls = 'bg-blue-50 text-blue-700 border-blue-200/80';
+            dotCls = 'bg-blue-500';
+          } else if (lower.includes('service') || lower.includes('maintenance') || lower.includes('repair')) {
+            badgeCls = 'bg-amber-50 text-amber-800 border-amber-200/80';
+            dotCls = 'bg-amber-500';
+          } else if (lower.includes('damaged') || lower.includes('broken')) {
+            badgeCls = 'bg-rose-50 text-rose-700 border-rose-200/80';
+            dotCls = 'bg-rose-500';
+          } else if (lower.includes('removed') || lower.includes('retired') || lower.includes('disposed')) {
+            badgeCls = 'bg-slate-100 text-slate-600 border-slate-200 line-through';
+            dotCls = 'bg-slate-400';
+          }
+
           return `<div class="flex items-center justify-center w-full">
-            <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${colorClass} tracking-wide shadow-xs">${name}</span>
+            <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeCls} border tracking-wide shadow-2xs">
+              <span class="inline-block w-1.5 h-1.5 rounded-full ${dotCls} mr-1.5"></span>
+              <span>${name}</span>
+            </span>
           </div>`;
         },
         onCellValueChanged: (params: any) => {
@@ -689,7 +921,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         flex: 1.5,
         editable: true,
         cellEditor: SearchableCellEditorComponent,
-        cellEditorParams: { values: this.locations.map(l => l.name) },
+        cellEditorParams: () => ({ values: this.locations.map(l => l.name) }),
         valueSetter: (params: any) => {
           if (!params.data.location) {
             params.data.location = {};
@@ -726,35 +958,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
         flex: 1.5,
         editable: true,
         cellEditor: SearchableCellEditorComponent,
-        cellEditorParams: { values: ['Unassigned', ...this.users.map(u => u.name)] },
+        cellEditorParams: () => ({ values: ['Unassigned', ...this.users.map(u => u.name)] }),
+        cellRenderer: AssignedUserRenderer,
         valueSetter: (params: any) => {
           if (!params.data.assignedUser) {
             params.data.assignedUser = {};
           }
           params.data.assignedUser.name = params.newValue;
           return true;
-        },
-        cellRenderer: (params: any) => {
-          const name = params.value || 'Unassigned';
-          const isUnassigned = name === 'Unassigned' || !params.data?.assignedUserId;
-          const displayHtml = isUnassigned
-            ? `<span class="text-slate-400 text-xs">Unassigned</span>`
-            : `<span class="user-detail-link text-primary hover:underline font-medium cursor-pointer">${name}</span>`;
-          return `<div class="flex items-center gap-1.5 group/assign">
-            ${displayHtml}
-            <span class="opacity-0 group-hover/assign:opacity-100 text-[10px] text-slate-400 transition-opacity">click to edit</span>
-          </div>`;
-        },
-        onCellClicked: (params: any) => {
-          const target = params.event?.target as HTMLElement;
-          if (target?.closest('.user-detail-link') && params.data?.assignedUserId) {
-            params.event.stopPropagation();
-            params.event.preventDefault();
-            this.ngZone.run(() => {
-              this.selectedUserIdForDialog = params.data.assignedUserId;
-              this.showUserDetailDialog = true;
-            });
-          }
         },
         onCellValueChanged: (params: any) => {
           this.ngZone.run(() => {
@@ -843,7 +1054,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       },
       {
         headerName: 'Actions',
-        width: 130,
+        width: 165,
         sortable: false,
         filter: false,
         resizable: false,
@@ -852,14 +1063,18 @@ export class AssetListComponent implements OnInit, OnDestroy {
         cellRenderer: (params: any) => {
           return `
             <div class="flex items-center gap-1 h-full">
-              <button class="action-edit-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-primary rounded-lg transition-all"
+              <button class="action-print-btn p-1.5 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 rounded-lg transition-all cursor-pointer"
+                      title="Print Asset Label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+              </button>
+              <button class="action-edit-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer"
                       title="Edit">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
               </button>
-              <button class="action-clone-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-500 rounded-lg transition-all" title="Duplicate">
+              <button class="action-clone-btn p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-500 rounded-lg transition-all cursor-pointer" title="Duplicate">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
               </button>
-              <button class="action-delete-btn p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-all" title="Delete">
+              <button class="action-delete-btn p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg transition-all cursor-pointer" title="Delete">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
               </button>
             </div>
@@ -867,7 +1082,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
         },
         onCellClicked: (params: any) => {
           const target = params.event?.target as HTMLElement;
-          if (target?.closest('.action-edit-btn')) this.router.navigate(['/assets', params.data.id, 'edit']);
+          if (target?.closest('.action-print-btn')) this.openPrintLabel(params.data);
+          else if (target?.closest('.action-edit-btn')) this.router.navigate(['/assets', params.data.id, 'edit']);
           else if (target?.closest('.action-delete-btn')) this.confirmDeleteSingle(params.data);
           else if (target?.closest('.action-clone-btn')) this.cloneAsset(params.data);
         }
@@ -888,9 +1104,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
   showFloatingFilters = false;
 
   ngOnInit() {
+    this.pageHeaderService.setHeader({ title: 'IT Assets', subtitle: 'Manage and track physical equipment' });
     // Load master data first (statuses, locations, users) in ONE parallel call
     this.loadMasterData();
-    this.loadSavedViews();
 
     // Restore table state from local storage on load
     const savedStateStr = localStorage.getItem('assets_table_state');
@@ -940,9 +1156,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
     });
     this.subs.push(qpSub);
 
-    const searchSub = this.searchSubject.pipe(debounceTime(350), distinctUntilChanged()).subscribe(searchTerm => {
+    const searchSub = this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchTerm => {
       this.currentSearchTerm = searchTerm;
-      const params: any = { ...this.currentFilters, search: searchTerm };
+      const params: any = { ...this.currentFilters, search: searchTerm.trim() };
       const loadParams: any = {};
       Object.keys(params).forEach(key => { if (params[key]) loadParams[key] = params[key]; });
       this.loadAssets(loadParams);

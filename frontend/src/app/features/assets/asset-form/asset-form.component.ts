@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { AssetService } from '../../../core/services/asset.service';
@@ -13,18 +13,21 @@ import { Category, Location, MasterDataService, Status } from '../../../core/ser
 import { User, UserService } from '../../../core/services/user.service';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { PageHeaderService } from '../../../core/services/page-header.service';
+import { PageHeaderActionsDirective } from '../../../shared/directives/page-header-actions.directive';
 
 const DRAFT_KEY = 'asset_form_draft';
 
 @Component({
   selector: 'app-asset-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, SearchableSelectComponent, ConfirmationModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule, SearchableSelectComponent, ConfirmationModalComponent, PageHeaderActionsDirective],
   templateUrl: './asset-form.component.html',
   styleUrls: ['./asset-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetFormComponent implements OnInit, OnDestroy {
+  private pageHeaderService = inject(PageHeaderService);
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -65,10 +68,12 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.initForm();
     this.loadMasterData();
+    this.updateHeader();
 
     this.assetId = this.route.snapshot.paramMap.get('id');
     if (this.assetId) {
       this.isEditMode = true;
+      this.updateHeader();
       this.loadAssetData(this.assetId);
     } else {
       // Check for clone data from navigation state (history.state persists after nav)
@@ -196,24 +201,26 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   }
 
   loadMasterData() {
-    this.masterDataService.getCategories().subscribe(res => {
-      this.categories = res;
-      this.cdr.markForCheck();
-    });
-    this.masterDataService.getLocations().subscribe(res => {
-      this.locations = res;
-      this.cdr.markForCheck();
-    });
-    this.masterDataService.getStatuses().subscribe(res => {
-      this.statuses = res;
-      if (!this.isEditMode && this.statuses.length > 0) {
-        this.assetForm.patchValue({ statusId: this.statuses[0].id });
+    forkJoin({
+      categories: this.masterDataService.getCategories(),
+      locations: this.masterDataService.getLocations(),
+      statuses: this.masterDataService.getStatuses(),
+      users: this.userService.getUsers(),
+    }).subscribe({
+      next: ({ categories, locations, statuses, users }) => {
+        this.categories = [...categories];
+        this.locations = [...locations];
+        this.statuses = [...statuses];
+        this.users = [...users];
+        if (!this.isEditMode && this.statuses.length > 0 && !this.assetForm.get('statusId')?.value) {
+          this.assetForm.patchValue({ statusId: this.statuses[0].id });
+        }
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load master data', err);
       }
-      this.cdr.markForCheck();
-    });
-    this.userService.getUsers().subscribe(res => {
-      this.users = res;
-      this.cdr.markForCheck();
     });
   }
 
@@ -239,12 +246,24 @@ export class AssetFormComponent implements OnInit, OnDestroy {
         if (asset.imageUrl) {
           this.imageUrl = asset.imageUrl;
         }
+        this.updateHeader();
         this.cdr.markForCheck();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.notifyError('Failed to load asset details');
         this.router.navigate(['/assets']);
       }
+    });
+  }
+
+  private updateHeader(): void {
+    this.pageHeaderService.setHeader({
+      title: this.isEditMode ? 'Edit Asset' : 'New Asset',
+      subtitle: this.isEditMode && this.fullAsset?.serialNumber
+        ? `Serial: ${this.fullAsset.serialNumber}`
+        : (this.isEditMode ? (this.fullAsset?.name || 'Update asset details') : 'Draft auto-saves'),
+      backUrl: '/assets'
     });
   }
 
@@ -308,13 +327,16 @@ export class AssetFormComponent implements OnInit, OnDestroy {
     setTimeout(() => this.toastr.info(msg, title, opts), 0);
   }
 
-  async onSubmit() {
+  async onSubmit(navigateAfterSave: boolean = true) {
     if (this.assetForm.invalid) {
       this.assetForm.markAllAsTouched();
       return;
     }
 
-    const formValue = { ...this.assetForm.getRawValue() };
+    const formValue = { 
+      ...this.assetForm.getRawValue(),
+      __navigateAfterSave: navigateAfterSave
+    };
     if (formValue.serialNumber) {
       formValue.serialNumber = formValue.serialNumber.trim().toUpperCase();
     }
@@ -407,6 +429,9 @@ export class AssetFormComponent implements OnInit, OnDestroy {
   }
 
   async executeFormSubmit(formValue: any) {
+    const navigateAfterSave = formValue.__navigateAfterSave !== false;
+    delete formValue.__navigateAfterSave;
+
     this.loading = true;
     this.cdr.markForCheck();
     try {
@@ -420,12 +445,23 @@ export class AssetFormComponent implements OnInit, OnDestroy {
       if (this.isEditMode && this.assetId) {
         await this.assetService.updateAsset(this.assetId, formValue).toPromise();
         this.notifySuccess('Asset updated successfully');
+        this.clearDraft();
+        if (navigateAfterSave) {
+          this.router.navigate(['/assets']);
+        } else {
+          this.selectedFile = null;
+          this.loadAssetData(this.assetId);
+        }
       } else {
-        await this.assetService.createAsset(formValue).toPromise();
+        const created = await this.assetService.createAsset(formValue).toPromise();
         this.notifySuccess('Asset created successfully');
+        this.clearDraft();
+        if (navigateAfterSave) {
+          this.router.navigate(['/assets']);
+        } else if (created?.id) {
+          this.router.navigate(['/assets', created.id, 'edit']);
+        }
       }
-      this.clearDraft();
-      this.router.navigate(['/assets']);
     } catch (error) {
       this.notifyError(this.isEditMode ? 'Failed to update asset' : 'Failed to create asset');
     } finally {

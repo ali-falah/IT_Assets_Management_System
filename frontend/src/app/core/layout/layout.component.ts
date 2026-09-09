@@ -6,6 +6,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { Observable, Subject, Subscription, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { OfflineManagerService } from '../services/offline-manager.service';
+import { PageHeaderService } from '../services/page-header.service';
 import { PlatformService } from '../services/platform.service';
 import { SearchResult, SearchService } from '../services/search.service';
 import { User } from '../services/user.service';
@@ -21,6 +22,7 @@ import { AuthState } from '../store/auth/auth.reducer';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutComponent implements OnInit, OnDestroy {
+  public pageHeaderService = inject(PageHeaderService);
   private store = inject(Store<{ auth: AuthState }>);
   private router = inject(Router);
   private searchService = inject(SearchService);
@@ -128,6 +130,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   toggleProfileMenu(event?: MouseEvent) {
     if (event) event.stopPropagation();
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
+    this.cdr.markForCheck();
   }
 
   logout() {
@@ -161,7 +164,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (!target.closest('.profile-menu-container')) {
-      this.isProfileMenuOpen = false;
+      if (this.isProfileMenuOpen) {
+        this.isProfileMenuOpen = false;
+        this.cdr.markForCheck();
+      }
     }
   }
 

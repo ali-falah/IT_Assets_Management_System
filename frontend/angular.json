@@ -35,6 +35,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/it-asset/",
               "optimization": {
                 "scripts": true,
                 "styles": {

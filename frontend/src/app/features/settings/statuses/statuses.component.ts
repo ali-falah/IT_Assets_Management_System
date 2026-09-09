@@ -5,8 +5,12 @@ import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
 import { MasterDataService, Status } from '../../../core/services/master-data.service';
+import { PageHeaderService } from '../../../core/services/page-header.service';
+import { PageHeaderActionsDirective } from '../../../shared/directives/page-header-actions.directive';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 
-interface ColorPreset {
+export interface ColorPreset {
   name: string;
   class: string;
   bgClass: string;
@@ -15,23 +19,34 @@ interface ColorPreset {
 @Component({
   selector: 'app-statuses',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule, 
+    LucideAngularModule, 
+    PageHeaderActionsDirective, 
+    ConfirmationModalComponent, 
+    DialogComponent
+  ],
   templateUrl: './statuses.component.html',
   styleUrls: ['./statuses.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatusesComponent implements OnInit {
+  private pageHeaderService = inject(PageHeaderService);
   private masterDataService = inject(MasterDataService);
   private toastr = inject(ToastrService);
   private cdr = inject(ChangeDetectorRef);
 
   statuses: Status[] = [];
-  
-  addingStatus = false;
-  newStatus: Partial<Status> = { name: '', colorClass: 'bg-slate-100 text-slate-700' };
-  
-  editingStatus: string | null = null;
-  editStatusData: Partial<Status> = {};
+  showStatusModal = false;
+  selectedStatus: Status | null = null;
+  statusName = '';
+  statusColorClass = 'bg-slate-100 text-slate-700';
+  savingStatus = false;
+
+  showConfirmDelete = false;
+  statusToDelete: Status | null = null;
 
   colorPresets: ColorPreset[] = [
     { name: 'Slate', class: 'bg-slate-100 text-slate-700', bgClass: 'bg-slate-500' },
@@ -49,6 +64,11 @@ export class StatusesComponent implements OnInit {
   ];
 
   ngOnInit() {
+    this.pageHeaderService.setHeader({
+      title: 'Statuses',
+      subtitle: 'Configure asset lifecycle states and colors',
+      backUrl: '/settings'
+    });
     this.loadStatuses();
   }
 
@@ -66,44 +86,41 @@ export class StatusesComponent implements OnInit {
     });
   }
 
-  saveNewStatus() {
-    if (!this.newStatus.name?.trim()) return;
-    const nameStr = this.newStatus.name.trim();
-    const slug = nameStr
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-');
-
-    const payload = {
-      ...this.newStatus,
-      slug
-    };
-
-    this.masterDataService.createStatus(payload).subscribe({
-      next: () => {
-        this.toastr.success('Status created');
-        this.addingStatus = false;
-        this.newStatus = { name: '', colorClass: 'bg-slate-100 text-slate-700' };
-        this.loadStatuses();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.toastr.error('Failed to create status');
-        this.cdr.detectChanges();
-      }
-    });
+  startAddStatus() {
+    this.selectedStatus = null;
+    this.statusName = '';
+    this.statusColorClass = 'bg-slate-100 text-slate-700';
+    this.showStatusModal = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   startEditStatus(status: Status) {
     if (status.isSystem) return;
-    this.editingStatus = status.id;
-    this.editStatusData = { name: status.name, colorClass: status.colorClass };
+    this.selectedStatus = status;
+    this.statusName = status.name || '';
+    this.statusColorClass = status.colorClass || 'bg-slate-100 text-slate-700';
+    this.showStatusModal = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  closeStatusModal() {
+    this.showStatusModal = false;
+    this.selectedStatus = null;
+    this.statusName = '';
+    this.statusColorClass = 'bg-slate-100 text-slate-700';
+    this.savingStatus = false;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   saveStatus() {
-    if (!this.editingStatus || !this.editStatusData.name?.trim()) return;
-    const nameStr = this.editStatusData.name.trim();
+    if (!this.statusName.trim() || this.savingStatus) return;
+    this.savingStatus = true;
+    this.cdr.markForCheck();
+
+    const nameStr = this.statusName.trim();
     const slug = nameStr
       .toLowerCase()
       .replace(/\s+/g, '-')
@@ -111,46 +128,75 @@ export class StatusesComponent implements OnInit {
       .replace(/-+/g, '-');
 
     const payload = {
-      ...this.editStatusData,
-      slug
+      name: nameStr,
+      slug,
+      colorClass: this.statusColorClass
     };
 
-    this.masterDataService.updateStatus(this.editingStatus, payload).subscribe({
-      next: () => {
-        this.toastr.success('Status updated');
-        this.editingStatus = null;
-        this.loadStatuses();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.toastr.error('Failed to update status');
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  deleteStatus(status: Status) {
-    if (status.isSystem) return;
-    if (confirm(`Are you sure you want to delete status "${status.name}"?`)) {
-      this.masterDataService.deleteStatus(status.id).subscribe({
+    if (this.selectedStatus) {
+      this.masterDataService.updateStatus(this.selectedStatus.id, payload).subscribe({
         next: () => {
-          this.toastr.success('Status deleted');
+          this.toastr.success('Status updated successfully');
+          this.savingStatus = false;
+          this.closeStatusModal();
           this.loadStatuses();
           this.cdr.detectChanges();
         },
         error: () => {
-          this.toastr.error('Failed to delete status. It might be in use.');
+          this.toastr.error('Failed to update status');
+          this.savingStatus = false;
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      this.masterDataService.createStatus(payload).subscribe({
+        next: () => {
+          this.toastr.success('Status created successfully');
+          this.savingStatus = false;
+          this.closeStatusModal();
+          this.loadStatuses();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.toastr.error('Failed to create status');
+          this.savingStatus = false;
           this.cdr.detectChanges();
         }
       });
     }
   }
 
-  selectColorForNew(colorClass: string) {
-    this.newStatus.colorClass = colorClass;
+  confirmDeleteStatus(status: Status) {
+    if (status.isSystem) return;
+    this.statusToDelete = status;
+    this.showConfirmDelete = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
-  selectColorForEdit(colorClass: string) {
-    this.editStatusData.colorClass = colorClass;
+  cancelDelete() {
+    this.showConfirmDelete = false;
+    this.statusToDelete = null;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  executeDelete() {
+    if (!this.statusToDelete) return;
+
+    this.masterDataService.deleteStatus(this.statusToDelete.id).subscribe({
+      next: () => {
+        this.toastr.success('Status deleted successfully');
+        this.loadStatuses();
+        this.showConfirmDelete = false;
+        this.statusToDelete = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.error('Failed to delete status. It might be in use by assets.');
+        this.showConfirmDelete = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

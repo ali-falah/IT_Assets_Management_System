@@ -63,7 +63,7 @@ export class DataSyncService {
     this.lastSyncTime = now;
 
     forkJoin({
-      assets: this.assetService.getAssets({ limit: 500, skipCache: true }).pipe(catchError(() => of({ data: [], total: 0 }))),
+      assets: this.assetService.getAssets({ limit: 10000, skipCache: true }).pipe(catchError(() => of({ data: [], total: 0 }))),
       users: this.userService.getUsers(true).pipe(catchError(() => of([]))),
 
       statuses: this.masterDataService.getStatuses().pipe(catchError(() => of([]))),

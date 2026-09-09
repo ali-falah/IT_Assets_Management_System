@@ -1,58 +1,154 @@
-<div class="flex flex-col p-4 lg:p-8 lg:h-full bg-slate-50/50">
-  <!-- Header Section -->
-  <div class="mb-8">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Users & Staff</h1>
-        <p class="text-slate-500 mt-1 text-sm font-medium">Manage system access and asset assignees</p>
+<div class="flex flex-col p-0 lg:h-full w-full">
+
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <div class="flex items-center gap-1.5">
+      <!-- Bulk delete -->
+      <button *ngIf="selectedCount > 0" (click)="deleteSelectedUsers()"
+        class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+        <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+        <span>Delete ({{selectedCount}})</span>
+      </button>
+
+      <!-- Import -->
+      <button (click)="showImportModal = true"
+        class="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer">
+        <lucide-icon name="user-plus" [size]="14"></lucide-icon>
+        <span>Import</span>
+      </button>
+
+      <!-- Export -->
+      <button (click)="exportToExcel()"
+        class="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer">
+        <lucide-icon name="download" [size]="14"></lucide-icon>
+        <span>Export</span>
+      </button>
+
+      <!-- New User -->
+      <button (click)="openModal()"
+        class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs shadow-indigo-200 active:scale-95 cursor-pointer">
+        <lucide-icon name="plus" [size]="14"></lucide-icon>
+        <span>New User</span>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Desktop Compact Search Bar -->
+  <div class="hidden lg:flex items-center justify-between gap-3 mb-2">
+    <div class="relative w-72">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <lucide-icon name="search" [size]="14"></lucide-icon>
+      </div>
+      <input type="text" [value]="searchTerm" placeholder="Search users..."
+        (input)="onSearch($event)"
+        class="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs outline-none placeholder:text-slate-400">
+    </div>
+  </div>
+
+  <!-- ═══════════════ MOBILE HEADER & CONTROLS (Option A Style - Mobile Only) ═══════════════ -->
+  <div class="flex flex-col gap-2 mb-2 lg:hidden">
+    
+    <!-- Top Bar: Title + Count Badge + Action Icon Buttons -->
+    <div class="flex items-center justify-between px-0.5">
+      <div class="flex items-center gap-2">
+        <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-2xs">
+          <lucide-icon name="users" [size]="16"></lucide-icon>
+        </div>
+        <h1 class="text-base font-bold text-slate-800 tracking-tight">Users & Staff</h1>
+        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200">
+          {{ filteredUsers.length }}
+        </span>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Search Bar -->
-        <div class="relative min-w-[300px]">
-          <lucide-icon name="search" [size]="16"
-            class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none lucide-icon-search-translate-x"></lucide-icon>
-          <input type="text" [value]="searchTerm" placeholder="Search by name, email, role..."
-            (input)="onSearch($event)"
-            class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none placeholder:text-slate-400">
-        </div>
+      <!-- Action Icons -->
+      <div class="flex items-center gap-1">
+        <!-- Bulk delete (if selected) -->
+        <button *ngIf="selectedCount > 0" (click)="deleteSelectedUsers()"
+          class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 shadow-2xs transition-all active:scale-95"
+          title="Delete Selected">
+          <lucide-icon name="trash-2" [size]="15"></lucide-icon>
+        </button>
 
-        <div class="h-8 w-px bg-slate-200 mx-1 hidden lg:block"></div>
+        <!-- Search Toggle Button -->
+        <button (click)="toggleMobileSearch()"
+          [ngClass]="mobileSearchOpen || searchTerm ? 'bg-indigo-50 text-indigo-600 border-indigo-200 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-white border-slate-200'"
+          class="p-1.5 rounded-lg border shadow-2xs transition-all active:scale-95"
+          title="Search Users">
+          <lucide-icon name="search" [size]="15"></lucide-icon>
+        </button>
 
-        <div class="flex items-center gap-2">
-          <button *ngIf="selectedCount > 0" (click)="deleteSelectedUsers()"
-            class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3.5 py-2 rounded-lg text-sm font-bold transition-all flex items-center border border-rose-100 whitespace-nowrap active:scale-95">
-            <lucide-icon name="trash-2" [size]="16" class="mr-1.5"></lucide-icon>
-            <span class="hidden sm:inline">Delete ({{selectedCount}})</span>
-            <span class="sm:hidden">{{selectedCount}}</span>
-          </button>
+        <!-- Import Icon Button -->
+        <button (click)="showImportModal = true"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Import Users">
+          <lucide-icon name="user-plus" [size]="15"></lucide-icon>
+        </button>
 
-          <button (click)="showImportModal = true"
-            class="bg-white border border-slate-200 text-slate-600 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center shadow-sm whitespace-nowrap active:scale-95">
-            <lucide-icon name="user-plus" [size]="16" class="mr-1.5"></lucide-icon>
-            Import
-          </button>
+        <!-- Export Excel Icon Button -->
+        <button (click)="exportToExcel()"
+          class="p-1.5 text-emerald-600 hover:bg-emerald-50 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Export to Excel">
+          <lucide-icon name="download" [size]="15"></lucide-icon>
+        </button>
 
-          <button (click)="exportToExcel()"
-            class="bg-white border border-slate-200 text-slate-600 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center shadow-sm whitespace-nowrap active:scale-95">
-            <lucide-icon name="download" [size]="16" class="mr-1.5"></lucide-icon>
-            Export
-          </button>
+        <!-- Refresh Button -->
+        <button (click)="loadUsers()"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Refresh">
+          <lucide-icon name="refresh-cw" [size]="15" [class.animate-spin]="loading"></lucide-icon>
+        </button>
 
-          <button (click)="openModal()"
-            class="bg-primary hover:bg-indigo-600 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-lg shadow-indigo-100 whitespace-nowrap active:scale-95">
-            <lucide-icon name="plus" [size]="16" class="mr-1.5"></lucide-icon>
-            <span class="hidden sm:inline">New User</span>
-            <span class="sm:hidden">New</span>
-          </button>
-        </div>
+        <!-- New User Button -->
+        <button (click)="openModal()"
+          class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold shadow-2xs transition-all active:scale-95">
+          <lucide-icon name="plus" [size]="14"></lucide-icon>
+          <span>New</span>
+        </button>
       </div>
     </div>
+
+    <!-- Collapsible Search Input (Mobile) -->
+    <div *ngIf="mobileSearchOpen || searchTerm" class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <lucide-icon name="search" [size]="14"></lucide-icon>
+      </div>
+      <input type="search" [value]="searchTerm" (input)="onSearch($event)"
+        placeholder="Search staff by name, email, role..."
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" role="searchbox" data-lpignore="true"
+        class="w-full pl-9 pr-8 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+      <button *ngIf="searchTerm" (click)="clearSearch()"
+        class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+        <lucide-icon name="x" [size]="13"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Horizontally Scrollable Role / Category Filter Pills -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+      <button (click)="filterByRole(null)"
+        [ngClass]="!selectedRoleId ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="users" [size]="12"></lucide-icon>
+        <span>All Staff</span>
+        <span [ngClass]="!selectedRoleId ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ users.length }}</span>
+      </button>
+
+      <button *ngFor="let role of roles" (click)="filterByRole(role.id)"
+        [ngClass]="selectedRoleId === role.id ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon [name]="getRoleIcon(role.name)" [size]="12"></lucide-icon>
+        <span>{{ role.name | titlecase }}</span>
+        <span *ngIf="getUserCountByRole(role.id) > 0"
+          [ngClass]="selectedRoleId === role.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ getUserCountByRole(role.id) }}</span>
+      </button>
+    </div>
+
   </div>
 
   <!-- Grid Section -->
   <div
-    class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0 flex flex-col"
+    class="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0 flex flex-col"
     style="min-height: 400px;">
     <!-- Desktop Skeleton Loader -->
     <div *ngIf="loading && users.length === 0" class="hidden lg:block flex-1 p-6">
@@ -117,9 +213,9 @@
                 <p class="text-[11px] text-slate-400 truncate mt-0.5 leading-none">{{ user.email }}</p>
               </div>
             </div>
-            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase shrink-0"
-              [ngClass]="user.role?.colorClass || 'bg-slate-100 text-slate-500'">
-              {{ user.role?.name }}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border shrink-0"
+              [ngClass]="getRoleBadgeConfig(user.role.name).badgeClass">
+              {{ getRoleBadgeConfig(user.role.name).displayName }}
             </span>
           </div>
           <div class="flex justify-between items-center text-xs text-slate-500 pt-3 border-t border-slate-50">
@@ -155,56 +251,47 @@
   </div>
 </div>
 
-<!-- Add User Modal -->
-<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
-    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-      <h3 class="font-bold text-slate-800">Add New User</h3>
-      <button (click)="closeModal()" class="p-2 hover:bg-slate-200 rounded-lg transition-colors">
-        <lucide-icon name="x" [size]="18" class="text-slate-500"></lucide-icon>
-      </button>
+<!-- Add User Modal (Using shared reusable DialogComponent) -->
+<app-dialog
+  *ngIf="showModal"
+  title="Add New User"
+  icon="user-plus"
+  iconClass="text-primary"
+  iconBgClass="bg-primary/10"
+  maxWidth="md"
+  primaryButtonText="Create User"
+  [primaryButtonDisabled]="saving"
+  [primaryButtonLoading]="saving"
+  (close)="closeModal()"
+  (primaryAction)="createUser()">
+  <div class="space-y-4">
+    <div>
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+      <input type="text" [(ngModel)]="newUser.name" placeholder="e.g. John Doe"
+        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
     </div>
 
-    <div class="p-6 space-y-4">
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
-        <input type="text" [(ngModel)]="newUser.name" placeholder="e.g. John Doe"
-          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
-        <input type="email" [(ngModel)]="newUser.email" placeholder="john@example.com (optional)"
-          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
-        <input type="password" [(ngModel)]="newUser.password" placeholder="•••••••• (optional)"
-          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">System Role</label>
-        <select [(ngModel)]="newUser.roleId"
-          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
-          <option *ngFor="let role of roles" [value]="role.id">{{ role.name | titlecase }}</option>
-        </select>
-      </div>
+    <div>
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email Address <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
+      <input type="email" [(ngModel)]="newUser.email" placeholder="john@example.com (optional)"
+        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
     </div>
 
-    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
-      <button (click)="closeModal()"
-        class="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
-      <button (click)="createUser()" [disabled]="saving"
-        class="px-6 py-2 bg-primary hover:bg-indigo-600 text-white text-sm font-bold rounded-lg transition-colors flex items-center shadow-md">
-        <span *ngIf="saving"
-          class="mr-2 w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
-        Create User
-      </button>
+    <div>
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
+      <input type="password" [(ngModel)]="newUser.password" placeholder="•••••••• (optional)"
+        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+    </div>
+
+    <div>
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">System Role</label>
+      <select [(ngModel)]="newUser.roleId"
+        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none">
+        <option *ngFor="let role of roles" [value]="role.id">{{ role.name | titlecase }}</option>
+      </select>
     </div>
   </div>
-</div>
+</app-dialog>
 
 <!-- Import Modal -->
 <app-user-import *ngIf="showImportModal" (close)="showImportModal = false" (imported)="loadUsers()"></app-user-import>

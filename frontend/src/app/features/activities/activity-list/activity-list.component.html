@@ -1,131 +1,847 @@
-<div class="flex-1 flex flex-col space-y-6">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-800">Activity History</h1>
-      <p class="text-slate-500 text-sm mt-1">All asset and user events across the organization</p>
+<div class="flex-1 flex flex-col space-y-3.5 w-full max-w-full overflow-x-hidden pb-4">
+  
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <div class="flex items-center gap-2">
+      <!-- View Mode Toggle -->
+      <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+        <button (click)="setViewMode('timeline')"
+          [ngClass]="viewMode === 'timeline' ? 'bg-white text-indigo-600 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer">
+          <lucide-icon name="list" [size]="13"></lucide-icon>
+          <span>Timeline</span>
+        </button>
+        <button (click)="setViewMode('table')"
+          [ngClass]="viewMode === 'table' ? 'bg-white text-indigo-600 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-800'"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-all cursor-pointer">
+          <lucide-icon name="table" [size]="13"></lucide-icon>
+          <span>Audit Table</span>
+        </button>
+      </div>
+
+      <!-- Export to Excel Button -->
+      <button (click)="exportToExcel()" [disabled]="exporting || activities.length === 0"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer">
+        <lucide-icon name="file-spreadsheet" [size]="14" [class.animate-spin]="exporting"></lucide-icon>
+        <span>{{ exporting ? 'Exporting...' : 'Export Excel' }}</span>
+      </button>
+
+      <!-- Refresh Button -->
+      <button (click)="loadActivities()" title="Refresh Logs"
+        class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95 cursor-pointer">
+        <lucide-icon name="refresh-cw" [size]="14" [class.animate-spin]="loading"></lucide-icon>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- ==================================================== -->
+  <!-- MOBILE STREAM HEADER & QUICK CONTROLS (Mobile Only)   -->
+  <!-- ==================================================== -->
+  <div class="flex flex-col gap-2 md:hidden">
+    
+    <!-- Top Bar: Title + Count Badge + Action Icons -->
+    <div class="flex items-center justify-between px-0.5">
+      <div class="flex items-center gap-2">
+        <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-2xs">
+          <lucide-icon name="history" [size]="16"></lucide-icon>
+        </div>
+        <h1 class="text-base font-bold text-slate-800 tracking-tight">Activity Log</h1>
+        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200">
+          {{ filteredActivities.length }}
+        </span>
+      </div>
+
+      <!-- Compact Action Icons -->
+      <div class="flex items-center gap-1">
+        <!-- Search Toggle Button -->
+        <button (click)="toggleMobileSearch()"
+          [ngClass]="mobileSearchOpen || searchTerm ? 'bg-indigo-50 text-indigo-600 border-indigo-200 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-white border-slate-200'"
+          class="p-1.5 rounded-lg border shadow-2xs transition-all active:scale-95"
+          title="Search Activities">
+          <lucide-icon name="search" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- View Mode Toggle (Timeline vs Table) -->
+        <button (click)="toggleViewMode()"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          [title]="viewMode === 'timeline' ? 'Switch to Table' : 'Switch to Timeline'">
+          <lucide-icon [name]="viewMode === 'timeline' ? 'table' : 'list'" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- Export Excel Icon Button -->
+        <button (click)="exportToExcel()" [disabled]="exporting || activities.length === 0"
+          class="p-1.5 text-emerald-600 hover:bg-emerald-50 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95 disabled:opacity-50"
+          title="Export to Excel">
+          <lucide-icon name="file-spreadsheet" [size]="15" [class.animate-spin]="exporting"></lucide-icon>
+        </button>
+
+        <!-- Refresh Button -->
+        <button (click)="loadActivities()"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Refresh">
+          <lucide-icon name="refresh-cw" [size]="15" [class.animate-spin]="loading"></lucide-icon>
+        </button>
+      </div>
     </div>
 
-    <div class="flex items-center space-x-3">
-      <div class="relative flex-1 sm:w-72">
-        <lucide-icon name="search" [size]="16"
-          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
-        <input type="text" [(ngModel)]="searchTerm" placeholder="Search activity..."
-          class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm text-sm">
+    <!-- Collapsible Search Input (Mobile) -->
+    <div *ngIf="mobileSearchOpen || searchTerm" class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <lucide-icon name="search" [size]="14"></lucide-icon>
       </div>
-      <button (click)="loadActivities()"
-        class="p-2 text-slate-400 hover:text-primary transition-colors bg-white rounded-xl border border-slate-200 shadow-sm shrink-0">
-        <lucide-icon name="refresh-cw" [size]="18" [class.animate-spin]="loading"></lucide-icon>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1"
+        placeholder="Search asset, serial, user, action..."
+        class="w-full pl-9 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+      <button *ngIf="searchTerm" (click)="searchTerm = ''; currentPage = 1"
+        class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+        <lucide-icon name="x" [size]="13"></lucide-icon>
       </button>
+    </div>
+
+    <!-- Horizontally Scrollable Filter Pills (Option A Spec) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+      <!-- All -->
+      <button (click)="setQuickMobileFilter('all')"
+        [ngClass]="selectedCategory === 'all' && selectedDateRange === 'all' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <span>All</span>
+        <span [ngClass]="selectedCategory === 'all' && selectedDateRange === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ activities.length }}</span>
+      </button>
+
+      <!-- Today -->
+      <button (click)="setQuickMobileFilter('today')"
+        [ngClass]="selectedDateRange === 'today' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="clock" [size]="11"></lucide-icon>
+        <span>Today</span>
+        <span *ngIf="stats.last24hCount > 0"
+          [ngClass]="selectedDateRange === 'today' ? 'bg-white/20 text-white' : 'bg-amber-50 text-amber-700'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ stats.last24hCount }}</span>
+      </button>
+
+      <!-- Assets -->
+      <button (click)="setQuickMobileFilter('assets')"
+        [ngClass]="selectedCategory === 'assets' && selectedDateRange === 'all' ? 'bg-blue-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="laptop" [size]="11"></lucide-icon>
+        <span>Assets</span>
+        <span *ngIf="stats.assetEventsCount > 0"
+          [ngClass]="selectedCategory === 'assets' && selectedDateRange === 'all' ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-700'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ stats.assetEventsCount }}</span>
+      </button>
+
+      <!-- Assignments -->
+      <button (click)="setQuickMobileFilter('assignments')"
+        [ngClass]="selectedCategory === 'assignments' && selectedDateRange === 'all' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="arrow-up-right" [size]="11"></lucide-icon>
+        <span>Assignments</span>
+        <span *ngIf="stats.assignmentEventsCount > 0"
+          [ngClass]="selectedCategory === 'assignments' && selectedDateRange === 'all' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-700'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ stats.assignmentEventsCount }}</span>
+      </button>
+
+      <!-- Updates -->
+      <button (click)="setQuickMobileFilter('updates')"
+        [ngClass]="selectedCategory === 'updates' && selectedDateRange === 'all' ? 'bg-amber-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="pencil" [size]="11"></lucide-icon>
+        <span>Updates</span>
+      </button>
+
+      <!-- Users -->
+      <button (click)="setQuickMobileFilter('users')"
+        [ngClass]="selectedCategory === 'users' && selectedDateRange === 'all' ? 'bg-emerald-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="users" [size]="11"></lucide-icon>
+        <span>Users</span>
+      </button>
+
+      <!-- Deletions -->
+      <button (click)="setQuickMobileFilter('deletions')"
+        [ngClass]="selectedCategory === 'deletions' && selectedDateRange === 'all' ? 'bg-rose-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="trash-2" [size]="11"></lucide-icon>
+        <span>Deletions</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Overview Metrics Bar (High-Density Compact with Hover Effects - Desktop Only) -->
+  <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-2.5">
+    <!-- Total Events -->
+    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
+      <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200">
+        <lucide-icon name="activity" [size]="16"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Total Events</p>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.totalCount | number }}</h3>
+      </div>
+    </div>
+
+    <!-- Asset Operations -->
+    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
+      <div class="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
+        <lucide-icon name="laptop" [size]="16"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Asset Operations</p>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.assetEventsCount | number }}</h3>
+      </div>
+    </div>
+
+    <!-- Assignments & Returns -->
+    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
+      <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
+        <lucide-icon name="arrow-up-right" [size]="16"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Assignments</p>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.assignmentEventsCount | number }}</h3>
+      </div>
+    </div>
+
+    <!-- Recent 24h -->
+    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
+      <div class="p-2 bg-amber-50 text-amber-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-200">
+        <lucide-icon name="clock" [size]="16"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-600 transition-colors">Past 24 Hours</p>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.last24hCount | number }}</h3>
+      </div>
     </div>
   </div>
 
-  <!-- Activity List -->
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+  <!-- Sticky Filter & Search Container (Clean Full-Width, No Overflow - Desktop Only) -->
+  <div class="hidden md:block sticky top-0 z-30 pt-1 pb-2 bg-background/95 backdrop-blur-md transition-all w-full">
+    
+    <div class="bg-white rounded-xl p-3 border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 space-y-2.5">
+      <!-- Top Row: Search & Date Presets -->
+      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+        
+        <!-- Live Search Box with Hover & Focus Elevation -->
+        <div class="relative flex-1 group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+            <lucide-icon name="search" [size]="15"></lucide-icon>
+          </div>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1"
+            placeholder="Search by asset, user, serial number, actor, or changes..."
+            class="w-full pl-9 pr-8 py-2 bg-slate-50/90 hover:bg-white hover:border-slate-300 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-xs outline-none transition-all text-xs text-slate-800 placeholder-slate-400">
+          <button *ngIf="searchTerm" (click)="searchTerm = ''; currentPage = 1"
+            class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+            <lucide-icon name="x" [size]="13"></lucide-icon>
+          </button>
+        </div>
 
-    <!-- Loading -->
-    <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="p-4 bg-indigo-50 rounded-full text-primary animate-pulse">
-        <lucide-icon name="clock" [size]="32"></lucide-icon>
-      </div>
-      <p class="text-slate-400 font-medium italic">Loading history...</p>
-    </div>
-
-    <!-- Empty -->
-    <div *ngIf="!loading && activities.length === 0" class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="p-4 bg-slate-50 rounded-full text-slate-300">
-        <lucide-icon name="history" [size]="32"></lucide-icon>
-      </div>
-      <p class="text-slate-400 font-medium italic">No activity recorded yet</p>
-      <p class="text-slate-400 text-xs">Start adding assets or assigning them to users</p>
-    </div>
-
-    <!-- No search results -->
-    <div *ngIf="!loading && activities.length > 0 && filteredActivities.length === 0"
-      class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="p-4 bg-slate-50 rounded-full text-slate-300">
-        <lucide-icon name="search" [size]="32"></lucide-icon>
-      </div>
-      <p class="text-slate-400 font-medium italic">No results matching "{{ searchTerm }}"</p>
-    </div>
-
-    <!-- Activity feed -->
-    <div *ngIf="!loading && filteredActivities.length > 0" class="divide-y divide-slate-50">
-      <div *ngFor="let activity of filteredActivities" class="p-4 hover:bg-slate-50/60 transition-colors group">
-        <div class="flex items-start space-x-4">
-
-          <!-- Icon badge -->
-          <div [ngClass]="actionColor(activity.action)"
-            class="p-2.5 rounded-xl shrink-0 transition-transform group-hover:scale-105">
-            <lucide-icon [name]="actionIcon(activity.action)" [size]="18"></lucide-icon>
+        <!-- Date Range Selectors -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shadow-2xs">
+            <button (click)="setDateRange('all')"
+              [ngClass]="selectedDateRange === 'all' ? 'bg-white text-slate-900 font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 py-1 rounded-md transition-all hover:bg-white/50 active:scale-95">All Time</button>
+            <button (click)="setDateRange('today')"
+              [ngClass]="selectedDateRange === 'today' ? 'bg-white text-slate-900 font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 py-1 rounded-md transition-all hover:bg-white/50 active:scale-95">Today</button>
+            <button (click)="setDateRange('week')"
+              [ngClass]="selectedDateRange === 'week' ? 'bg-white text-slate-900 font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 py-1 rounded-md transition-all hover:bg-white/50 active:scale-95">7 Days</button>
+            <button (click)="setDateRange('month')"
+              [ngClass]="selectedDateRange === 'month' ? 'bg-white text-slate-900 font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 py-1 rounded-md transition-all hover:bg-white/50 active:scale-95">30 Days</button>
+            <button (click)="setDateRange('custom')"
+              [ngClass]="selectedDateRange === 'custom' ? 'bg-white text-slate-900 font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'"
+              class="px-2 py-1 rounded-md transition-all hover:bg-white/50 active:scale-95">Custom</button>
           </div>
 
-          <!-- Content -->
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-1">
-              <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                [ngClass]="actionColor(activity.action)">
-                {{ actionLabel(activity.action) }}
-              </span>
-              <span
-                class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
-                {{ formatDate(activity.date) }}
-              </span>
-            </div>
-
-            <p class="text-sm text-slate-700 mt-1.5 font-medium">{{ activity.message }}</p>
-
-            <!-- Links row -->
-            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-500">
-              <a *ngIf="activity.entityId && (activity.action.startsWith('asset'))"
-                [routerLink]="['/assets', activity.entityId, 'edit']"
-                class="flex items-center gap-1 text-primary hover:underline font-medium">
-                <lucide-icon name="laptop" [size]="12"></lucide-icon>
-                View Asset
-              </a>
-              <span
-                *ngIf="activity.secondaryName && (activity.action === 'asset_assigned' || activity.action === 'asset_returned')"
-                class="flex items-center gap-1">
-                <lucide-icon name="user" [size]="12"></lucide-icon>
-                <button (click)="openUserDialog(activity.secondaryId || '')"
-                  class="text-primary hover:underline font-medium outline-none text-left">
-                  {{ activity.secondaryName }}
-                </button>
-              </span>
-            </div>
-
-            <!-- Enhanced Details Row -->
-            <div *ngIf="activity.assetSerialNumber || activity.ownerName"
-              class="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs">
-              <!-- Serial Number -->
-              <span *ngIf="activity.assetSerialNumber"
-                class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
-                <lucide-icon name="hash" [size]="11" class="text-slate-400"></lucide-icon>
-                Serial: <span class="text-slate-800 font-bold select-all">{{ activity.assetSerialNumber }}</span>
-              </span>
-
-              <!-- Owner / Assignment Status -->
-              <span *ngIf="activity.ownerName"
-                class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
-                <lucide-icon name="shield" [size]="11" class="text-slate-400"></lucide-icon>
-                Current Owner:
-                <span *ngIf="activity.ownerName === 'Stock'"
-                  class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded uppercase text-[10px] tracking-wider">Stock</span>
-                <span *ngIf="activity.ownerName !== 'Stock'"
-                  class="text-indigo-600 font-bold hover:underline cursor-pointer"
-                  (click)="openUserDialog(activity.secondaryId || '')">
-                  {{ activity.ownerName }}
-                </span>
-              </span>
-            </div>
+          <!-- Custom Date Range Inputs -->
+          <div *ngIf="selectedDateRange === 'custom'" class="flex items-center gap-1.5">
+            <input type="date" [(ngModel)]="customStartDate" (change)="currentPage = 1"
+              class="px-2 py-1 bg-white hover:border-slate-300 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all">
+            <span class="text-slate-400 text-xs font-medium">to</span>
+            <input type="date" [(ngModel)]="customEndDate" (change)="currentPage = 1"
+              class="px-2 py-1 bg-white hover:border-slate-300 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all">
           </div>
         </div>
       </div>
+
+      <!-- Category Filter Pills Row with Micro-Interactions -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5 pt-0.5 no-scrollbar border-t border-slate-100">
+        <button (click)="setCategory('all')"
+          [ngClass]="selectedCategory === 'all' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="layers" [size]="12"></lucide-icon>
+          <span>All Activities</span>
+          <span [ngClass]="selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+            class="ml-1 px-1.5 py-0.1 rounded-full text-[10px] font-bold">{{ activities.length }}</span>
+        </button>
+
+        <button (click)="setCategory('assets')"
+          [ngClass]="selectedCategory === 'assets' ? 'bg-blue-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="laptop" [size]="12"></lucide-icon>
+          <span>Assets</span>
+        </button>
+
+        <button (click)="setCategory('assignments')"
+          [ngClass]="selectedCategory === 'assignments' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="arrow-up-right" [size]="12"></lucide-icon>
+          <span>Assignments & Returns</span>
+        </button>
+
+        <button (click)="setCategory('updates')"
+          [ngClass]="selectedCategory === 'updates' ? 'bg-amber-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="pencil" [size]="12"></lucide-icon>
+          <span>Field Diffs</span>
+        </button>
+
+        <button (click)="setCategory('users')"
+          [ngClass]="selectedCategory === 'users' ? 'bg-emerald-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="users" [size]="12"></lucide-icon>
+          <span>Users</span>
+        </button>
+
+        <button (click)="setCategory('deletions')"
+          [ngClass]="selectedCategory === 'deletions' ? 'bg-rose-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
+          <lucide-icon name="trash-2" [size]="12"></lucide-icon>
+          <span>Deletions</span>
+        </button>
+      </div>
     </div>
+
   </div>
+
+  <!-- Content Container with Permanently Docked Bottom Pagination -->
+  <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col">
+
+    <!-- Scrollable Activities List Area -->
+    <div class="overflow-y-auto max-h-[calc(100vh-175px)] md:max-h-[calc(100vh-270px)] min-h-[350px]">
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 space-y-3">
+        <div class="p-3 bg-indigo-50 rounded-full text-indigo-600 animate-pulse">
+          <lucide-icon name="history" [size]="28"></lucide-icon>
+        </div>
+        <p class="text-slate-500 font-medium text-xs">Loading activity records...</p>
+      </div>
+
+      <!-- Empty State (No records at all) -->
+      <div *ngIf="!loading && activities.length === 0" class="flex flex-col items-center justify-center py-16 space-y-3">
+        <div class="p-3 bg-slate-50 rounded-full text-slate-300">
+          <lucide-icon name="history" [size]="28"></lucide-icon>
+        </div>
+        <p class="text-slate-600 font-semibold text-sm">No activity logs recorded yet</p>
+        <p class="text-slate-400 text-xs">Events will automatically appear here as assets and users are managed</p>
+      </div>
+
+      <!-- No Search/Filter Results -->
+      <div *ngIf="!loading && activities.length > 0 && filteredActivities.length === 0"
+        class="flex flex-col items-center justify-center py-16 space-y-3">
+        <div class="p-3 bg-slate-50 rounded-full text-slate-300">
+          <lucide-icon name="search-x" [size]="28"></lucide-icon>
+        </div>
+        <p class="text-slate-600 font-semibold text-sm">No results matching your filters</p>
+        <button (click)="searchTerm = ''; selectedCategory = 'all'; selectedDateRange = 'all'; currentPage = 1"
+          class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all">
+          Reset All Filters
+        </button>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW MODE 1: TIMELINE FEED VIEW           -->
+      <!-- ========================================== -->
+      <div *ngIf="!loading && filteredActivities.length > 0 && viewMode === 'timeline'" class="divide-y divide-slate-100">
+      
+      <div *ngFor="let group of timelineGroups" class="p-3 sm:p-4 space-y-2.5">
+        
+        <!-- Timeline Group Header Badge -->
+        <div class="flex items-center gap-2.5">
+          <span [ngClass]="group.badgeClass"
+            class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border">
+            {{ group.title }}
+          </span>
+          <div class="h-px bg-slate-100 flex-1"></div>
+          <span class="text-slate-400 text-[11px] font-medium">{{ group.items.length }} events</span>
+        </div>
+
+        <!-- Timeline Items in Group -->
+        <div class="space-y-2 pl-0.5 sm:pl-2">
+          <ng-container *ngFor="let activity of group.items; trackBy: trackByActivity">
+            <!-- Desktop Timeline Card (Unchanged) -->
+            <div class="hidden md:block p-3 py-2.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-xl transition-all group">
+              <div class="flex items-start gap-2.5">
+                
+                <!-- Action Icon Badge -->
+                <div [ngClass]="actionColor(activity.action)"
+                  class="p-2 rounded-lg border shrink-0 shadow-2xs transition-transform group-hover:scale-105">
+                  <lucide-icon [name]="actionIcon(activity.action)" [size]="15"></lucide-icon>
+                </div>
+
+                <!-- Main Event Details -->
+                <div class="flex-1 min-w-0">
+                  
+                  <!-- Header: Entity Name + Action Badge + Timestamp + Quick View -->
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <div class="flex items-center flex-wrap gap-1.5 min-w-0">
+                      
+                      <!-- Entity Title / Name -->
+                      <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                        <!-- Clickable Asset Drawer Link -->
+                        <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                          type="button"
+                          (click)="openAssetDrawer(activity.entityId, $event)"
+                          class="hover:text-indigo-600 hover:underline text-left cursor-pointer transition-colors"
+                          title="Quick Inspect Asset Drawer">
+                          {{ activity.entityName }}
+                        </button>
+                        <!-- User Event Target Name -->
+                        <button *ngIf="activity.isUserEvent && activity.action !== 'user_deleted'"
+                          data-user-hover="true"
+                          type="button"
+                          (click)="openUserDialog(activity.entityId || activity.entityName, $event)"
+                          (mouseenter)="onUserHover(activity.entityId || activity.entityName, $event)"
+                          (mouseleave)="onUserHoverLeave()"
+                          class="text-indigo-600 hover:text-indigo-800 hover:underline text-left cursor-pointer transition-colors"
+                          title="View User Details">
+                          {{ activity.entityName }}
+                        </button>
+                        <span *ngIf="(!activity.entityId && !activity.entityName) || activity.action === 'asset_deleted' || activity.action === 'user_deleted'">
+                          {{ activity.entityName || 'System Record' }}
+                        </span>
+                      </span>
+
+                      <!-- Category / Action Badge -->
+                      <span [ngClass]="actionBadgeClass(activity.action)"
+                        class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.2 rounded-full">
+                        {{ actionLabel(activity.action) }}
+                      </span>
+                    </div>
+
+                    <!-- Date/Time + Drawer Icon -->
+                    <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
+                      <span class="text-[10px] font-medium" [title]="activity.date | date:'medium'">
+                        {{ formatDate(activity.date) }}
+                      </span>
+                      <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                        type="button"
+                        (click)="openAssetDrawer(activity.entityId, $event)"
+                        class="p-1 hover:text-indigo-600 hover:bg-white rounded-md transition-all cursor-pointer"
+                        title="Quick Inspect Drawer">
+                        <lucide-icon name="panel-right" [size]="12"></lucide-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Message Description -->
+                  <p class="text-xs text-slate-700 font-normal leading-relaxed">{{ activity.message }}</p>
+
+                  <!-- Detailed Attribute Metadata Chips -->
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs">
+                    
+                    <!-- Serial Number Chip (Assets only) -->
+                    <div *ngIf="activity.assetSerialNumber"
+                      class="inline-flex items-center gap-1.5 bg-white text-slate-700 px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs text-[11px] font-medium">
+                      <lucide-icon name="hash" [size]="11" class="text-slate-400"></lucide-icon>
+                      <span class="font-mono font-bold">{{ activity.assetSerialNumber }}</span>
+                      <button type="button"
+                        (click)="copySerial(activity.assetSerialNumber, $event)"
+                        class="p-0.5 rounded hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center justify-center ml-0.5"
+                        [ngClass]="copiedSerialMap[activity.assetSerialNumber] ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 hover:text-indigo-600'"
+                        [title]="copiedSerialMap[activity.assetSerialNumber] ? 'Copied!' : 'Copy Serial'">
+                        <lucide-icon [name]="copiedSerialMap[activity.assetSerialNumber] ? 'check' : 'copy'" [size]="11"></lucide-icon>
+                      </button>
+                    </div>
+
+                    <!-- Target Assignee Chip (Assignments/Returns/Transfers) -->
+                    <span *ngIf="activity.ownerName"
+                      class="inline-flex items-center gap-1 bg-white text-slate-700 px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs text-[11px] font-medium">
+                      <lucide-icon name="user" [size]="11" class="text-slate-400"></lucide-icon>
+                      <span>Assignee:</span>
+                      <span *ngIf="activity.ownerName === 'Stock'" class="font-bold text-emerald-700">Stock</span>
+                      <button type="button" *ngIf="activity.ownerName !== 'Stock'" 
+                        data-user-hover="true"
+                        (mouseenter)="onUserHover(activity.secondaryId || activity.ownerName, $event)" 
+                        (mouseleave)="onUserHoverLeave()"
+                        (click)="openUserDialog(activity.secondaryId || activity.ownerName, $event)"
+                        class="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer focus:outline-none">
+                        {{ activity.ownerName }}
+                      </button>
+                    </span>
+
+                    <!-- Performed By / Actor Attribution -->
+                    <span *ngIf="activity.actorName"
+                      class="inline-flex items-center gap-1 bg-slate-100/70 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/60 text-[11px] font-medium">
+                      <lucide-icon name="shield-check" [size]="11" class="text-slate-500"></lucide-icon>
+                      By: <span class="font-semibold text-slate-800">{{ activity.actorName }}</span>
+                    </span>
+
+                    <!-- Quick View Asset Button -->
+                    <button type="button" *ngIf="activity.entityId && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
+                      (click)="viewAsset(activity.entityId, $event)"
+                      class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold ml-auto hover:underline text-[11px] cursor-pointer focus:outline-none"
+                      title="Open Asset Edit Page">
+                      <lucide-icon name="external-link" [size]="11"></lucide-icon>
+                      <span>View Asset</span>
+                    </button>
+                  </div>
+
+                  <!-- Field-Level Diffs Box (only when valid differences exist) -->
+                  <div *ngIf="activity.diffList && activity.diffList.length > 0" class="mt-2 p-2 bg-white border border-slate-200/80 rounded-lg space-y-1 shadow-2xs">
+                    <div class="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      <lucide-icon name="git-commit" [size]="11"></lucide-icon>
+                      <span>Modified Fields</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                      <div *ngFor="let diff of activity.diffList; trackBy: trackByDiff"
+                        class="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 text-[11px] px-2 py-0.5 rounded-md">
+                        <span class="font-semibold text-slate-600">{{ diff.field }}:</span>
+                        <span class="line-through text-rose-500 font-medium text-[10px]">{{ diff.from }}</span>
+
+                        <lucide-icon name="arrow-right" [size]="10" class="text-slate-400"></lucide-icon>
+
+                        <button type="button" *ngIf="diff.isUser"
+                          (click)="openUserDialog(diff.userId || diff.to, $event)"
+                          class="text-emerald-600 font-bold text-[10px] hover:underline cursor-pointer focus:outline-none relative z-10">
+                          {{ diff.to }}
+                        </button>
+                        <span *ngIf="!diff.isUser"
+                          class="text-emerald-600 font-bold text-[10px]">
+                          {{ diff.to }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Mobile Stream Feed Item (Option A - Native Stream Feed) -->
+            <div class="block md:hidden bg-white hover:bg-slate-50 active:bg-slate-100/80 border border-slate-200/80 rounded-xl p-2.5 shadow-2xs transition-all cursor-pointer"
+              (click)="onMobileCardClick(activity, $event)">
+              
+              <!-- Top Row: Action Dot/Icon + Entity Name + Relative Time + Chevron -->
+              <div class="flex items-center gap-2">
+                <!-- Action Mini Icon Badge -->
+                <div [ngClass]="actionColor(activity.action)"
+                  class="p-1.5 rounded-lg border shrink-0 shadow-2xs">
+                  <lucide-icon [name]="actionIcon(activity.action)" [size]="13"></lucide-icon>
+                </div>
+
+                <!-- Entity Name -->
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-slate-900 text-xs truncate">
+                    {{ activity.entityName || 'System Record' }}
+                  </div>
+                </div>
+
+                <!-- Relative Time -->
+                <span class="text-[10px] font-medium text-slate-400 shrink-0">
+                  {{ formatRelativeTime(activity.date) }}
+                </span>
+
+                <lucide-icon name="chevron-right" [size]="13" class="text-slate-300 shrink-0"></lucide-icon>
+              </div>
+
+              <!-- Second Row: Action Badge + Actor Attribution + Target -->
+              <div class="flex items-center flex-wrap gap-1.5 mt-1.5 pl-7">
+                <!-- Action Badge -->
+                <span [ngClass]="actionBadgeClass(activity.action)"
+                  class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md">
+                  {{ actionLabel(activity.action) }}
+                </span>
+
+                <!-- Actor Attribution -->
+                <span *ngIf="activity.actorName" class="text-[10px] text-slate-500 font-medium">
+                  by <span class="text-slate-700 font-semibold">{{ activity.actorName }}</span>
+                </span>
+
+                <!-- Assignee Target (if applicable) -->
+                <span *ngIf="activity.ownerName" class="text-[10px] text-slate-500 font-medium">
+                  &bull; to <span class="text-indigo-600 font-semibold">{{ activity.ownerName }}</span>
+                </span>
+              </div>
+
+              <!-- Third Row: Serial Number & Modified Field Diffs -->
+              <div *ngIf="activity.assetSerialNumber || (activity.diffList && activity.diffList.length > 0)"
+                class="flex items-center flex-wrap gap-1.5 mt-1.5 pl-7">
+                
+                <!-- Serial Tag with stopPropagation copy -->
+                <div *ngIf="activity.assetSerialNumber"
+                  (click)="$event.stopPropagation(); copySerial(activity.assetSerialNumber, $event)"
+                  class="inline-flex items-center gap-1 bg-slate-100/80 hover:bg-slate-200 active:scale-95 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200/80 text-[10px] font-mono font-medium transition-all"
+                  [title]="copiedSerialMap[activity.assetSerialNumber] ? 'Copied!' : 'Copy Serial'">
+                  <span class="text-slate-400">#</span>
+                  <span>{{ activity.assetSerialNumber }}</span>
+                  <lucide-icon [name]="copiedSerialMap[activity.assetSerialNumber] ? 'check' : 'copy'" [size]="10"
+                    [ngClass]="copiedSerialMap[activity.assetSerialNumber] ? 'text-emerald-600' : 'text-slate-400'"></lucide-icon>
+                </div>
+
+                <!-- Modified Field Diffs (Compact) -->
+                <ng-container *ngIf="activity.diffList && activity.diffList.length > 0">
+                  <div *ngFor="let diff of activity.diffList.slice(0, 2); trackBy: trackByDiff"
+                    class="inline-flex items-center gap-1 bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 text-[10px]">
+                    <span class="font-medium text-slate-500">{{ diff.field }}:</span>
+                    <span class="text-emerald-700 font-semibold">{{ diff.to }}</span>
+                  </div>
+                  <span *ngIf="activity.diffList.length > 2" class="text-[10px] text-slate-400 font-medium">
+                    +{{ activity.diffList.length - 2 }}
+                  </span>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW MODE 2: AUDIT TABLE VIEW (Compact)   -->
+    <!-- ========================================== -->
+    <div *ngIf="!loading && filteredActivities.length > 0 && viewMode === 'table'" class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-600 border-collapse">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[10px]">
+          <tr>
+            <th class="py-2.5 px-3">Date & Time</th>
+            <th class="py-2.5 px-3">Action</th>
+            <th class="py-2.5 px-3">Entity</th>
+            <th class="py-2.5 px-3">Serial No.</th>
+            <th class="py-2.5 px-3">Assignee / Target</th>
+            <th class="py-2.5 px-3">Performed By</th>
+            <th class="py-2.5 px-3">Changes & Details</th>
+            <th class="py-2.5 px-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let activity of paginatedActivities; trackBy: trackByActivity" class="hover:bg-slate-50/80 transition-colors">
+            
+            <!-- Date & Time -->
+            <td class="py-2 px-3 whitespace-nowrap font-medium text-slate-700">
+              <div class="text-[11px]">{{ formatDate(activity.date) }}</div>
+              <span class="text-[10px] text-slate-400">{{ formatRelativeTime(activity.date) }}</span>
+            </td>
+
+            <!-- Action Badge -->
+            <td class="py-2 px-3 whitespace-nowrap">
+              <span [ngClass]="actionBadgeClass(activity.action)"
+                class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.1 rounded-full">
+                <lucide-icon [name]="actionIcon(activity.action)" [size]="10"></lucide-icon>
+                {{ actionLabel(activity.action) }}
+              </span>
+            </td>
+
+            <!-- Entity -->
+            <td class="py-2 px-3 font-semibold text-slate-900 max-w-xs truncate text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                  type="button"
+                  (click)="openAssetDrawer(activity.entityId, $event)"
+                  class="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-left cursor-pointer truncate"
+                  title="Quick Inspect Asset">
+                  {{ activity.entityName || '-' }}
+                </button>
+                <button *ngIf="activity.isUserEvent && activity.action !== 'user_deleted'"
+                  data-user-hover="true"
+                  type="button"
+                  (click)="openUserDialog(activity.entityId || activity.entityName, $event)"
+                  (mouseenter)="onUserHover(activity.entityId || activity.entityName, $event)"
+                  (mouseleave)="onUserHoverLeave()"
+                  class="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-left cursor-pointer truncate"
+                  title="View User Details">
+                  {{ activity.entityName || '-' }}
+                </button>
+                <span *ngIf="!activity.entityId || activity.action === 'asset_deleted' || activity.action === 'user_deleted'">
+                  {{ activity.entityName || '-' }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Serial Number -->
+            <td class="py-2 px-3 whitespace-nowrap font-mono text-slate-800">
+              <div *ngIf="activity.assetSerialNumber" class="inline-flex items-center gap-1">
+                <span class="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-bold">
+                  {{ activity.assetSerialNumber }}
+                </span>
+                <button type="button"
+                  (click)="copySerial(activity.assetSerialNumber, $event)"
+                  class="p-0.5 rounded hover:bg-slate-200 transition-colors cursor-pointer inline-flex items-center justify-center"
+                  [ngClass]="copiedSerialMap[activity.assetSerialNumber] ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 hover:text-indigo-600'"
+                  [title]="copiedSerialMap[activity.assetSerialNumber] ? 'Copied!' : 'Copy Serial'">
+                  <lucide-icon [name]="copiedSerialMap[activity.assetSerialNumber] ? 'check' : 'copy'" [size]="11"></lucide-icon>
+                </button>
+              </div>
+              <span *ngIf="!activity.assetSerialNumber" class="text-slate-300">-</span>
+            </td>
+
+            <!-- Assignee / Target -->
+            <td class="py-2 px-3 whitespace-nowrap text-[11px]">
+              <span *ngIf="activity.isUserEvent" class="text-slate-300">-</span>
+              <span *ngIf="!activity.isUserEvent && activity.ownerName === 'Stock'"
+                class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded text-[10px] uppercase">
+                Stock
+              </span>
+              <button type="button" *ngIf="!activity.isUserEvent && activity.ownerName && activity.ownerName !== 'Stock'"
+                data-user-hover="true"
+                (mouseenter)="onUserHover(activity.secondaryId || activity.ownerName, $event)" 
+                (mouseleave)="onUserHoverLeave()"
+                (click)="openUserDialog(activity.secondaryId || activity.ownerName, $event)"
+                class="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline cursor-pointer focus:outline-none">
+                {{ activity.ownerName }}
+              </button>
+              <span *ngIf="!activity.isUserEvent && !activity.ownerName" class="text-slate-300">-</span>
+            </td>
+
+            <!-- Performed By -->
+            <td class="py-2 px-3 whitespace-nowrap text-[11px]">
+              <span class="text-slate-700 font-medium">{{ activity.actorName || 'System Admin' }}</span>
+            </td>
+
+            <!-- Changes & Details -->
+            <td class="py-2 px-3 max-w-sm">
+              <div class="text-slate-700 truncate text-[11px]" title="{{ activity.message }}">{{ activity.message }}</div>
+              <div *ngIf="activity.diffList && activity.diffList.length > 0" class="flex flex-wrap gap-1 mt-0.5">
+                <span *ngFor="let diff of activity.diffList; trackBy: trackByDiff"
+                  class="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-1.5 py-0.1 rounded text-[10px] border border-slate-200 font-medium">
+                  <span class="text-slate-500 font-semibold">{{ diff.field }}:</span>
+                  <span class="line-through text-rose-500 font-medium text-[10px]">{{ diff.from }}</span>
+
+                  <lucide-icon name="arrow-right" [size]="8" class="text-slate-400"></lucide-icon>
+
+                  <button type="button" *ngIf="diff.isUser"
+                    (click)="openUserDialog(diff.userId || diff.to, $event)"
+                    class="text-emerald-600 font-bold hover:underline cursor-pointer focus:outline-none relative z-10">
+                    {{ diff.to }}
+                  </button>
+                  <span *ngIf="!diff.isUser"
+                    class="text-emerald-600 font-bold">
+                    {{ diff.to }}
+                  </span>
+                </span>
+              </div>
+            </td>
+
+            <!-- Action Link -->
+            <td class="py-2 px-3 whitespace-nowrap text-right">
+              <div *ngIf="activity.entityId && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
+                class="flex items-center justify-end gap-2">
+                <button type="button"
+                  (click)="openAssetDrawer(activity.entityId, $event)"
+                  class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-all cursor-pointer"
+                  title="Quick Inspect Drawer">
+                  <lucide-icon name="panel-right" [size]="13"></lucide-icon>
+                </button>
+                <button type="button"
+                  (click)="viewAsset(activity.entityId, $event)"
+                  class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline text-[11px] cursor-pointer inline-flex items-center gap-0.5"
+                  title="Open Asset Edit Page">
+                  <span>View</span>
+                  <lucide-icon name="external-link" [size]="10"></lucide-icon>
+                </button>
+              </div>
+              <button type="button" *ngIf="activity.isUserEvent && activity.action !== 'user_deleted'"
+                (click)="openUserDialog(activity.entityId || activity.entityName, $event)"
+                class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline text-[11px] cursor-pointer"
+                title="View User Details">
+                Profile
+              </button>
+              <span *ngIf="activity.action === 'asset_deleted' || activity.action === 'user_deleted'" class="text-slate-300">-</span>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <!-- End Scrollable Activities List Area -->
+
+  <!-- Pagination & Page Controls Bar (Permanently Fixed/Docked at Bottom of Card) -->
+  <div *ngIf="!loading && filteredActivities.length > 0"
+    class="shrink-0 p-2.5 px-4 bg-slate-50/95 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-600">
+    
+    <!-- Info & Page Size -->
+    <div class="flex items-center gap-3 text-[11px]">
+      <span>
+        Showing <span class="font-bold text-slate-800">{{ (currentPage - 1) * pageSize + 1 }}</span>
+        to <span class="font-bold text-slate-800">{{ Math.min(currentPage * pageSize, filteredActivities.length) }}</span>
+        of <span class="font-bold text-slate-800">{{ filteredActivities.length }}</span> events
+      </span>
+
+      <div class="flex items-center gap-1.5">
+        <span class="text-slate-400">Rows:</span>
+        <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)"
+          class="bg-white border border-slate-200 rounded-md px-1.5 py-0.5 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500 shadow-2xs">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex items-center gap-1 self-center sm:self-auto text-xs">
+      <button (click)="goToPage(1)" [disabled]="currentPage === 1"
+        class="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-600 transition-all shadow-2xs active:scale-95"
+        title="First Page">
+        <lucide-icon name="chevrons-left" [size]="13"></lucide-icon>
+      </button>
+
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+        class="px-2.5 py-1 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-600 font-semibold transition-all shadow-2xs active:scale-95"
+        title="Previous Page">
+        Previous
+      </button>
+
+      <span class="px-2.5 py-1 font-bold text-slate-800 text-[11px] bg-white border border-slate-200/80 rounded-md shadow-2xs">
+        {{ currentPage }} / {{ totalPages }}
+      </span>
+
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+        class="px-2.5 py-1 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-600 font-semibold transition-all shadow-2xs active:scale-95"
+        title="Next Page">
+        Next
+      </button>
+
+      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"
+        class="p-1 rounded-md border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-600 transition-all shadow-2xs active:scale-95"
+        title="Last Page">
+        <lucide-icon name="chevrons-right" [size]="13"></lucide-icon>
+      </button>
+    </div>
+
+  </div>
+
+</div>
 </div>
 
-<!-- User Detail Dialog -->
-<app-user-detail-dialog *ngIf="showUserDetailDialog && selectedUserIdForDialog" [userId]="selectedUserIdForDialog"
-  (close)="showUserDetailDialog = false; selectedUserIdForDialog = null" (updated)="loadActivities()">
+<!-- User Detail Dialog Component Modal -->
+<app-user-detail-dialog *ngIf="showUserDetailDialog && selectedUserIdForDialog"
+  [userId]="selectedUserIdForDialog"
+  (close)="closeUserDialog()"
+  (updated)="loadActivities()">
 </app-user-detail-dialog>
+
+<!-- Quick Asset Inspection Drawer (Slide-Over Panel) -->
+<app-asset-drawer
+  [assetId]="selectedAssetIdForDrawer"
+  [isOpen]="showAssetDrawer"
+  (close)="closeAssetDrawer()"
+  (updated)="onDrawerUpdated()"
+  (openUserDetail)="openUserDialog($event)">
+</app-asset-drawer>
+
+<!-- Assignee Hover Micro-Profile Card -->
+<app-user-hover-card
+  [user]="hoverUser"
+  [visible]="showHoverCard"
+  [position]="hoverCardPosition"
+  (viewProfile)="openUserDialog($event)"
+  (cardHoverChange)="onCardHoverChange($event)">
+</app-user-hover-card>

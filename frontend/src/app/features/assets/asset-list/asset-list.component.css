@@ -6,6 +6,12 @@
   -webkit-overflow-scrolling: touch;
 }
 
+@media (min-width: 1024px) {
+  .filter-pills {
+    display: none !important;
+  }
+}
+
 .filter-pills::-webkit-scrollbar {
   display: none;
 }

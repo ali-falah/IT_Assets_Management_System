@@ -1,13 +1,20 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-slate-800">Dashboard</h1>
-    <div class="flex space-x-2">
-     
-      <button routerLink="/assets/new" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-        <lucide-icon name="plus" [size]="16" class="mr-2"></lucide-icon>
-        New Asset
-      </button>
-    </div>
+<div class="space-y-4 sm:space-y-6">
+  <!-- Desktop Top Header Actions Projection -->
+  <ng-template appPageHeaderActions>
+    <button routerLink="/assets/new"
+      class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs shadow-indigo-100 active:scale-95 cursor-pointer">
+      <lucide-icon name="plus" [size]="14"></lucide-icon>
+      <span>New Asset</span>
+    </button>
+  </ng-template>
+
+  <!-- Mobile Page Title Bar (Untouched for Mobile App) -->
+  <div class="flex items-center justify-between md:hidden">
+    <h1 class="text-xl font-bold text-slate-800">Dashboard</h1>
+    <button routerLink="/assets/new" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center shadow-sm">
+      <lucide-icon name="plus" [size]="14" class="mr-1.5"></lucide-icon>
+      New Asset
+    </button>
   </div>
 
   <!-- Loading -->
@@ -87,86 +94,160 @@
           </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-slate-800">Recent Activity</h3>
-            <button routerLink="/activities" class="text-sm text-primary hover:underline font-medium">View All</button>
-          </div>
-          <div class="space-y-1">
-            <div *ngIf="recentActivity.length === 0" class="py-8 text-center text-sm text-slate-400">
-              No activity yet — start adding or assigning assets.
+        <!-- Recent Activity (Option 1: Modern Connected Stream) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+          
+          <!-- Header with Mini Filter Tabs & View All -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                <lucide-icon name="history" [size]="16"></lucide-icon>
+              </div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-800">Recent Activity</h3>
             </div>
-            <div *ngFor="let activity of recentActivity"
-              class="flex flex-col py-2.5 px-2 rounded-xl hover:bg-slate-50/60 transition-colors group border-b border-slate-50/80 last:border-0">
-              <div class="flex items-center gap-3">
-                <!-- Colour-coded icon -->
-                <div class="p-2 rounded-xl shrink-0 transition-transform group-hover:scale-110"
-                  [ngClass]="{
-                    'bg-emerald-50 text-emerald-600': activity.action === 'asset_created',
-                    'bg-rose-50    text-rose-600':    activity.action === 'asset_deleted',
-                    'bg-indigo-50  text-indigo-600':  activity.action === 'asset_assigned',
-                    'bg-teal-50    text-teal-600':    activity.action === 'asset_returned',
-                    'bg-amber-50   text-amber-600':   activity.action === 'asset_updated',
-                    'bg-violet-50  text-violet-600':  activity.action === 'user_created' || activity.action === 'user_deleted',
-                    'bg-slate-50   text-slate-500':   !['asset_created','asset_deleted','asset_assigned','asset_returned','asset_updated','user_created','user_deleted'].includes(activity.action)
-                  }">
-                  <lucide-icon
-                    [name]="activity.action === 'asset_created'  ? 'plus-circle'   :
-                             activity.action === 'asset_deleted'  ? 'trash-2'       :
-                             activity.action === 'asset_assigned' ? 'user-check'    :
-                             activity.action === 'asset_returned' ? 'arrow-down-left':
-                             activity.action === 'asset_updated'  ? 'pencil'        :
-                             activity.action === 'user_created'   ? 'user-plus'     :
-                             activity.action === 'user_deleted'   ? 'user-minus'    : 'clock'"
-                    [size]="15">
-                  </lucide-icon>
+
+            <!-- Mini Filter Switcher & View All Link -->
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/80 text-[11px]">
+                <button (click)="setActivityFilter('all')"
+                  [ngClass]="activityFilter === 'all' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2 py-0.5 rounded-md transition-all">All</button>
+                <button (click)="setActivityFilter('assets')"
+                  [ngClass]="activityFilter === 'assets' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2 py-0.5 rounded-md transition-all">Assets</button>
+                <button (click)="setActivityFilter('assignments')"
+                  [ngClass]="activityFilter === 'assignments' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2 py-0.5 rounded-md transition-all">Assignments</button>
+                <button (click)="setActivityFilter('users')"
+                  [ngClass]="activityFilter === 'users' ? 'bg-white text-indigo-600 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                  class="px-2 py-0.5 rounded-md transition-all">Users</button>
+              </div>
+
+              <a routerLink="/activities" class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold hover:underline shrink-0 ml-1">
+                <span>View All</span>
+                <lucide-icon name="arrow-right" [size]="12"></lucide-icon>
+              </a>
+            </div>
+          </div>
+
+          <!-- Connected Stream Feed -->
+          <div class="relative pl-6 space-y-3 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200/80">
+            
+            <div *ngIf="filteredRecentActivity.length === 0" class="py-8 text-center text-xs text-slate-400">
+              No recent activity found for this filter.
+            </div>
+
+            <div *ngFor="let activity of filteredRecentActivity; trackBy: trackByActivity"
+              class="relative group bg-slate-50/50 hover:bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/60 hover:border-indigo-200 hover:shadow-xs transition-all duration-200">
+              
+              <!-- Connected Node Icon on Left -->
+              <div [ngClass]="actionColor(activity.action)"
+                class="absolute -left-6 top-3 p-1 rounded-full border-2 border-white shadow-2xs transition-transform group-hover:scale-110">
+                <lucide-icon [name]="actionIcon(activity.action)" [size]="11"></lucide-icon>
+              </div>
+
+              <!-- Line 1: Header (Entity Name + Action Badge + Relative Time + Quick Action Link) -->
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="flex items-center flex-wrap gap-1.5 min-w-0">
+                  <!-- Entity Name -->
+                  <button *ngIf="activity.entityId && !activity.isUserEvent" 
+                    (click)="openAssetDrawer(activity.entityId)"
+                    class="text-xs sm:text-sm font-bold text-slate-900 hover:text-indigo-600 hover:underline truncate text-left outline-none cursor-pointer"
+                    title="Quick Inspect Asset">
+                    {{ activity.entityName }}
+                  </button>
+                  <button *ngIf="activity.isUserEvent"
+                    data-user-hover="true"
+                    type="button"
+                    (click)="openUserDialog(activity.entityId || activity.entityName, $event)"
+                    (mouseenter)="onUserHover(activity.entityId || activity.entityName, $event)"
+                    (mouseleave)="onUserHoverLeave()"
+                    class="text-xs sm:text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline truncate cursor-pointer text-left"
+                    title="View User Details">
+                    {{ activity.entityName || 'User' }}
+                  </button>
+                  <span *ngIf="!activity.isUserEvent && !activity.entityId" class="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                    System Record
+                  </span>
+
+                  <!-- Action Pill Badge -->
+                  <span [ngClass]="actionBadgeClass(activity.action)"
+                    class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full">
+                    {{ actionLabel(activity.action) }}
+                  </span>
                 </div>
 
-                <!-- Text -->
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm text-slate-800 font-medium leading-snug break-words">{{ activity.message }}</p>
-                  <p class="text-xs text-slate-400 mt-0.5">{{ activity.date | date:'short' }}</p>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <!-- Relative Time with tooltip -->
+                  <span class="text-[10px] font-medium text-slate-400" [title]="activity.date | date:'medium'">
+                    {{ formatRelativeTime(activity.date) }}
+                  </span>
+
+                  <!-- Quick View Link Button -->
+                  <button *ngIf="activity.entityId && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
+                     (click)="openAssetDrawer(activity.entityId)"
+                     title="Inspect Asset"
+                     class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors">
+                    <lucide-icon name="panel-right" [size]="13"></lucide-icon>
+                  </button>
                 </div>
               </div>
 
-              <!-- Badges/Details Row -->
-              <div class="flex flex-wrap items-center gap-2 mt-2 pl-11 text-xs">
-                <!-- View Asset Link -->
-                <a *ngIf="activity.entityId && (activity.action.startsWith('asset'))"
-                   [routerLink]="['/assets', activity.entityId, 'edit']"
-                   class="inline-flex items-center gap-1 text-primary hover:underline font-semibold bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/30">
-                  <lucide-icon name="laptop" [size]="11"></lucide-icon>
-                  View
-                </a>
+              <!-- Line 2: Natural Description & Contextual Metadata Chips -->
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
+                
+                <!-- Message Text -->
+                <span class="text-[11px] text-slate-600 font-medium">
+                  {{ activity.message }}
+                </span>
 
                 <!-- Serial Badge -->
-                <span *ngIf="activity.assetSerialNumber" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
-                  <lucide-icon name="hash" [size]="11" class="text-slate-400"></lucide-icon>
-                  Serial: <span class="text-slate-800 font-bold select-all">{{ activity.assetSerialNumber }}</span>
+                <span *ngIf="activity.assetSerialNumber"
+                  class="inline-flex items-center gap-0.5 text-[10px] bg-white text-slate-700 px-1.5 py-0.2 rounded border border-slate-200 font-mono">
+                  #<span class="font-bold text-slate-900">{{ activity.assetSerialNumber }}</span>
                 </span>
-                
-                <!-- Owner Badge -->
-                <span *ngIf="activity.ownerName" class="inline-flex items-center gap-1 font-medium bg-slate-50 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-100">
-                  <lucide-icon name="shield" [size]="11" class="text-slate-400"></lucide-icon>
-                  Owner: 
-                  <span *ngIf="activity.ownerName === 'Stock'" class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded uppercase text-[10px] tracking-wider">Stock</span>
-                  <span *ngIf="activity.ownerName !== 'Stock'" class="text-indigo-600 font-bold hover:underline cursor-pointer" (click)="openUserDialog(activity.secondaryId || '')">
+
+                <!-- Owner Badge (Asset events only) -->
+                <span *ngIf="!activity.isUserEvent && activity.ownerName"
+                  class="inline-flex items-center gap-1 text-[10px] bg-white text-slate-600 px-1.5 py-0.2 rounded border border-slate-200">
+                  <span *ngIf="activity.ownerName === 'Stock'" class="text-emerald-700 font-bold">In Stock</span>
+                  <button type="button" *ngIf="activity.ownerName !== 'Stock'" 
+                    data-user-hover="true"
+                    (mouseenter)="onUserHover(activity.secondaryId || activity.ownerName, $event)" 
+                    (mouseleave)="onUserHoverLeave()"
+                    (click)="openUserDialog(activity.secondaryId || activity.ownerName, $event)"
+                    class="text-indigo-600 font-bold hover:text-indigo-800 hover:underline cursor-pointer focus:outline-none">
                     {{ activity.ownerName }}
-                  </span>
+                  </button>
                 </span>
+
+                <!-- Modified Field Diffs -->
+                <div *ngIf="activity.diffList && activity.diffList.length > 0" class="w-full flex flex-wrap gap-1 mt-1">
+                  <span *ngFor="let diff of activity.diffList; trackBy: trackByDiff"
+                    class="inline-flex items-center gap-1 bg-white text-slate-700 px-1.5 py-0.2 rounded text-[10px] border border-slate-200 font-medium">
+                    <span class="font-semibold text-slate-500">{{ diff.field }}:</span>
+                    <span class="line-through text-rose-500">{{ diff.from }}</span>
+                    <lucide-icon name="arrow-right" [size]="8" class="text-slate-400"></lucide-icon>
+                    <button type="button" *ngIf="diff.isUser"
+                      (click)="openUserDialog(diff.userId || diff.to, $event)"
+                      class="text-emerald-600 font-bold hover:underline cursor-pointer focus:outline-none relative z-10">
+                      {{ diff.to }}
+                    </button>
+                    <span *ngIf="!diff.isUser"
+                      class="text-emerald-600 font-bold">
+                      {{ diff.to }}
+                    </span>
+                  </span>
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </div>
 
-        <!-- User Detail Dialog -->
-        <app-user-detail-dialog
-          *ngIf="showUserDetailDialog && selectedUserIdForDialog"
-          [userId]="selectedUserIdForDialog"
-          (close)="showUserDetailDialog = false; selectedUserIdForDialog = null"
-          (updated)="ngOnInit()">
-        </app-user-detail-dialog>
+
 
       </div>
 
@@ -195,3 +276,28 @@
 
   </ng-container>
 </div>
+
+<!-- Quick Asset Inspection Drawer (Slide-Over Panel) -->
+<app-asset-drawer
+  [assetId]="selectedAssetIdForDrawer"
+  [isOpen]="showAssetDrawer"
+  (close)="closeAssetDrawer()"
+  (openUserDetail)="openUserDialog($event)">
+</app-asset-drawer>
+
+<!-- Assignee Hover Micro-Profile Card -->
+<app-user-hover-card
+  [user]="hoverUser"
+  [visible]="showHoverCard"
+  [position]="hoverCardPosition"
+  (viewProfile)="openUserDialog($event)"
+  (cardHoverChange)="onCardHoverChange($event)">
+</app-user-hover-card>
+
+<!-- User Detail Dialog -->
+<app-user-detail-dialog
+  *ngIf="showUserDetailDialog && selectedUserIdForDialog"
+  [userId]="selectedUserIdForDialog"
+  (close)="closeUserDialog()"
+  (updated)="ngOnInit()">
+</app-user-detail-dialog>

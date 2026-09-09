@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto space-y-6 flex-1 flex flex-col w-full">
-  <div class="flex items-center space-x-4">
+  <div class="flex items-center space-x-4 md:hidden">
     <a routerLink="/settings" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">
       <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
     </a>
@@ -12,82 +12,56 @@
     </div>
   </div>
 
-  <!-- Search & Add Header -->
-  <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-    <div class="relative group w-full md:max-w-md">
-      <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <div class="flex items-center gap-2">
+      <!-- Search Input in Header -->
+      <div class="relative group">
+        <div class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none">
+          <lucide-icon name="search" [size]="14"></lucide-icon>
+        </div>
+        <input 
+          type="text" 
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search categories..." 
+          class="pl-8 pr-7 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/90 rounded-lg text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none w-48 sm:w-56 transition-all duration-150 shadow-2xs"
+        >
+        @if (searchTerm) {
+          <button 
+            type="button"
+            (click)="onSearchChange('')" 
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer">
+            <lucide-icon name="x" [size]="12"></lucide-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Add Category Button in Header -->
+      <button (click)="startAddCategory()" class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs shadow-indigo-200 active:scale-95 cursor-pointer shrink-0">
+        <lucide-icon name="plus" [size]="14"></lucide-icon>
+        <span>Add Category</span>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Mobile-only Search & Add Header (hidden on desktop) -->
+  <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between md:hidden">
+    <div class="relative group flex-1">
+      <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none">
+        <lucide-icon name="search" [size]="18"></lucide-icon>
       </div>
       <input 
         type="text" 
-        [(ngModel)]="searchTerm"
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"
         placeholder="Search categories..." 
-        class="pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white hover:border-slate-300 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none w-full transition-all duration-200 shadow-sm"
+        class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm bg-white hover:border-slate-300 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none w-full transition-all duration-200 shadow-sm"
       >
     </div>
-    <button *ngIf="!addingCat" (click)="addingCat = true" class="w-full md:w-auto bg-primary hover:bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center shadow-md active:scale-95">
-      <lucide-icon name="plus" [size]="18" class="mr-2"></lucide-icon> Add New Category
+    <button (click)="startAddCategory()" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer shrink-0">
+      <lucide-icon name="plus" [size]="18" class="mr-1.5"></lucide-icon> Add New Category
     </button>
-  </div>
-
-  <!-- Add/Edit Form -->
-  <div *ngIf="addingCat || editingCat" class="bg-white rounded-2xl shadow-lg border border-indigo-100 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-    <div class="p-6 space-y-6">
-      <div class="flex justify-between items-center">
-        <h3 class="text-lg font-bold text-slate-800">{{ addingCat ? 'New Category' : 'Edit Category' }}</h3>
-        <button (click)="addingCat = false; editingCat = null" class="text-slate-400 hover:text-slate-600"><lucide-icon name="x" [size]="20"></lucide-icon></button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Category Name</label>
-          <input *ngIf="addingCat" type="text" [(ngModel)]="newCat.name" placeholder="e.g. Laptops" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-          <input *ngIf="!addingCat" type="text" [(ngModel)]="editCatData.name" placeholder="e.g. Laptops" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
-          <input *ngIf="addingCat" type="text" [(ngModel)]="newCat.description" placeholder="Brief description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-          <input *ngIf="!addingCat" type="text" [(ngModel)]="editCatData.description" placeholder="Brief description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all">
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Choose Icon</label>
-          <div class="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-            @for (icon of iconOptions; track icon) {
-              <button (click)="addingCat ? newCat.icon = icon : editCatData.icon = icon" 
-                [class.bg-primary]="(addingCat ? newCat.icon : editCatData.icon) === icon"
-                [class.text-white]="(addingCat ? newCat.icon : editCatData.icon) === icon"
-                class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all flex items-center justify-center">
-                <lucide-icon [name]="icon" [size]="18"></lucide-icon>
-              </button>
-            }
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Brand Color</label>
-          <div class="grid grid-cols-6 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-            @for (color of colorOptions; track color) {
-              <button (click)="addingCat ? newCat.color = color : editCatData.color = color" 
-                [class.ring-4]="(addingCat ? newCat.color : editCatData.color) === color"
-                class="w-8 h-8 rounded-full bg-{{color}}-500 transition-all border-2 border-white shadow-sm ring-{{color}}-400/30">
-              </button>
-            }
-          </div>
-        </div>
-      </div>
-
-      <div class="flex justify-end space-x-3 pt-6 border-t border-slate-100">
-        <button (click)="addingCat = false; editingCat = null" class="px-6 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm transition-all">Cancel</button>
-        <button (click)="addingCat ? saveNewCategory() : saveCategory()" 
-          [disabled]="addingCat ? !newCat.name : !editCatData.name" 
-          class="px-8 py-2.5 bg-primary text-white rounded-xl hover:bg-indigo-600 font-bold text-sm transition-all shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95">
-          {{ addingCat ? 'Create Category' : 'Update Category' }}
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- Reusable Data Table -->
@@ -98,6 +72,61 @@
     [actionsTemplate]="actionsTemplate">
   </app-data-table>
 </div>
+
+<!-- Category Dialog (Using shared reusable DialogComponent) -->
+<app-dialog
+  *ngIf="showCategoryModal"
+  [title]="selectedCategory ? 'Edit Category' : 'New Category'"
+  icon="tags"
+  iconClass="text-indigo-600"
+  iconBgClass="bg-indigo-50"
+  maxWidth="2xl"
+  [primaryButtonText]="selectedCategory ? 'Update Category' : 'Create Category'"
+  [primaryButtonDisabled]="!categoryName.trim() || savingCategory"
+  [primaryButtonLoading]="savingCategory"
+  (close)="closeCategoryModal()"
+  (primaryAction)="saveCategory()">
+  <div class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Category Name</label>
+        <input type="text" [(ngModel)]="categoryName" placeholder="e.g. Laptops" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
+        <input type="text" [(ngModel)]="categoryDescription" placeholder="Brief description" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm">
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Choose Icon</label>
+        <div class="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100 max-h-48 overflow-y-auto custom-scrollbar">
+          @for (iconOpt of iconOptions; track iconOpt) {
+            <button type="button" (click)="categoryIcon = iconOpt" 
+              [class.bg-primary]="categoryIcon === iconOpt"
+              [class.text-white]="categoryIcon === iconOpt"
+              class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all flex items-center justify-center cursor-pointer">
+              <lucide-icon [name]="iconOpt" [size]="18"></lucide-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Brand Color</label>
+        <div class="grid grid-cols-6 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          @for (colorOpt of colorOptions; track colorOpt) {
+            <button type="button" (click)="categoryColor = colorOpt" 
+              [class.ring-4]="categoryColor === colorOpt"
+              class="w-8 h-8 rounded-full bg-{{colorOpt}}-500 transition-all border-2 border-white shadow-sm ring-{{colorOpt}}-400/30 cursor-pointer">
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</app-dialog>
 
 <!-- Custom Templates for Table Cells -->
 <ng-template #iconTemplate let-cat>
@@ -127,5 +156,5 @@
   [message]="'Are you sure you want to delete ' + categoryToDelete?.name + '? This action is permanent and might affect assets assigned to this category.'"
   confirmText="Delete Category"
   (confirm)="executeDelete()"
-  (cancel)="showConfirmDelete = false">
+  (cancel)="cancelDelete()">
 </app-confirmation-modal>

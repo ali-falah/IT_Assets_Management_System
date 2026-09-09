@@ -1,140 +1,206 @@
-<div class="flex flex-col p-4 lg:p-8 lg:h-full bg-slate-50/50">
+<div class="flex flex-col p-0 lg:h-full w-full">
 
-  <!-- ═══════════════ HEADER ═══════════════ -->
-  <div class="mb-4 lg:mb-8">
-
-    <!-- Row 1: Title + New button (+ bulk delete if rows selected) -->
-    <div class="flex items-center justify-between gap-3">
-      <div>
-        <h1 class="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">IT Assets</h1>
-        <p class="hidden sm:block text-slate-500 mt-0.5 text-xs lg:text-sm font-medium">Manage and track your company's
-          physical equipment</p>
-      </div>
-
-      <div class="flex items-center gap-2 shrink-0">
-        <!-- Bulk delete pill -->
-        <button *ngIf="selectedCount > 0" (click)="deleteSelectedAssets()"
-          class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center border border-rose-100 active:scale-95">
-          <lucide-icon name="trash-2" [size]="15" class="mr-1.5"></lucide-icon>
-          <span class="hidden sm:inline">Delete ({{selectedCount}})</span>
-          <span class="sm:hidden">{{selectedCount}}</span>
-        </button>
-
-        <!-- Desktop secondary buttons -->
-        <div class="hidden lg:flex items-center gap-2">
-          <!-- Save View -->
-          <div class="relative">
-            <button (click)="showSaveViewInput = !showSaveViewInput" [class.bg-indigo-50]="showSaveViewInput"
-              [class.text-primary]="showSaveViewInput"
-              class="bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95"
-              title="Save View">
-              <lucide-icon name="bookmark" [size]="15"></lucide-icon>
-              Save View
-            </button>
-            <div *ngIf="showSaveViewInput"
-              class="absolute right-0 top-full mt-2 z-20 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-64 animate-slide-in">
-              <p class="text-xs font-bold text-slate-600 mb-2">Name this view</p>
-              <div class="flex items-center gap-2">
-                <input [(ngModel)]="newViewName" placeholder="e.g. Broken Laptops" (keydown.enter)="saveCurrentView()"
-                  class="flex-1 min-w-0 text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                <button (click)="saveCurrentView()"
-                  class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
-              </div>
-            </div>
-          </div>
-          <!-- Filter -->
-          <button (click)="toggleFilters()" [class.bg-indigo-50]="showFloatingFilters"
-            class="bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
-            <lucide-icon name="filter" [size]="15"></lucide-icon>
-            Filter
-          </button>
-          <!-- Import -->
-          <button (click)="showImportModal = true"
-            class="bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
-            <lucide-icon name="upload" [size]="15"></lucide-icon>
-            Import
-          </button>
-          <!-- Export -->
-          <button (click)="exportToExcel()"
-            class="bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
-            <lucide-icon name="download" [size]="15"></lucide-icon>
-            Export
-          </button>
-        </div>
-
-        <!-- New Asset (always) -->
-        <button routerLink="/assets/new"
-          class="bg-primary hover:bg-indigo-600 text-white px-3 lg:px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-100 active:scale-95">
-          <lucide-icon name="plus" [size]="16"></lucide-icon>
-          <span class="hidden sm:inline">New Asset</span>
-          <span class="sm:hidden">New</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Row 2: Search + mobile icon buttons -->
-    <div class="flex items-center gap-2 mt-3">
-      <div class="relative flex-1">
-        <lucide-icon name="search" [size]="15"
-          class="lucide-icon-search-translate-x absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></lucide-icon>
-        <input type="text" (input)="onSearch($event)" [value]="currentSearchTerm" placeholder="Search assets..."
-          class="w-full pl-8 pr-9 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none placeholder:text-slate-400">
-        <button *ngIf="currentSearchTerm" (click)="clearSearch()"
-          class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-all active:scale-90"
-          title="Clear search">
-          <lucide-icon name="x" [size]="14"></lucide-icon>
-        </button>
-      </div>
-
-      <!-- Mobile-only icon buttons -->
-      <div class="flex items-center gap-1.5 lg:hidden shrink-0">
-        <button (click)="showImportModal = true"
-          class="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-colors">
-          <lucide-icon name="upload" [size]="16"></lucide-icon>
-        </button>
-        <div class="relative">
-          <button (click)="showSaveViewInput = !showSaveViewInput" [class.bg-indigo-50]="showSaveViewInput"
-            [class.text-primary]="showSaveViewInput"
-            class="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-lg shadow-sm hover:bg-slate-50 active:scale-95 transition-colors"
-            title="Save View">
-            <lucide-icon name="bookmark" [size]="16"></lucide-icon>
-          </button>
-          <div *ngIf="showSaveViewInput"
-            class="absolute right-0 top-full mt-2 z-30 bg-white border border-slate-200 rounded-xl shadow-xl p-3 w-60 animate-slide-in">
-            <p class="text-xs font-bold text-slate-600 mb-2">Name this view</p>
-            <div class="flex items-center gap-2">
-              <input [(ngModel)]="newViewName" placeholder="e.g. Broken Laptops" (keydown.enter)="saveCurrentView()"
-                class="flex-1 min-w-0 text-sm px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-              <button (click)="saveCurrentView()"
-                class="shrink-0 px-3 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-indigo-600 active:scale-95">Save</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 3: Filter pills — horizontally scrollable on mobile -->
-    <div class="filter-pills custom-scrollbar mt-3">
-      <button (click)="filterByStatus(null)" class="filter-pill" [class.active]="!selectedStatusId">All Assets</button>
-      <button *ngFor="let status of statuses" (click)="filterByStatus(status.id)" class="filter-pill"
-        [class.active]="selectedStatusId === status.id">{{ status.name }}</button>
-
-      <div *ngIf="savedViews.length > 0" class="h-6 w-px bg-slate-200 self-center shrink-0 mx-1"></div>
-
-      <button *ngFor="let view of savedViews" (click)="applyView(view)"
-        class="saved-view-pill flex items-center gap-1.5">
-        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
-        </svg>
-        {{ view.name }}
-        <span *ngIf="view.searchTerm"
-          class="text-[9px] font-mono bg-violet-200/60 text-violet-800 px-1.5 py-0.5 rounded-full">
-          "{{ view.searchTerm }}"
-        </span>
-        <span (click)="deleteView(view, $event)"
-          class="ml-0.5 hover:bg-violet-300/50 rounded-full p-0.5 transition-colors" title="Remove">×</span>
+  <!-- Projected Header Actions for Desktop Layout -->
+  <ng-template appPageHeaderActions>
+    <div class="flex items-center gap-1.5">
+      <!-- Bulk delete pill -->
+      <button *ngIf="selectedCount > 0" (click)="deleteSelectedAssets()"
+        class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-2xs">
+        <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+        <span>Delete ({{selectedCount}})</span>
       </button>
+
+      <!-- Filter -->
+      <button (click)="toggleFilters()" [class.bg-indigo-50]="showFloatingFilters" [class.text-primary]="showFloatingFilters" [class.border-indigo-200]="showFloatingFilters"
+        class="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95">
+        <lucide-icon name="filter" [size]="14"></lucide-icon>
+        <span>Filter</span>
+      </button>
+
+      <!-- Import -->
+      <button (click)="showImportModal = true"
+        class="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95">
+        <lucide-icon name="upload" [size]="14"></lucide-icon>
+        <span>Import</span>
+      </button>
+
+      <!-- Export -->
+      <button (click)="exportToExcel()"
+        class="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-95">
+        <lucide-icon name="download" [size]="14"></lucide-icon>
+        <span>Export</span>
+      </button>
+
+      <!-- New Asset -->
+      <button routerLink="/assets/new"
+        class="bg-primary hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs shadow-indigo-200 active:scale-95">
+        <lucide-icon name="plus" [size]="14"></lucide-icon>
+        <span>New Asset</span>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- ═══════════════ MOBILE HEADER & CONTROLS (Option A Style - Mobile Only) ═══════════════ -->
+  <div class="flex flex-col gap-2 mb-2 lg:hidden">
+    
+    <!-- Top Bar: Title + Count Badge + Action Icon Buttons -->
+    <div class="flex items-center justify-between px-0.5">
+      <div class="flex items-center gap-2">
+        <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-2xs">
+          <lucide-icon name="laptop" [size]="16"></lucide-icon>
+        </div>
+        <h1 class="text-base font-bold text-slate-800 tracking-tight">IT Assets</h1>
+        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200">
+          {{ assets.length }}
+        </span>
+      </div>
+
+      <!-- Action Icons -->
+      <div class="flex items-center gap-1">
+        <!-- Bulk delete (if selected) -->
+        <button *ngIf="selectedCount > 0" (click)="deleteSelectedAssets()"
+          class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg border border-rose-200 shadow-2xs transition-all active:scale-95"
+          title="Delete Selected">
+          <lucide-icon name="trash-2" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- Search Toggle Button -->
+        <button (click)="toggleMobileSearch()"
+          [ngClass]="mobileSearchOpen || currentSearchTerm ? 'bg-indigo-50 text-indigo-600 border-indigo-200 shadow-xs' : 'text-slate-500 hover:text-slate-800 bg-white border-slate-200'"
+          class="p-1.5 rounded-lg border shadow-2xs transition-all active:scale-95"
+          title="Search Assets">
+          <lucide-icon name="search" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- Import Icon Button -->
+        <button (click)="showImportModal = true"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Import Assets">
+          <lucide-icon name="upload" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- Export Excel Icon Button -->
+        <button (click)="exportToExcel()"
+          class="p-1.5 text-emerald-600 hover:bg-emerald-50 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Export to Excel">
+          <lucide-icon name="download" [size]="15"></lucide-icon>
+        </button>
+
+        <!-- Refresh Button -->
+        <button (click)="loadAssets(currentFilters)"
+          class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
+          title="Refresh">
+          <lucide-icon name="refresh-cw" [size]="15" [class.animate-spin]="loading"></lucide-icon>
+        </button>
+
+        <!-- New Asset Button -->
+        <button routerLink="/assets/new"
+          class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold shadow-2xs transition-all active:scale-95">
+          <lucide-icon name="plus" [size]="14"></lucide-icon>
+          <span>New</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Search Input (Mobile) -->
+    <div *ngIf="mobileSearchOpen || currentSearchTerm" class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <lucide-icon *ngIf="!searchLoading" name="search" [size]="14"></lucide-icon>
+        <lucide-icon *ngIf="searchLoading" name="loader" [size]="14" class="animate-spin text-primary"></lucide-icon>
+      </div>
+      <input type="search" (input)="onSearch($event)" (keydown.enter)="onSearchEnter()" (keydown.escape)="clearSearch()"
+        [value]="currentSearchTerm"
+        placeholder="Search name, serial, category, location, assignee..."
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="search" role="searchbox" data-lpignore="true"
+        class="w-full pl-9 pr-24 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+      
+      <!-- Right Status Badge & Clear button -->
+      <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">
+        <span *ngIf="searchLoading && currentSearchTerm"
+          class="text-[10px] font-semibold text-primary bg-indigo-50 px-1.5 py-0.5 rounded animate-pulse">
+          Searching...
+        </span>
+        <span *ngIf="!searchLoading && currentSearchTerm"
+          class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+          {{ assets.length }} found
+        </span>
+        <button *ngIf="currentSearchTerm" (click)="clearSearch()"
+          class="text-slate-400 hover:text-slate-600 p-0.5" title="Clear search">
+          <lucide-icon name="x" [size]="13"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Horizontally Scrollable Status Pills Strip -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+      <button (click)="filterByStatus(null)"
+        [ngClass]="!selectedStatusId ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <lucide-icon name="laptop" [size]="12"></lucide-icon>
+        <span>All Assets</span>
+        <span [ngClass]="!selectedStatusId ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold">{{ totalAssetsCount || assets.length }}</span>
+      </button>
+
+      <button *ngFor="let status of statuses" (click)="filterByStatus(status.id)"
+        [ngClass]="selectedStatusId === status.id ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0 transition-all active:scale-95">
+        <span class="w-1.5 h-1.5 rounded-full"
+          [ngClass]="selectedStatusId === status.id ? 'bg-white' : getStatusDotColor(status.name)"></span>
+        <span>{{ status.name }}</span>
+        <span *ngIf="selectedStatusId === status.id"
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-white/20 text-white">{{ assets.length }}</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ DESKTOP TOOLBAR (Combined Search + Status Tabs in One Row) ═══════════════ -->
+  <div class="hidden lg:flex items-center gap-3 mb-2">
+    <!-- Search Input (expands to take all remaining width) -->
+    <div class="relative flex-1 min-w-[200px]">
+      <!-- Search Icon or Spinning Loader -->
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <lucide-icon *ngIf="!searchLoading" name="search" [size]="14"></lucide-icon>
+        <lucide-icon *ngIf="searchLoading" name="loader" [size]="14" class="animate-spin text-primary"></lucide-icon>
+      </div>
+
+      <input type="text" (input)="onSearch($event)" (keydown.enter)="onSearchEnter()" (keydown.escape)="clearSearch()"
+        [value]="currentSearchTerm"
+        placeholder="Search assets by name, serial, category, location, assignee..."
+        class="w-full pl-9 pr-28 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-2xs outline-none placeholder:text-slate-400">
+
+      <!-- Right badge / clear controls inside the input -->
+      <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-1.5">
+        <!-- Searching Badge -->
+        <span *ngIf="searchLoading && currentSearchTerm"
+          class="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded transition-all animate-pulse">
+          Searching...
+        </span>
+
+        <!-- Match Count Badge (when search is finished and term present) -->
+        <span *ngIf="!searchLoading && currentSearchTerm"
+          class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded transition-all">
+          {{ assets.length }} found
+        </span>
+
+        <!-- Clear Search Button -->
+        <button *ngIf="currentSearchTerm" (click)="clearSearch()"
+          class="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-all active:scale-90"
+          title="Clear search (Esc)">
+          <lucide-icon name="x" [size]="12"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Vertical Divider -->
+    <div class="h-5 w-px bg-slate-200 shrink-0"></div>
+
+    <!-- Status Tabs -->
+    <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 min-w-0 shrink-0">
+      <button (click)="filterByStatus(null)" class="filter-pill !py-1.5 !px-3 !text-xs !rounded-lg shrink-0" [class.active]="!selectedStatusId">All Assets</button>
+      <button *ngFor="let status of statuses" (click)="filterByStatus(status.id)" class="filter-pill !py-1.5 !px-3 !text-xs !rounded-lg shrink-0"
+        [class.active]="selectedStatusId === status.id">{{ status.name }}</button>
     </div>
   </div>
 
@@ -142,7 +208,7 @@
     (imported)="loadAssets()"></app-asset-import>
 
   <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
-  <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0"
+  <div class="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm lg:overflow-hidden relative lg:min-h-0"
     style="min-height: 400px;">
 
     <!-- Refresh spinner overlay -->
@@ -178,7 +244,7 @@
       </div>
 
       <ag-grid-angular *ngIf="!loading || assets.length > 0" class="ag-theme-quartz w-full flex-1" [rowData]="assets"
-        [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+        [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [context]="gridContext"
         [rowSelection]="{ mode: 'multiRow', enableClickSelection: false }" [pagination]="true" [paginationPageSize]="50"
         [enableCellTextSelection]="true" [ensureDomOrder]="true" [stopEditingWhenCellsLoseFocus]="true"
         [getRowId]="getRowId" (gridReady)="onGridReady($event)" (filterChanged)="onFilterChanged()"
@@ -210,12 +276,21 @@
       <!-- Empty state -->
       <div *ngIf="!loading && assets.length === 0" class="py-20 text-center">
         <lucide-icon name="package" [size]="48" class="mx-auto mb-4 text-slate-200"></lucide-icon>
-        <p class="text-slate-400 font-semibold text-base">No assets found</p>
-        <p class="text-slate-400 text-sm mt-1">Try a different filter or add a new asset</p>
-        <button routerLink="/assets/new"
-          class="mt-5 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-md shadow-indigo-100 active:scale-95">
-          + Add Asset
-        </button>
+        <p class="text-slate-700 font-semibold text-base">No assets found</p>
+        <p *ngIf="currentSearchTerm" class="text-slate-400 text-xs mt-1">
+          No matches found for "<span class="font-medium text-slate-600">{{ currentSearchTerm }}</span>"
+        </p>
+        <p *ngIf="!currentSearchTerm" class="text-slate-400 text-xs mt-1">Try a different filter or add a new asset</p>
+        <div class="mt-4 flex items-center justify-center gap-2">
+          <button *ngIf="currentSearchTerm" (click)="clearSearch()"
+            class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors active:scale-95">
+            Clear Search
+          </button>
+          <button routerLink="/assets/new"
+            class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-md shadow-indigo-100 active:scale-95">
+            + Add Asset
+          </button>
+        </div>
       </div>
 
       <!-- Asset Cards -->
@@ -268,19 +343,24 @@
           </div>
 
           <!-- Card actions -->
-          <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+          <div class="flex items-center gap-1.5 mt-3 pt-3 border-t border-slate-50">
             <a [routerLink]="['/assets', asset.id, 'edit']"
-              class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
+              class="flex-1 flex items-center justify-center gap-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
               <lucide-icon name="pencil" [size]="13"></lucide-icon>
               Edit
             </a>
+            <button (click)="openPrintLabel(asset)"
+              class="flex-1 flex items-center justify-center gap-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition-colors active:scale-95">
+              <lucide-icon name="printer" [size]="13"></lucide-icon>
+              Label
+            </button>
             <button (click)="cloneAsset(asset)"
-              class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold rounded-xl transition-colors active:scale-95">
+              class="flex-1 flex items-center justify-center gap-1 py-2 bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold rounded-xl transition-colors active:scale-95">
               <lucide-icon name="copy" [size]="13"></lucide-icon>
               Clone
             </button>
             <button type="button" (click)="$event.stopPropagation(); confirmDeleteSingle(asset)"
-              class="flex-1 flex items-center justify-center gap-1.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
+              class="flex-1 flex items-center justify-center gap-1 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors active:scale-95">
               <lucide-icon name="trash-2" [size]="13"></lucide-icon>
               Delete
             </button>
@@ -313,3 +393,28 @@
 <app-user-detail-dialog *ngIf="showUserDetailDialog && selectedUserIdForDialog" [userId]="selectedUserIdForDialog"
   (close)="showUserDetailDialog = false; selectedUserIdForDialog = null" (updated)="loadAssets(currentFilters)">
 </app-user-detail-dialog>
+
+<!-- Quick Asset Inspection Drawer (Slide-Over Panel) -->
+<app-asset-drawer
+  [assetId]="selectedAssetIdForDrawer"
+  [isOpen]="showAssetDrawer"
+  (close)="closeAssetDrawer()"
+  (updated)="onDrawerAssetUpdated()"
+  (openUserDetail)="openUserDialog($event)">
+</app-asset-drawer>
+
+<!-- Assignee Hover Micro-Profile Card -->
+<app-user-hover-card
+  [user]="hoverUser"
+  [visible]="showHoverCard"
+  [position]="hoverCardPosition"
+  (viewProfile)="openUserDialog($event)"
+  (cardHoverChange)="onCardHoverChange($event)">
+</app-user-hover-card>
+
+<!-- Print Asset Label Modal -->
+<app-asset-label-modal
+  [show]="showPrintLabelModal"
+  [asset]="assetForLabel"
+  (close)="closePrintLabelModal()">
+</app-asset-label-modal>

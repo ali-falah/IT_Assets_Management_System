@@ -1,14 +1,28 @@
 <div class="flex h-[100dvh] bg-background overflow-hidden font-sans text-slate-800">
   <!-- Desktop Sidebar -->
-  <aside class="bg-sidebar text-slate-300 hidden md:flex flex-col transition-all duration-300 ease-in-out shrink-0"
+  <aside class="bg-[#0b1120] text-slate-300 hidden md:flex flex-col border-r border-slate-800/80 transition-all duration-300 ease-in-out shrink-0 relative z-20 shadow-2xl select-none"
     [class.w-64]="!isCollapsed" [class.w-16]="isCollapsed">
-    <div class="h-16 flex items-center px-4 shrink-0" [class.justify-between]="!isCollapsed"
+    
+    <!-- Sidebar Header / Brand -->
+    <div class="h-16 flex items-center px-3.5 shrink-0 border-b border-slate-800/80"
+      [class.justify-between]="!isCollapsed"
       [class.justify-center]="isCollapsed">
       @if (!isCollapsed) {
-      <span class="text-white font-bold text-lg truncate">IT Assets</span>
+      <div class="flex items-center min-w-0">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 shrink-0 font-extrabold text-xs tracking-tight border border-white/20">
+          IT
+        </div>
+        <div class="flex flex-col min-w-0 ml-2.5">
+          <div class="flex items-center gap-1.5">
+            <span class="text-white font-bold text-sm tracking-tight truncate">IT Assets</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-medium tracking-wide truncate">Management</span>
+        </div>
+      </div>
       }
       <button (click)="toggleSidebar()"
-        class="text-slate-400 hover:text-white p-1 rounded-md transition-colors focus:outline-none">
+        class="text-slate-400 hover:text-white p-1.5 hover:bg-slate-800/80 rounded-lg transition-all focus:outline-none shrink-0 cursor-pointer"
+        [title]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="4" x2="20" y1="12" y2="12" />
@@ -18,101 +32,254 @@
       </button>
     </div>
 
-    <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+    <!-- Navigation List -->
+    <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-1 sidebar-scrollbar">
+      @if (!isCollapsed) {
+      <div class="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+        Platform
+      </div>
+      }
+
       <!-- Dashboard -->
-      <a routerLink="/dashboard" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      <a routerLink="/dashboard" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Dashboard' : ''">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-105">
           <rect width="7" height="9" x="3" y="3" rx="1" />
           <rect width="7" height="5" x="14" y="3" rx="1" />
           <rect width="7" height="9" x="14" y="12" rx="1" />
           <rect width="7" height="5" x="3" y="16" rx="1" />
         </svg>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Dashboard</span> }
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Dashboard</span> }
       </a>
 
       <!-- Assets -->
-      <a routerLink="/assets" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      <a routerLink="/assets" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Assets' : ''">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-105">
           <path
             d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m14 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16" />
         </svg>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Assets</span> }
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Assets</span> }
       </a>
 
       <!-- Activity -->
-      <a routerLink="/activities" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      <a routerLink="/activities" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Activity' : ''">
-        <lucide-icon name="history" [size]="20" class="shrink-0"></lucide-icon>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Activity</span> }
+        <lucide-icon name="history" [size]="20" class="shrink-0 transition-transform group-hover:scale-105"></lucide-icon>
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Activity</span> }
       </a>
 
       <!-- Scan -->
-      <a routerLink="/scan" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      <a routerLink="/scan" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Scan' : ''">
-        <lucide-icon name="scan" [size]="20" class="shrink-0"></lucide-icon>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Scan</span> }
+        <lucide-icon name="scan" [size]="20" class="shrink-0 transition-transform group-hover:scale-105"></lucide-icon>
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Scan</span> }
       </a>
 
-      <!-- Users — uses plain isAdmin boolean to avoid async pipe race condition -->
+      <!-- Administration Group -->
       @if (isAdmin) {
-      <a routerLink="/users" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      @if (!isCollapsed) {
+      <div class="px-3 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+        Management
+      </div>
+      } @else {
+      <div class="h-px bg-slate-800/80 my-2 mx-2"></div>
+      }
+
+      <!-- Users -->
+      <a routerLink="/users" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Users' : ''">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-105">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
           <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Users</span> }
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Users</span> }
       </a>
       }
 
+      @if (!isAdmin) {
+      @if (isCollapsed) {
+      <div class="h-px bg-slate-800/80 my-2 mx-2"></div>
+      }
+      }
+
       <!-- Settings -->
-      <a routerLink="/settings" routerLinkActive="bg-primary text-white shadow-md"
-        class="flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-150 cursor-pointer"
+      <a routerLink="/settings" routerLinkActive="bg-gradient-to-r from-indigo-600 to-indigo-700 !text-white shadow-md shadow-indigo-900/40 border border-indigo-500/30 font-semibold"
+        class="flex items-center rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 transition-all duration-200 cursor-pointer group"
+        [class.justify-center]="isCollapsed"
+        [class.w-10]="isCollapsed"
+        [class.h-10]="isCollapsed"
+        [class.mx-auto]="isCollapsed"
+        [class.px-3]="!isCollapsed"
+        [class.py-2.5]="!isCollapsed"
+        [class.mx-1]="!isCollapsed"
+        [class.gap-3]="!isCollapsed"
         [title]="isCollapsed ? 'Settings' : ''">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform group-hover:scale-105">
           <path
             d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        @if (!isCollapsed) { <span class="ml-3 truncate text-sm font-medium">Settings</span> }
+        @if (!isCollapsed) { <span class="truncate text-sm font-medium">Settings</span> }
       </a>
     </nav>
+
+    <!-- Sidebar Footer: User Card with Profile Menu -->
+    <div class="p-2.5 border-t border-slate-800/80 shrink-0 relative profile-menu-container">
+      @if (!isCollapsed) {
+      <button type="button" (click)="toggleProfileMenu($event)"
+        class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700/80 text-left transition-all cursor-pointer focus:outline-none group">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-xs flex items-center justify-center select-none shadow-xs group-hover:scale-105 transition-transform shrink-0">
+          {{ userInitials$ | async }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-semibold text-slate-200 truncate group-hover:text-white">{{ (user$ | async)?.name || 'Admin' }}</p>
+          <p class="text-[10px] text-slate-400 font-medium truncate">{{ (user$ | async)?.email || 'User Profile' }}</p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-slate-200 transition-transform shrink-0" [class.rotate-180]="isProfileMenuOpen">
+          <path d="m18 15-6-6-6 6"/>
+        </svg>
+      </button>
+      } @else {
+      <div class="flex items-center justify-center">
+        <button type="button" (click)="toggleProfileMenu($event)"
+          class="relative group cursor-pointer focus:outline-none"
+          [title]="(user$ | async)?.name || 'User Profile'">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-xs flex items-center justify-center select-none hover:bg-indigo-600/50 transition-all shadow-xs group-hover:scale-105">
+            {{ userInitials$ | async }}
+          </div>
+        </button>
+      </div>
+      }
+
+      <!-- Profile Menu Dropdown in Sidebar -->
+      @if (isProfileMenuOpen) {
+      <div class="absolute z-50 bg-white rounded-xl shadow-2xl py-1 border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
+        [class.bottom-full]="!isCollapsed"
+        [class.left-2]="!isCollapsed"
+        [class.right-2]="!isCollapsed"
+        [class.mb-2]="!isCollapsed"
+        [class.bottom-2]="isCollapsed"
+        [class.left-full]="isCollapsed"
+        [class.ml-2]="isCollapsed"
+        [class.w-52]="isCollapsed">
+        <div class="px-3.5 py-2.5 border-b border-slate-100">
+          <p class="text-xs font-semibold text-slate-800 truncate">{{ (user$ | async)?.name || 'User' }}</p>
+          <p class="text-[11px] text-slate-500 truncate">{{ (user$ | async)?.email }}</p>
+        </div>
+        <button (click)="logout()"
+          class="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer text-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+          <span>Sign out</span>
+        </button>
+      </div>
+      }
+    </div>
   </aside>
 
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col min-w-0 overflow-hidden mb-[70px] md:mb-0">
-    <!-- Topbar -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden mb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:mb-0">
+    <!-- Topbar (Dynamic Page Header on Desktop only — hidden on mobile to remove empty header) -->
     <header
-      class="bg-white shrink-0 border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-10 shadow-sm pt-[env(safe-area-inset-top,32px)] md:pt-0 h-[calc(4rem+env(safe-area-inset-top,32px))] md:h-16">
-      <div class="flex-1 flex items-center">
-        <button (click)="openCommandPalette()"
-          class="w-full max-w-md hidden sm:flex items-center text-left text-slate-400 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-100 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
+      class="hidden md:flex bg-white shrink-0 border-b border-slate-200 items-center justify-between px-4 sm:px-6 shadow-xs h-16">
+      
+      <!-- Left: Dynamic Page Title & Back Button (Desktop Web) -->
+      <div class="hidden md:flex items-center gap-3 min-w-0 flex-1 mr-4">
+        @if (pageHeaderService.backUrl()) {
+        <a [routerLink]="pageHeaderService.backUrl()!"
+          class="p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 transition-colors shadow-2xs shrink-0"
+          title="Go Back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
           </svg>
-          <span class="flex-1 text-sm">Search assets, users...</span>
-          <kbd
-            class="hidden sm:inline-block border border-slate-200 rounded px-2 py-0.5 text-xs font-sans bg-white shadow-sm">Ctrl+K</kbd>
-        </button>
+        </a>
+        }
+        @if (pageHeaderService.title()) {
+        <div class="flex flex-col min-w-0">
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate leading-tight">
+            {{ pageHeaderService.title() }}
+          </h1>
+          @if (pageHeaderService.subtitle()) {
+          <p class="text-[11px] text-slate-500 truncate leading-tight mt-0.5">{{ pageHeaderService.subtitle() }}</p>
+          }
+        </div>
+        }
       </div>
 
-      <div class="flex items-center space-x-4 ml-4">
-        <!-- Offline Queue Badge -->
+      <!-- Right: Page Actions + Compact Search Trigger + Offline Queue Badge -->
+      <div class="flex items-center gap-2.5 ml-auto shrink-0">
+        <!-- Page Actions Template Projection (Desktop Web) -->
+        <div class="hidden md:flex items-center gap-2">
+          <ng-container *ngTemplateOutlet="pageHeaderService.actionsTemplate()"></ng-container>
+        </div>
+
+        <!-- Global Search Trigger (Compact Ctrl+K) -->
+        <button (click)="openCommandPalette()"
+          class="hidden md:flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/90 rounded-lg text-slate-500 hover:text-slate-800 text-xs font-medium transition-all shadow-2xs cursor-pointer active:scale-95"
+          title="Search assets, users... (Ctrl+K)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <span class="hidden xl:inline text-slate-400 text-xs">Search...</span>
+          <kbd class="px-1.5 py-0.2 bg-white border border-slate-200 rounded text-[10px] font-sans text-slate-400 shadow-3xs">Ctrl K</kbd>
+        </button>
+
+        <!-- Offline Queue Badge (Desktop) -->
         <div *ngIf="(queueCount$ | async)! > 0"
           class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs font-semibold text-amber-700 animate-pulse-soft">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -122,32 +289,19 @@
           </svg>
           {{ queueCount$ | async }} pending
         </div>
-
-
-        <!-- Profile Menu — wrapped in .profile-menu-container for click-outside detection -->
-        <div class="relative profile-menu-container">
-          <button (click)="toggleProfileMenu($event)" class="flex items-center space-x-2 focus:outline-none">
-            <div
-              class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm select-none">
-              {{ userInitials$ | async }}
-            </div>
-          </button>
-
-          @if (isProfileMenuOpen) {
-          <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-slate-100 z-50">
-            <div class="px-4 py-2 border-b border-slate-100">
-              <p class="text-sm font-medium text-slate-800 truncate">{{ (user$ | async)?.name }}</p>
-              <p class="text-xs text-slate-500 truncate">{{ (user$ | async)?.email }}</p>
-            </div>
-            <button (click)="logout()"
-              class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-colors">
-              Sign out
-            </button>
-          </div>
-          }
-        </div>
       </div>
     </header>
+
+    <!-- Mobile Offline Queue Indicator -->
+    <div *ngIf="(queueCount$ | async)! > 0"
+      class="md:hidden flex items-center justify-center gap-2 py-1.5 px-4 bg-amber-50 border-b border-amber-200 text-xs font-semibold text-amber-800 animate-pulse-soft shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+        class="animate-spin">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+      <span>{{ queueCount$ | async }} changes pending sync</span>
+    </div>
 
     <!-- Stale Data Offline Banner -->
     <div *ngIf="showOfflineBanner"
@@ -173,10 +327,8 @@
     </div>
 
     <!-- Page Content -->
-    <main class="flex-1 bg-background p-4 sm:p-6 md:p-8 overflow-y-auto flex flex-col pb-28 md:pb-8">
+    <main class="flex-1 bg-background p-3 sm:p-4 md:p-5 pt-[max(env(safe-area-inset-top,0px),0.75rem)] md:pt-5 overflow-y-auto flex flex-col pb-3 md:pb-5">
       <router-outlet></router-outlet>
-      <!-- Mobile Safe Area Spacer -->
-      <div class="h-20 shrink-0 md:hidden"></div>
     </main>
   </div>
 

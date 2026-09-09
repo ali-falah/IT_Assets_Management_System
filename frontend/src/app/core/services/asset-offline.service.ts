@@ -38,11 +38,16 @@ export class AssetOfflineService {
 
   async search(term: string): Promise<Asset[]> {
     const assets = await this.getAll();
-    const searchTerm = term.toLowerCase();
+    const searchTerm = term.toLowerCase().trim();
     return assets.filter(asset => 
       asset.serialNumber?.toLowerCase().includes(searchTerm) ||
       asset.name?.toLowerCase().includes(searchTerm) ||
-      asset.id?.toLowerCase().includes(searchTerm)
+      asset.id?.toLowerCase().includes(searchTerm) ||
+      asset.category?.name?.toLowerCase().includes(searchTerm) ||
+      asset.location?.name?.toLowerCase().includes(searchTerm) ||
+      asset.status?.name?.toLowerCase().includes(searchTerm) ||
+      asset.assignedUser?.name?.toLowerCase().includes(searchTerm) ||
+      asset.notes?.toLowerCase().includes(searchTerm)
     );
   }
 

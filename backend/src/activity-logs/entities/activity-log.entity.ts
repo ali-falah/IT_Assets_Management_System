@@ -10,7 +10,10 @@ export type ActivityAction =
   | 'asset_deleted'
   | 'asset_assigned'
   | 'asset_returned'
+  | 'asset_bulk_updated'
+  | 'asset_imported'
   | 'user_created'
+  | 'user_updated'
   | 'user_deleted';
 
 @Entity('activity_logs')

@@ -111,6 +111,12 @@ export class AssetsService {
       message: `Asset "${saved.name}" was added to inventory`,
       entityId: saved.id,
       entityName: saved.name,
+      meta: {
+        serialNumber: saved.serialNumber,
+        categoryId: saved.categoryId,
+        locationId: saved.locationId,
+        statusId: saved.statusId,
+      },
     });
 
     // If initially assigned, create history
@@ -128,7 +134,7 @@ export class AssetsService {
 
   async findAll(query: any): Promise<{ data: Asset[]; total: number; page: number; limit: number }> {
     const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 100;
+    const limit = parseInt(query.limit) || 10000;
     const cacheKey = `assets_list_${JSON.stringify(query)}`;
 
     const cachedData = await this.redisService.get(cacheKey);
@@ -149,7 +155,10 @@ export class AssetsService {
     if (query.assignedUserId) qb.andWhere('asset.assignedUserId = :assignedUserId', { assignedUserId: query.assignedUserId });
 
     if (query.search) {
-      qb.andWhere('(asset.name ILIKE :search OR asset.serialNumber ILIKE :search OR assignedUser.name ILIKE :search)', { search: `%${query.search}%` });
+      qb.andWhere(
+        '(asset.name ILIKE :search OR asset.serialNumber ILIKE :search OR assignedUser.name ILIKE :search OR category.name ILIKE :search OR location.name ILIKE :search OR status.name ILIKE :search OR asset.notes ILIKE :search)',
+        { search: `%${query.search}%` }
+      );
     }
 
     qb.skip((page - 1) * limit).take(limit);
@@ -180,6 +189,13 @@ export class AssetsService {
 
   async update(id: string, updateAssetDto: UpdateAssetDto): Promise<Asset> {
     const asset = await this.findOne(id);
+    const oldName = asset.name || '';
+    const oldSerial = asset.serialNumber || '';
+    const oldStatus = asset.status?.name || 'Stock';
+    const oldLocation = asset.location?.name || 'None';
+    const oldCategory = asset.category?.name || 'None';
+    const oldAssignee = asset.assignedUser?.name || 'Stock';
+    const oldNotes = (asset.notes || '').trim();
     const oldAssigneeId = asset.assignedUserId;
     const newAssigneeId = updateAssetDto.assignedUserId;
 
@@ -187,8 +203,6 @@ export class AssetsService {
 
       // 1. History Tracking logic (same as before)
       const isAssigneeChanging = updateAssetDto.hasOwnProperty('assignedUserId') && oldAssigneeId !== newAssigneeId;
-
-
 
       if (isAssigneeChanging) {
         if (oldAssigneeId) {
@@ -251,31 +265,72 @@ export class AssetsService {
       const dto = updateAssetDto as any;
       fields.forEach(field => {
         // Only set if not already set by our auto-logic above
-        if (dto.hasOwnProperty(field) && dto[field] !== undefined && dto[field] !== '' && !updateData.hasOwnProperty(field)) {
-          updateData[field] = dto[field];
+        if (dto.hasOwnProperty(field) && dto[field] !== undefined && !updateData.hasOwnProperty(field)) {
+          if (field === 'assignedUserId' && dto[field] === '') {
+            updateData[field] = null;
+          } else {
+            updateData[field] = dto[field];
+          }
         }
       });
-
 
       // 3. Perform the update directly on the table to avoid entity state issues
       await transactionalEntityManager.update(Asset, id, updateData);
 
-      await this.invalidateCache();
-      const fresh = await this.findOne(id);
-
-      // Log meaningful changes
-      const meta: Record<string, any> = {};
-      if (updateData.categoryId && updateData.categoryId !== asset.categoryId) meta.category = 'changed';
-      if (updateData.locationId && updateData.locationId !== asset.locationId) meta.location = 'changed';
-      if (updateData.statusId && updateData.statusId !== asset.statusId) meta.status = 'changed';
-
-      this.activityLogs.log({
-        action: 'asset_updated',
-        message: `Asset "${asset.name}" was updated`,
-        entityId: id,
-        entityName: asset.name,
-        meta: Object.keys(meta).length ? meta : undefined,
+      // Query fresh state inside transaction so joined relations reflect updated data
+      const fresh = await transactionalEntityManager.findOne(Asset, {
+        where: { id },
+        relations: ['category', 'location', 'assignedUser', 'status'],
       });
+
+      if (!fresh) {
+        throw new NotFoundException(`Asset with ID ${id} not found after update`);
+      }
+
+      const newName = fresh.name || '';
+      const newSerial = fresh.serialNumber || '';
+      const newStatus = fresh.status?.name || 'Stock';
+      const newLocation = fresh.location?.name || 'None';
+      const newCategory = fresh.category?.name || 'None';
+      const newAssignee = fresh.assignedUser?.name || 'Stock';
+      const newNotes = (fresh.notes || '').trim();
+
+      // Log only actual meaningful changes where before !== after
+      const changes: Record<string, { from: string; to: string }> = {};
+      if (oldName !== newName) {
+        changes['name'] = { from: oldName || 'None', to: newName || 'None' };
+      }
+      if (oldSerial !== newSerial) {
+        changes['serialNumber'] = { from: oldSerial || 'None', to: newSerial || 'None' };
+      }
+      if (oldStatus !== newStatus) {
+        changes['status'] = { from: oldStatus, to: newStatus };
+      }
+      if (oldLocation !== newLocation) {
+        changes['location'] = { from: oldLocation, to: newLocation };
+      }
+      if (oldCategory !== newCategory) {
+        changes['category'] = { from: oldCategory, to: newCategory };
+      }
+      if (oldAssignee !== newAssignee) {
+        changes['assignedUser'] = { from: oldAssignee, to: newAssignee };
+      }
+      if (oldNotes !== newNotes) {
+        changes['notes'] = { from: oldNotes || 'Empty', to: newNotes || 'Empty' };
+      }
+
+      await this.activityLogs.log({
+        action: 'asset_updated',
+        message: `Asset "${fresh.name}" was updated`,
+        entityId: id,
+        entityName: fresh.name,
+        meta: {
+          serialNumber: fresh.serialNumber,
+          changes: Object.keys(changes).length ? changes : undefined,
+        },
+      });
+
+      await this.invalidateCache();
 
       return fresh;
     });

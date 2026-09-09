@@ -5,6 +5,8 @@ import { ToastrService } from 'ngx-toastr';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+let isHandling401 = false;
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const toastr = inject(ToastrService);
@@ -19,13 +21,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Don't intercept login or register endpoint errors
+      if (req.url.includes('/auth/login') || req.url.includes('/auth/register')) {
+        return throwError(() => error);
+      }
+
       if (error.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.navigate(['/login']);
-        toastr.error('Session expired. Please login again.');
-      } else if (error.status !== 401 && error.error?.message) {
-        toastr.error(error.error.message);
+        if (!isHandling401) {
+          isHandling401 = true;
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setTimeout(() => {
+            router.navigate(['/login']);
+            toastr.error('Session expired. Please login again.');
+            isHandling401 = false;
+          }, 0);
+        }
       }
       return throwError(() => error);
     })

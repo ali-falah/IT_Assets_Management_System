@@ -1,0 +1,385 @@
+<ng-container *ngIf="isOpen">
+  <!-- Slide-Over Drawer Backdrop -->
+  <div (click)="close.emit()"
+       class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 transition-opacity animate-in fade-in duration-200">
+  </div>
+
+  <!-- Slide-Over Panel Container -->
+  <div class="fixed inset-y-0 right-0 max-w-full w-full sm:w-[500px] bg-white shadow-2xl z-50 flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
+
+  <!-- Drawer Header -->
+  <div class="p-4 sm:px-5 bg-slate-50/90 border-b border-slate-200/90 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="p-2 bg-white rounded-xl shadow-xs border border-slate-200 text-primary shrink-0">
+        <lucide-icon [name]="asset?.category?.icon || 'laptop'" [size]="20"></lucide-icon>
+      </div>
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-800 truncate" [title]="asset?.name">
+          {{ asset?.name || 'Asset Details' }}
+        </h2>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span class="text-xs font-mono text-slate-500 font-semibold truncate">{{ asset?.serialNumber || '-' }}</span>
+          <button (click)="copySerial()" class="transition-colors p-0.5 cursor-pointer rounded" 
+            [ngClass]="copiedSerial ? 'text-emerald-600' : 'text-slate-400 hover:text-primary'"
+            [title]="copiedSerial ? 'Copied!' : 'Copy Serial'">
+            <lucide-icon [name]="copiedSerial ? 'check' : 'copy'" [size]="12"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button (click)="navigateToEdit()" 
+        class="p-1.5 text-slate-500 hover:text-primary hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
+        title="Full Edit">
+        <lucide-icon name="edit-3" [size]="16"></lucide-icon>
+      </button>
+      <button (click)="printLabel()" 
+        class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
+        title="Print Label">
+        <lucide-icon name="printer" [size]="16"></lucide-icon>
+      </button>
+      <button (click)="close.emit()" 
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
+        title="Close Drawer">
+        <lucide-icon name="x" [size]="18"></lucide-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex-1 flex flex-col items-center justify-center space-y-3">
+    <lucide-icon name="loader" [size]="32" class="animate-spin text-primary"></lucide-icon>
+    <p class="text-xs text-slate-500 font-medium">Loading asset details...</p>
+  </div>
+
+  <!-- Empty / Not Found State -->
+  <div *ngIf="!loading && !asset" class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-3">
+    <div class="p-3 bg-slate-100 rounded-full text-slate-400">
+      <lucide-icon name="search-x" [size]="28"></lucide-icon>
+    </div>
+    <p class="text-sm font-bold text-slate-700">Asset Record Unavailable</p>
+    <p class="text-xs text-slate-400 max-w-xs">This asset may have been deleted or the ID is not available in the database.</p>
+    <button (click)="close.emit()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold mt-2 cursor-pointer">
+      Close Drawer
+    </button>
+  </div>
+
+  <!-- Drawer Body Content -->
+  <div *ngIf="!loading && asset" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 custom-scrollbar">
+
+    <!-- Status & Main Banner (Read-Only Badge) -->
+    <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-slate-500">Status:</span>
+        <span [ngClass]="getStatusBadgeClass()"
+              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border shadow-2xs">
+          <span [ngClass]="getStatusDotClass()" class="w-1.5 h-1.5 rounded-full inline-block mr-1.5"></span>
+          {{ asset.status?.name || 'Unknown' }}
+        </span>
+      </div>
+
+      <span class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+        <lucide-icon name="tag" [size]="12" class="text-slate-400"></lucide-icon>
+        {{ asset.category?.name || 'General' }}
+      </span>
+    </div>
+
+    <!-- Asset Photo Box (If available) -->
+    <div *ngIf="asset.imageUrl" class="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-h-48 flex items-center justify-center">
+      <img [src]="asset.imageUrl" [alt]="asset.name" class="object-cover w-full h-44 group-hover:scale-105 transition-transform duration-300">
+    </div>
+
+    <!-- ─── Dynamic Custody & Assignment Card ─── -->
+    <div class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+          <lucide-icon name="user-check" [size]="14" class="text-primary"></lucide-icon>
+          <span>Custody & Assignment</span>
+        </h3>
+        
+        <!-- Condition-based Header Badges -->
+        <span *ngIf="asset.assignedUserId" class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-[10px] font-bold uppercase tracking-wider">
+          Assigned
+        </span>
+        <span *ngIf="isAvailableStock()" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[10px] font-bold uppercase tracking-wider">
+          Available in Stock
+        </span>
+        <span *ngIf="isOutOfService()" class="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[10px] font-bold uppercase tracking-wider">
+          Out of Service
+        </span>
+        <span *ngIf="isDamaged()" class="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-md text-[10px] font-bold uppercase tracking-wider">
+          Damaged
+        </span>
+        <span *ngIf="isRemoved()" class="px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-md text-[10px] font-bold uppercase tracking-wider">
+          Retired / Removed
+        </span>
+      </div>
+
+      <!-- State 1: Currently Assigned to Employee -->
+      <div *ngIf="asset.assignedUserId && asset.assignedUser && !isAssigning" class="space-y-3">
+        <div class="flex items-start justify-between bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shadow-2xs shrink-0">
+              {{ asset.assignedUser.name.charAt(0) }}
+            </div>
+            <div>
+              <button (click)="onUserClick(asset.assignedUser.id)" 
+                class="text-xs font-bold text-slate-800 hover:text-primary hover:underline text-left transition-colors flex items-center gap-1 cursor-pointer">
+                <span>{{ asset.assignedUser.name }}</span>
+                <lucide-icon name="external-link" [size]="10"></lucide-icon>
+              </button>
+              <p class="text-[11px] text-slate-500 truncate">{{ asset.assignedUser.email || 'No email registered' }}</p>
+            </div>
+          </div>
+          
+          <span *ngIf="asset.assignedUser.role" 
+            [ngClass]="asset.assignedUser.role.colorClass || 'bg-slate-200 text-slate-700'"
+            class="px-2 py-0.5 rounded-md text-[10px] font-bold">
+            {{ asset.assignedUser.role.name }}
+          </span>
+        </div>
+
+        <!-- Action Buttons for Assigned Asset -->
+        <div class="flex items-center gap-2 pt-1">
+          <button (click)="showReturnConfirmModal = true" [disabled]="actionLoading"
+            class="flex-1 py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer">
+            <lucide-icon name="arrow-down-left" [size]="14"></lucide-icon>
+            <span>Return to Stock</span>
+          </button>
+          <button (click)="openInlineAssign()" [disabled]="actionLoading"
+            class="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-primary border border-indigo-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer">
+            <lucide-icon name="arrow-right-left" [size]="14"></lucide-icon>
+            <span>Transfer / Reassign</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- State 2: In Stock & Ready for Assignment -->
+      <div *ngIf="isAvailableStock() && !isAssigning" class="space-y-3 pt-1">
+        <p class="text-xs text-slate-500">This asset is in stock and ready to be issued to an employee.</p>
+        <button (click)="openInlineAssign()" [disabled]="actionLoading"
+          class="w-full py-2.5 px-3 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs shadow-indigo-100 active:scale-95 cursor-pointer">
+          <lucide-icon name="user-plus" [size]="14"></lucide-icon>
+          <span>Assign to Employee</span>
+        </button>
+      </div>
+
+      <!-- State 3: Out of Service / In Maintenance -->
+      <div *ngIf="isOutOfService() && !asset.assignedUserId && !isAssigning" class="space-y-3 pt-1">
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs">
+          <div class="flex items-center gap-2 font-bold mb-1">
+            <lucide-icon name="wrench" [size]="14" class="text-amber-700"></lucide-icon>
+            <span>Under Maintenance / Repair</span>
+          </div>
+          <p class="text-[11px] text-amber-700">This asset cannot be assigned while out of service. Move it back to Stock once repaired.</p>
+        </div>
+        <button (click)="moveToStock()" [disabled]="actionLoading"
+          class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer">
+          <lucide-icon name="check" [size]="14"></lucide-icon>
+          <span>Mark as Ready / Move to Stock</span>
+        </button>
+      </div>
+
+      <!-- State 4: Damaged Asset -->
+      <div *ngIf="isDamaged() && !asset.assignedUserId && !isAssigning" class="space-y-3 pt-1">
+        <div class="p-3 bg-rose-50 rounded-xl border border-rose-200 text-rose-900 text-xs">
+          <div class="flex items-center gap-2 font-bold mb-1">
+            <lucide-icon name="alert-triangle" [size]="14" class="text-rose-600"></lucide-icon>
+            <span>Asset Flagged as Damaged</span>
+          </div>
+          <p class="text-[11px] text-rose-700">Inspect or service this equipment before returning it to active inventory.</p>
+        </div>
+        <button (click)="moveToStock()" [disabled]="actionLoading"
+          class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer">
+          <lucide-icon name="check" [size]="14"></lucide-icon>
+          <span>Clear Damaged Status & Move to Stock</span>
+        </button>
+      </div>
+
+      <!-- State 5: Retired / Removed -->
+      <div *ngIf="isRemoved() && !asset.assignedUserId && !isAssigning" class="p-3 bg-slate-100 rounded-xl border border-slate-200 text-slate-600 text-xs">
+        <p class="font-bold text-slate-700">Decommissioned Asset</p>
+        <p class="text-[11px] text-slate-500 mt-0.5">This asset has been retired or disposed from the active registry.</p>
+      </div>
+
+      <!-- ─── Inline Smooth Assignment Form (No Popup Clipping!) ─── -->
+      <div *ngIf="isAssigning" class="bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-200 space-y-3 animate-in fade-in duration-150">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+            <lucide-icon name="user-plus" [size]="13" class="text-primary"></lucide-icon>
+            <span>Select Assignee</span>
+          </span>
+          <button (click)="cancelInlineAssign()" class="text-slate-400 hover:text-slate-600 text-xs font-semibold">
+            Cancel
+          </button>
+        </div>
+
+        <div>
+          <input type="text" [(ngModel)]="userFilterQuery" placeholder="Search employee name or email..."
+            class="w-full px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 mb-2">
+
+          <select [(ngModel)]="selectedNewUserId" size="4"
+            class="w-full px-2 py-1 bg-white border border-indigo-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-primary/20 max-h-32 overflow-y-auto">
+            <option *ngFor="let u of filteredUsers" [value]="u.id" class="p-1.5 hover:bg-indigo-50 rounded">
+              {{ u.name }} ({{ u.email || 'No email' }})
+            </option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button (click)="cancelInlineAssign()" 
+            class="px-3 py-1.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 rounded-lg text-xs font-semibold">
+            Cancel
+          </button>
+          <button (click)="submitInlineAssignment()" [disabled]="!selectedNewUserId || actionLoading"
+            class="px-4 py-1.5 bg-primary hover:bg-indigo-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer">
+            <lucide-icon *ngIf="actionLoading" name="loader" [size]="13" class="animate-spin"></lucide-icon>
+            <span>Confirm Assignment</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Key Specifications Grid -->
+    <div class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
+      <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Specifications & Location</h3>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px] font-bold uppercase">Location</span>
+          <span class="font-semibold text-slate-800 mt-0.5 flex items-center gap-1">
+            <lucide-icon name="map-pin" [size]="12" class="text-slate-400"></lucide-icon>
+            {{ asset.location?.name || 'Unspecified' }}
+          </span>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px] font-bold uppercase">Category</span>
+          <span class="font-semibold text-slate-800 mt-0.5 flex items-center gap-1">
+            <lucide-icon name="tag" [size]="12" class="text-slate-400"></lucide-icon>
+            {{ asset.category?.name || 'General' }}
+          </span>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px] font-bold uppercase">Added Date</span>
+          <span class="font-semibold text-slate-800 mt-0.5">
+            {{ asset.createdAt | date:'mediumDate' }}
+          </span>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px] font-bold uppercase">Last Activity</span>
+          <span class="font-semibold text-slate-800 mt-0.5">
+            {{ (asset.lastTransactionDate || asset.createdAt) | date:'mediumDate' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div *ngIf="asset.notes" class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs mt-2">
+        <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Notes</span>
+        <p class="text-slate-700 whitespace-pre-line">{{ asset.notes }}</p>
+      </div>
+    </div>
+
+    <!-- Assignment History Timeline (If Available) -->
+    <div *ngIf="asset.assignments && asset.assignments.length > 0" 
+         class="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
+      <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+        <lucide-icon name="history" [size]="14" class="text-primary"></lucide-icon>
+        <span>Assignment History</span>
+      </h3>
+
+      <div class="space-y-2.5 pl-2 border-l-2 border-slate-100 ml-2">
+        <div *ngFor="let h of asset.assignments" class="relative pl-3 text-xs">
+          <!-- Timeline Indicator -->
+          <span class="absolute -left-[19px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white"
+            [ngClass]="h.returnedAt ? 'bg-slate-300' : 'bg-primary ring-2 ring-indigo-100'"></span>
+          
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800">{{ h.user?.name || 'Unknown User' }}</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded"
+              [ngClass]="h.returnedAt ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-700'">
+              {{ h.returnedAt ? 'Returned' : 'In Custody' }}
+            </span>
+          </div>
+
+          <p class="text-[11px] text-slate-400 mt-0.5">
+            {{ h.assignedAt | date:'mediumDate' }}
+            <span *ngIf="h.returnedAt"> → {{ h.returnedAt | date:'mediumDate' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Drawer Footer Action Bar -->
+  <div class="p-3.5 sm:px-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+    <button (click)="close.emit()" 
+      class="px-4 py-2 border border-slate-200 text-slate-700 bg-white hover:bg-slate-100 rounded-lg text-xs font-semibold transition-all shadow-2xs active:scale-95 cursor-pointer">
+      Close
+    </button>
+
+    <button (click)="navigateToEdit()"
+      class="px-5 py-2 bg-primary hover:bg-indigo-600 text-white rounded-lg text-xs font-bold transition-all shadow-xs shadow-indigo-100 flex items-center gap-1.5 active:scale-95 cursor-pointer">
+      <lucide-icon name="external-link" [size]="14"></lucide-icon>
+      <span>Open Full Edit</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- Return to Stock Confirmation Modal -->
+<app-confirmation-modal
+  [show]="showReturnConfirmModal"
+  title="Return Asset to Stock"
+  [message]="'Are you sure you want to unassign <strong>' + (asset?.name || 'this asset') + '</strong> and return it to stock?'"
+  confirmText="Return to Stock"
+  confirmButtonClass="bg-amber-600 hover:bg-amber-700 text-white"
+  iconName="arrow-down-left"
+  iconBgClass="bg-amber-50 text-amber-700"
+  cancelText="Cancel"
+  (confirm)="confirmReturnToStock()"
+  (cancel)="showReturnConfirmModal = false">
+</app-confirmation-modal>
+
+<!-- Assignment / Transfer Confirmation Modal -->
+<app-confirmation-modal
+  [show]="showAssignConfirmModal"
+  [title]="assignConfirmTitle"
+  [message]="assignConfirmMessage"
+  [confirmText]="confirmButtonText"
+  confirmButtonClass="bg-primary hover:bg-indigo-600 text-white"
+  iconName="user-check"
+  iconBgClass="bg-indigo-50 text-primary"
+  cancelText="Cancel"
+  (confirm)="confirmAssignmentAction()"
+  (cancel)="showAssignConfirmModal = false">
+</app-confirmation-modal>
+
+<!-- Double Laptop Warning Modal -->
+<app-confirmation-modal
+  [show]="showLaptopWarningModal"
+  title="Laptop Already Assigned"
+  [message]="laptopWarningMessage"
+  confirmText="Proceed Anyway"
+  confirmButtonClass="bg-amber-600 hover:bg-amber-700 text-white"
+  iconName="alert-triangle"
+  iconBgClass="bg-amber-50 text-amber-600"
+  cancelText="Cancel"
+  (confirm)="confirmLaptopOverride()"
+  (cancel)="showLaptopWarningModal = false">
+</app-confirmation-modal>
+
+<!-- Print Asset Label Modal -->
+<app-asset-label-modal
+  [show]="showPrintModal"
+  [asset]="asset"
+  (close)="closePrintModal()">
+</app-asset-label-modal>
+</ng-container>
