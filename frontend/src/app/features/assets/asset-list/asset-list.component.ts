@@ -771,16 +771,27 @@ export class AssetListComponent implements OnInit, OnDestroy {
   }
 
   async exportToExcel() {
-    const dataToExport = this.assets.map(asset => ({
-      'Name': asset.name,
-      'Serial Number': asset.serialNumber,
-      'Status': asset.status?.name || '',
-      'Location': asset.location?.name || '',
-      'Assigned To': asset.assignedUser?.name || 'Unassigned',
-      'Category': asset.category?.name || '',
-      'Notes': asset.notes || ''
-    }));
-    await this.excelExportService.exportToExcel(dataToExport, 'assets');
+    if (!this.assets || this.assets.length === 0) {
+      this.notifyWarning('No assets to export');
+      return;
+    }
+    try {
+      this.notifyInfo('Preparing Excel export...');
+      const dataToExport = this.assets.map(asset => ({
+        'Name': asset.name,
+        'Serial Number': asset.serialNumber,
+        'Status': asset.status?.name || '',
+        'Location': asset.location?.name || '',
+        'Assigned To': asset.assignedUser?.name || 'Unassigned',
+        'Category': asset.category?.name || '',
+        'Notes': asset.notes || ''
+      }));
+      await this.excelExportService.exportToExcel(dataToExport, 'assets');
+      this.notifySuccess('Assets exported to Excel');
+    } catch (err: any) {
+      console.error('Failed to export assets to Excel:', err);
+      this.notifyError('Failed to export assets to Excel');
+    }
   }
 
   // ── Clone Asset ────────────────────────────────────────────────────

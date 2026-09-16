@@ -47,6 +47,13 @@ export class AssetsController {
     return this.assetsService.findAll(query);
   }
 
+  @Get('sync/delta')
+  @ApiOperation({ summary: 'Delta sync assets updated since a specific timestamp' })
+  @ApiQuery({ name: 'since', required: false })
+  syncDelta(@Query('since') since?: string) {
+    return this.assetsService.findUpdatedSince(since);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get an asset by id' })
   findOne(@Param('id') id: string) {

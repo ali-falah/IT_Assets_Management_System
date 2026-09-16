@@ -7,7 +7,6 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
-import { environment } from '../../../../environments/environment';
 import { PlatformService } from '../../../core/services/platform.service';
 import { User, UserRole, UserService } from '../../../core/services/user.service';
 import { ExcelExportService } from '../../../shared/services/excel-export.service';
@@ -131,9 +130,9 @@ export class UserListComponent implements OnInit {
         this.openUserDetail(params.data.id);
       }
     },
-    { 
-      field: 'email', 
-      headerName: 'Email', 
+    {
+      field: 'email',
+      headerName: 'Email',
       flex: 2,
       cellRenderer: (params: any) => {
         if (!params.value) return '-';
@@ -322,7 +321,7 @@ export class UserListComponent implements OnInit {
     this.route.queryParams.subscribe((params: any) => {
       const userId = params['userId'];
       const search = params['search'];
-      
+
       if (userId) {
         this.selectedUserId = userId;
         this.showDetailDialog = true;
@@ -349,10 +348,14 @@ export class UserListComponent implements OnInit {
     setTimeout(() => this.toastr.warning(msg), 0);
   }
 
-  loadUsers() {
+  private notifyInfo(msg: string) {
+    setTimeout(() => this.toastr.info(msg), 0);
+  }
+
+  loadUsers(skipCache = false) {
     this.loading = true;
     this.cdr.markForCheck();
-    this.userService.getUsers().subscribe({
+    this.userService.getUsers(skipCache).subscribe({
       next: (res: User[]) => {
         this.users = res;
         this.applyFilter();
@@ -458,11 +461,11 @@ export class UserListComponent implements OnInit {
           } else {
             const deletedCount = res.count || 0;
             const errorCount = res.errors?.length || 0;
-            
+
             if (deletedCount > 0) {
               this.notifySuccess(`${deletedCount} users deleted successfully`);
             }
-            
+
             if (errorCount > 0) {
               this.notifyError(`${errorCount} users failed to delete (Check if admin or self).`);
             }
@@ -506,12 +509,12 @@ export class UserListComponent implements OnInit {
     }
     this.saving = true;
     this.cdr.markForCheck();
-    this.http.post(`${environment.apiUrl}/auth/register`, payload).subscribe({
+    this.userService.createUser(payload).subscribe({
       next: () => {
         this.notifySuccess('User created successfully');
         this.showModal = false;
         this.newUser = { name: '', email: '', password: '', roleId: '' };
-        this.loadUsers();
+        this.loadUsers(true);
         this.cdr.markForCheck();
       },
       error: (err: any) => {
@@ -527,7 +530,7 @@ export class UserListComponent implements OnInit {
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
-    
+
     // Restore quick filter text
     if (this.searchTerm) {
       this.gridApi.setGridOption('quickFilterText', this.searchTerm);
@@ -558,14 +561,25 @@ export class UserListComponent implements OnInit {
   }
 
   async exportToExcel() {
-    const dataToExport = this.users.map(user => ({
-      'Name': user.name,
-      'Email': user.email,
-      'Role': user.role?.name || '',
-      'Status': user.isActive ? 'Active' : 'Inactive',
-      'Assigned Assets (Serials)': user.assets?.map((a: any) => a.serialNumber).join(', ') || 'None'
-    }));
-    await this.excelExportService.exportToExcel(dataToExport, 'users');
+    if (!this.users || this.users.length === 0) {
+      this.notifyWarning('No users to export');
+      return;
+    }
+    try {
+      this.notifyInfo('Preparing Excel export...');
+      const dataToExport = this.users.map(user => ({
+        'Name': user.name,
+        'Email': user.email,
+        'Role': user.role?.name || '',
+        'Status': user.isActive ? 'Active' : 'Inactive',
+        'Assigned Assets (Serials)': user.assets?.map((a: any) => a.serialNumber).join(', ') || 'None'
+      }));
+      await this.excelExportService.exportToExcel(dataToExport, 'users');
+      this.notifySuccess('Users exported to Excel');
+    } catch (err: any) {
+      console.error('Failed to export users to Excel:', err);
+      this.notifyError('Failed to export users to Excel');
+    }
   }
 
   applyFilter() {
@@ -577,7 +591,7 @@ export class UserListComponent implements OnInit {
     }
 
     if (term) {
-      list = list.filter(user => 
+      list = list.filter(user =>
         (user.name?.toLowerCase().includes(term)) ||
         (user.email?.toLowerCase().includes(term)) ||
         (user.role?.name?.toLowerCase().includes(term))

@@ -92,7 +92,7 @@
         </button>
 
         <!-- Refresh Button -->
-        <button (click)="loadUsers()"
+        <button (click)="loadUsers(true)"
           class="p-1.5 text-slate-500 hover:text-indigo-600 bg-white rounded-lg border border-slate-200 shadow-2xs transition-all active:scale-95"
           title="Refresh">
           <lucide-icon name="refresh-cw" [size]="15" [class.animate-spin]="loading"></lucide-icon>
@@ -294,10 +294,10 @@
 </app-dialog>
 
 <!-- Import Modal -->
-<app-user-import *ngIf="showImportModal" (close)="showImportModal = false" (imported)="loadUsers()"></app-user-import>
+<app-user-import *ngIf="showImportModal" (close)="showImportModal = false" (imported)="loadUsers(true)"></app-user-import>
 
 <app-user-detail-dialog *ngIf="showDetailDialog" [userId]="selectedUserId" (close)="closeUserDetail()"
-  (updated)="loadUsers()" (deleted)="loadUsers()">
+  (updated)="loadUsers(true)" (deleted)="loadUsers(true)">
 </app-user-detail-dialog>
 
 <!-- Standard Delete Confirmation -->

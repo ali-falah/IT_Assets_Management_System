@@ -89,10 +89,10 @@
       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
         <lucide-icon name="search" [size]="14"></lucide-icon>
       </div>
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1"
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
         placeholder="Search asset, serial, user, action..."
         class="w-full pl-9 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
-      <button *ngIf="searchTerm" (click)="searchTerm = ''; currentPage = 1"
+      <button *ngIf="searchTerm" (click)="clearSearch()"
         class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
         <lucide-icon name="x" [size]="13"></lucide-icon>
       </button>
@@ -228,10 +228,10 @@
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
             <lucide-icon name="search" [size]="15"></lucide-icon>
           </div>
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1"
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
             placeholder="Search by asset, user, serial number, actor, or changes..."
             class="w-full pl-9 pr-8 py-2 bg-slate-50/90 hover:bg-white hover:border-slate-300 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-xs outline-none transition-all text-xs text-slate-800 placeholder-slate-400">
-          <button *ngIf="searchTerm" (click)="searchTerm = ''; currentPage = 1"
+          <button *ngIf="searchTerm" (click)="clearSearch()"
             class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
             <lucide-icon name="x" [size]="13"></lucide-icon>
           </button>
@@ -259,10 +259,10 @@
 
           <!-- Custom Date Range Inputs -->
           <div *ngIf="selectedDateRange === 'custom'" class="flex items-center gap-1.5">
-            <input type="date" [(ngModel)]="customStartDate" (change)="currentPage = 1"
+            <input type="date" [(ngModel)]="customStartDate" (change)="onCustomDateChange()"
               class="px-2 py-1 bg-white hover:border-slate-300 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all">
             <span class="text-slate-400 text-xs font-medium">to</span>
-            <input type="date" [(ngModel)]="customEndDate" (change)="currentPage = 1"
+            <input type="date" [(ngModel)]="customEndDate" (change)="onCustomDateChange()"
               class="px-2 py-1 bg-white hover:border-slate-300 border border-slate-200 rounded-lg text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all">
           </div>
         </div>
@@ -348,7 +348,7 @@
           <lucide-icon name="search-x" [size]="28"></lucide-icon>
         </div>
         <p class="text-slate-600 font-semibold text-sm">No results matching your filters</p>
-        <button (click)="searchTerm = ''; selectedCategory = 'all'; selectedDateRange = 'all'; currentPage = 1"
+        <button (click)="resetFilters()"
           class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-all">
           Reset All Filters
         </button>
@@ -359,7 +359,7 @@
       <!-- ========================================== -->
       <div *ngIf="!loading && filteredActivities.length > 0 && viewMode === 'timeline'" class="divide-y divide-slate-100">
       
-      <div *ngFor="let group of timelineGroups" class="p-3 sm:p-4 space-y-2.5">
+      <div *ngFor="let group of timelineGroups; trackBy: trackByGroup" class="p-3 sm:p-4 space-y-2.5">
         
         <!-- Timeline Group Header Badge -->
         <div class="flex items-center gap-2.5">
@@ -379,9 +379,9 @@
               <div class="flex items-start gap-2.5">
                 
                 <!-- Action Icon Badge -->
-                <div [ngClass]="actionColor(activity.action)"
+                <div [ngClass]="activity.actionColor || actionColor(activity.action)"
                   class="p-2 rounded-lg border shrink-0 shadow-2xs transition-transform group-hover:scale-105">
-                  <lucide-icon [name]="actionIcon(activity.action)" [size]="15"></lucide-icon>
+                  <lucide-icon [name]="activity.actionIcon || actionIcon(activity.action)" [size]="15"></lucide-icon>
                 </div>
 
                 <!-- Main Event Details -->
@@ -394,9 +394,9 @@
                       <!-- Entity Title / Name -->
                       <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">
                         <!-- Clickable Asset Drawer Link -->
-                        <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                        <button *ngIf="!activity.isUserEvent && activity.action !== 'asset_deleted' && (activity.entityId || activity.entityName)"
                           type="button"
-                          (click)="openAssetDrawer(activity.entityId, $event)"
+                          (click)="openAssetDrawer(activity.entityId || activity.entityName, $event)"
                           class="hover:text-indigo-600 hover:underline text-left cursor-pointer transition-colors"
                           title="Quick Inspect Asset Drawer">
                           {{ activity.entityName }}
@@ -412,26 +412,26 @@
                           title="View User Details">
                           {{ activity.entityName }}
                         </button>
-                        <span *ngIf="(!activity.entityId && !activity.entityName) || activity.action === 'asset_deleted' || activity.action === 'user_deleted'">
+                        <span *ngIf="activity.action === 'asset_deleted' || activity.action === 'user_deleted' || (!activity.entityId && !activity.entityName && !activity.isUserEvent)">
                           {{ activity.entityName || 'System Record' }}
                         </span>
                       </span>
 
                       <!-- Category / Action Badge -->
-                      <span [ngClass]="actionBadgeClass(activity.action)"
+                      <span [ngClass]="activity.actionBadgeClass || actionBadgeClass(activity.action)"
                         class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.2 rounded-full">
-                        {{ actionLabel(activity.action) }}
+                        {{ activity.actionLabel || actionLabel(activity.action) }}
                       </span>
                     </div>
 
                     <!-- Date/Time + Drawer Icon -->
                     <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
                       <span class="text-[10px] font-medium" [title]="activity.date | date:'medium'">
-                        {{ formatDate(activity.date) }}
+                        {{ activity.date | date:'medium' }}
                       </span>
-                      <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                      <button *ngIf="!activity.isUserEvent && activity.action !== 'asset_deleted' && (activity.entityId || activity.entityName)"
                         type="button"
-                        (click)="openAssetDrawer(activity.entityId, $event)"
+                        (click)="openAssetDrawer(activity.entityId || activity.entityName, $event)"
                         class="p-1 hover:text-indigo-600 hover:bg-white rounded-md transition-all cursor-pointer"
                         title="Quick Inspect Drawer">
                         <lucide-icon name="panel-right" [size]="12"></lucide-icon>
@@ -483,10 +483,10 @@
                     </span>
 
                     <!-- Quick View Asset Button -->
-                    <button type="button" *ngIf="activity.entityId && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
-                      (click)="viewAsset(activity.entityId, $event)"
+                    <button type="button" *ngIf="(activity.entityId || activity.entityName) && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
+                      (click)="viewAsset(activity.entityId || activity.entityName, $event)"
                       class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold ml-auto hover:underline text-[11px] cursor-pointer focus:outline-none"
-                      title="Open Asset Edit Page">
+                      title="Quick Inspect Asset Details">
                       <lucide-icon name="external-link" [size]="11"></lucide-icon>
                       <span>View Asset</span>
                     </button>
@@ -530,9 +530,9 @@
               <!-- Top Row: Action Dot/Icon + Entity Name + Relative Time + Chevron -->
               <div class="flex items-center gap-2">
                 <!-- Action Mini Icon Badge -->
-                <div [ngClass]="actionColor(activity.action)"
+                <div [ngClass]="activity.actionColor || actionColor(activity.action)"
                   class="p-1.5 rounded-lg border shrink-0 shadow-2xs">
-                  <lucide-icon [name]="actionIcon(activity.action)" [size]="13"></lucide-icon>
+                  <lucide-icon [name]="activity.actionIcon || actionIcon(activity.action)" [size]="13"></lucide-icon>
                 </div>
 
                 <!-- Entity Name -->
@@ -544,7 +544,7 @@
 
                 <!-- Relative Time -->
                 <span class="text-[10px] font-medium text-slate-400 shrink-0">
-                  {{ formatRelativeTime(activity.date) }}
+                  {{ activity.relativeTime || formatRelativeTime(activity.date) }}
                 </span>
 
                 <lucide-icon name="chevron-right" [size]="13" class="text-slate-300 shrink-0"></lucide-icon>
@@ -553,9 +553,9 @@
               <!-- Second Row: Action Badge + Actor Attribution + Target -->
               <div class="flex items-center flex-wrap gap-1.5 mt-1.5 pl-7">
                 <!-- Action Badge -->
-                <span [ngClass]="actionBadgeClass(activity.action)"
+                <span [ngClass]="activity.actionBadgeClass || actionBadgeClass(activity.action)"
                   class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md">
-                  {{ actionLabel(activity.action) }}
+                  {{ activity.actionLabel || actionLabel(activity.action) }}
                 </span>
 
                 <!-- Actor Attribution -->
@@ -626,25 +626,25 @@
             
             <!-- Date & Time -->
             <td class="py-2 px-3 whitespace-nowrap font-medium text-slate-700">
-              <div class="text-[11px]">{{ formatDate(activity.date) }}</div>
-              <span class="text-[10px] text-slate-400">{{ formatRelativeTime(activity.date) }}</span>
+              <div class="text-[11px]">{{ activity.date | date:'medium' }}</div>
+              <span class="text-[10px] text-slate-400">{{ activity.relativeTime || formatRelativeTime(activity.date) }}</span>
             </td>
 
             <!-- Action Badge -->
             <td class="py-2 px-3 whitespace-nowrap">
-              <span [ngClass]="actionBadgeClass(activity.action)"
+              <span [ngClass]="activity.actionBadgeClass || actionBadgeClass(activity.action)"
                 class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.1 rounded-full">
-                <lucide-icon [name]="actionIcon(activity.action)" [size]="10"></lucide-icon>
-                {{ actionLabel(activity.action) }}
+                <lucide-icon [name]="activity.actionIcon || actionIcon(activity.action)" [size]="10"></lucide-icon>
+                {{ activity.actionLabel || actionLabel(activity.action) }}
               </span>
             </td>
 
             <!-- Entity -->
             <td class="py-2 px-3 font-semibold text-slate-900 max-w-xs truncate text-[11px]">
               <div class="flex items-center gap-1.5">
-                <button *ngIf="activity.entityId && !activity.isUserEvent && activity.action !== 'asset_deleted'"
+                <button *ngIf="!activity.isUserEvent && activity.action !== 'asset_deleted' && (activity.entityId || activity.entityName)"
                   type="button"
-                  (click)="openAssetDrawer(activity.entityId, $event)"
+                  (click)="openAssetDrawer(activity.entityId || activity.entityName, $event)"
                   class="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-left cursor-pointer truncate"
                   title="Quick Inspect Asset">
                   {{ activity.entityName || '-' }}
@@ -659,7 +659,7 @@
                   title="View User Details">
                   {{ activity.entityName || '-' }}
                 </button>
-                <span *ngIf="!activity.entityId || activity.action === 'asset_deleted' || activity.action === 'user_deleted'">
+                <span *ngIf="activity.action === 'asset_deleted' || activity.action === 'user_deleted' || (!activity.entityId && !activity.entityName && !activity.isUserEvent)">
                   {{ activity.entityName || '-' }}
                 </span>
               </div>
@@ -731,18 +731,18 @@
 
             <!-- Action Link -->
             <td class="py-2 px-3 whitespace-nowrap text-right">
-              <div *ngIf="activity.entityId && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
+              <div *ngIf="(activity.entityId || activity.entityName) && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
                 class="flex items-center justify-end gap-2">
                 <button type="button"
-                  (click)="openAssetDrawer(activity.entityId, $event)"
+                  (click)="openAssetDrawer(activity.entityId || activity.entityName, $event)"
                   class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-all cursor-pointer"
                   title="Quick Inspect Drawer">
                   <lucide-icon name="panel-right" [size]="13"></lucide-icon>
                 </button>
                 <button type="button"
-                  (click)="viewAsset(activity.entityId, $event)"
+                  (click)="viewAsset(activity.entityId || activity.entityName, $event)"
                   class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline text-[11px] cursor-pointer inline-flex items-center gap-0.5"
-                  title="Open Asset Edit Page">
+                  title="Quick Inspect Asset Details">
                   <span>View</span>
                   <lucide-icon name="external-link" [size]="10"></lucide-icon>
                 </button>
@@ -832,6 +832,7 @@
 <app-asset-drawer
   [assetId]="selectedAssetIdForDrawer"
   [isOpen]="showAssetDrawer"
+  [users]="users"
   (close)="closeAssetDrawer()"
   (updated)="onDrawerUpdated()"
   (openUserDetail)="openUserDialog($event)">

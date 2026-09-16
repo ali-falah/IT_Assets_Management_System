@@ -1,6 +1,6 @@
 <ng-container *ngIf="isOpen">
   <!-- Slide-Over Drawer Backdrop -->
-  <div (click)="close.emit()"
+  <div (click)="onBackdropClick($event)"
        class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 transition-opacity animate-in fade-in duration-200">
   </div>
 

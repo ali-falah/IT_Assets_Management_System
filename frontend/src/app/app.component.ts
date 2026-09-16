@@ -36,7 +36,17 @@ export class AppComponent implements OnInit {
     // Web: needsSetup() returns false → overlay never shown.
     // Mobile: shows overlay only when no server URL is saved yet.
     this.needsMobileSetup = this.serverConfig.needsSetup();
-    this.dataSync.syncAll();
+
+    // Defer sync to background idle time to prevent initial page load contention
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(() => {
+        this.dataSync.syncAll({ immediate: true });
+      }, { timeout: 3500 });
+    } else {
+      setTimeout(() => {
+        this.dataSync.syncAll({ immediate: true });
+      }, 2500);
+    }
   }
 
   onMobileConfigured(): void {

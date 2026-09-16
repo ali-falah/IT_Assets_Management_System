@@ -172,13 +172,49 @@ export class AssetsService {
     return result;
   }
 
+  async findUpdatedSince(since?: string): Promise<{ data: Asset[]; total: number; serverTime: string }> {
+    const serverTime = new Date().toISOString();
+    const qb = this.assetsRepository.createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.category', 'category')
+      .leftJoinAndSelect('asset.location', 'location')
+      .leftJoinAndSelect('asset.assignedUser', 'assignedUser')
+      .leftJoinAndSelect('asset.status', 'status');
+
+    if (since) {
+      const sinceDate = new Date(since);
+      if (!isNaN(sinceDate.getTime())) {
+        qb.andWhere('asset.updatedAt > :sinceDate', { sinceDate });
+      }
+    }
+
+    qb.orderBy('asset.updatedAt', 'ASC');
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data, total, serverTime };
+  }
+
   async findOne(id: string): Promise<Asset> {
-    const asset = await this.assetsRepository.findOne({
-      where: { id },
-      relations: ['category', 'location', 'assignedUser', 'assignments', 'assignments.user', 'maintenanceLogs', 'status'],
-    });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let asset: Asset | null = null;
+    const relations = ['category', 'location', 'assignedUser', 'assignments', 'assignments.user', 'maintenanceLogs', 'status'];
+
+    if (isUuid) {
+      asset = await this.assetsRepository.findOne({
+        where: { id },
+        relations,
+      });
+    } else {
+      asset = await this.assetsRepository.findOne({
+        where: [
+          { serialNumber: id },
+          { name: id }
+        ],
+        relations,
+      });
+    }
+
     if (!asset) {
-      throw new NotFoundException(`Asset with ID ${id} not found`);
+      throw new NotFoundException(`Asset with ID or identifier "${id}" not found`);
     }
     // Sort assignments by date desc
     if (asset.assignments) {

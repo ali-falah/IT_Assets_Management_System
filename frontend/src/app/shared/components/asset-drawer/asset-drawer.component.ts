@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, NgZone, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostListener, inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 import { Asset, AssetService } from '../../../core/services/asset.service';
 import { Location, MasterDataService, Status } from '../../../core/services/master-data.service';
 import { User, UserService } from '../../../core/services/user.service';
@@ -17,7 +18,7 @@ import { AssetLabelModalComponent } from '../asset-label-modal/asset-label-modal
   templateUrl: './asset-drawer.component.html',
   styleUrls: ['./asset-drawer.component.css']
 })
-export class AssetDrawerComponent implements OnInit, OnChanges {
+export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() assetId: string | null = null;
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
@@ -28,14 +29,15 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
   private masterDataService = inject(MasterDataService);
   private userService = inject(UserService);
   private toastr = inject(ToastrService);
-  private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private ngZone = inject(NgZone);
+
+  private assetSub?: Subscription;
+  private openTimestamp = 0;
 
   asset: any | null = null;
   loading = false;
   actionLoading = false;
-  users: User[] = [];
+  @Input() users: User[] = [];
   statuses: Status[] = [];
   locations: Location[] = [];
 
@@ -58,15 +60,49 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
   laptopWarningMessage = '';
   pendingAssignUserId = '';
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.isOpen) {
+      this.close.emit();
+    }
+  }
+
   ngOnInit(): void {
-    this.loadMasterData();
-    if (this.assetId && this.isOpen) {
-      this.loadAsset();
+    if (this.isOpen) {
+      this.ensureMasterData();
+      if (this.assetId) {
+        this.loadAsset();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.assetSub) {
+      this.assetSub.unsubscribe();
+      this.assetSub = undefined;
+    }
+    if (this.copySerialTimeout) {
+      clearTimeout(this.copySerialTimeout);
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['assetId'] || changes['isOpen']) && this.isOpen && this.assetId) {
+    if (changes['isOpen']) {
+      if (this.isOpen) {
+        this.openTimestamp = Date.now();
+        this.ensureMasterData();
+      } else {
+        // Drawer closed — cancel any pending in-flight request
+        if (this.assetSub) {
+          this.assetSub.unsubscribe();
+          this.assetSub = undefined;
+        }
+        this.loading = false;
+        this.asset = null;
+      }
+    }
+    if (this.isOpen && (changes['assetId'] || changes['isOpen']) && this.assetId) {
+      this.openTimestamp = Date.now();
       this.isAssigning = false;
       this.selectedNewUserId = '';
       this.userFilterQuery = '';
@@ -74,44 +110,69 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
     }
   }
 
-  loadMasterData(): void {
-    this.userService.getUsers().subscribe((u: User[]) => {
-      this.ngZone.run(() => { this.users = u; this.cdr.markForCheck(); this.cdr.detectChanges(); });
-    });
-    this.masterDataService.getStatuses().subscribe((s: Status[]) => {
-      this.ngZone.run(() => { this.statuses = s; this.cdr.markForCheck(); this.cdr.detectChanges(); });
-    });
-    this.masterDataService.getLocations().subscribe((l: Location[]) => {
-      this.ngZone.run(() => { this.locations = l; this.cdr.markForCheck(); this.cdr.detectChanges(); });
-    });
+  onBackdropClick(event: MouseEvent): void {
+    // Avoid instant backdrop close if click occurred within 250ms of opening
+    if (Date.now() - this.openTimestamp < 250) {
+      return;
+    }
+    if (event.target === event.currentTarget) {
+      this.close.emit();
+    }
+  }
+
+  ensureMasterData(): void {
+    if (!this.users || this.users.length === 0) {
+      this.userService.getUsers().subscribe(u => this.users = u);
+    }
+    if (!this.statuses || this.statuses.length === 0) {
+      this.masterDataService.getStatuses().subscribe(s => this.statuses = s);
+    }
+    if (!this.locations || this.locations.length === 0) {
+      this.masterDataService.getLocations().subscribe(l => this.locations = l);
+    }
   }
 
   loadAsset(): void {
     if (!this.assetId) return;
-    this.ngZone.run(() => {
-      this.loading = true;
-      this.asset = null;
-      this.cdr.markForCheck();
-      this.cdr.detectChanges();
-    });
 
-    this.assetService.getAsset(this.assetId).subscribe({
+    // Cancel any previous request still in flight to prevent race conditions
+    if (this.assetSub) {
+      this.assetSub.unsubscribe();
+      this.assetSub = undefined;
+    }
+
+    this.loading = true;
+    this.asset = null;
+
+    this.assetSub = this.assetService.getAsset(this.assetId).subscribe({
       next: (data: any) => {
-        this.ngZone.run(() => {
-          this.asset = data;
-          this.loading = false;
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
-        });
+        this.asset = (data && data.data) ? data.data : data;
+        this.loading = false;
       },
       error: (err: any) => {
-        this.ngZone.run(() => {
-          console.error('Failed to load asset in drawer:', err);
-          this.toastr.error('Failed to load asset details');
-          this.loading = false;
-          this.cdr.markForCheck();
-          this.cdr.detectChanges();
-        });
+        const raw = (this.assetId || '').trim();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+        if (raw && !isUuid) {
+          this.assetService.getAssets({ search: raw, limit: 1 }).subscribe({
+            next: (searchRes) => {
+              if (searchRes?.data && searchRes.data.length > 0) {
+                this.asset = searchRes.data[0];
+                this.loading = false;
+              } else {
+                this.toastr.error('Asset not found');
+                this.loading = false;
+              }
+            },
+            error: () => {
+              this.toastr.error('Failed to load asset details');
+              this.loading = false;
+            }
+          });
+          return;
+        }
+        console.error('Failed to load asset in drawer:', err);
+        this.toastr.error('Failed to load asset details');
+        this.loading = false;
       }
     });
   }
@@ -124,11 +185,9 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
       navigator.clipboard.writeText(this.asset.serialNumber);
       this.toastr.success('Serial Number copied to clipboard');
       this.copiedSerial = true;
-      this.cdr.detectChanges();
       if (this.copySerialTimeout) clearTimeout(this.copySerialTimeout);
       this.copySerialTimeout = setTimeout(() => {
         this.copiedSerial = false;
-        this.cdr.detectChanges();
       }, 2000);
     }
   }
@@ -203,7 +262,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
   onStatusChange(newStatusId: string): void {
     if (!this.asset?.id || !newStatusId || newStatusId === this.asset.statusId) return;
     this.actionLoading = true;
-    this.cdr.markForCheck();
 
     this.assetService.updateAsset(this.asset.id, { statusId: newStatusId }).subscribe({
       next: () => {
@@ -212,12 +270,10 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
         this.actionLoading = false;
         this.loadAsset();
         this.updated.emit();
-        this.cdr.markForCheck();
       },
       error: () => {
         this.toastr.error('Failed to change status');
         this.actionLoading = false;
-        this.cdr.markForCheck();
       }
     });
   }
@@ -229,7 +285,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
     if (!availableStatus) return;
 
     this.actionLoading = true;
-    this.cdr.markForCheck();
 
     this.assetService.updateAsset(this.asset.id, {
       statusId: availableStatus.id,
@@ -240,12 +295,10 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
         this.actionLoading = false;
         this.loadAsset();
         this.updated.emit();
-        this.cdr.markForCheck();
       },
       error: () => {
         this.toastr.error('Failed to move asset to stock');
         this.actionLoading = false;
-        this.cdr.markForCheck();
       }
     });
   }
@@ -254,7 +307,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
   confirmReturnToStock(): void {
     if (!this.asset?.id) return;
     this.actionLoading = true;
-    this.cdr.markForCheck();
 
     const availableStatus = this.statuses.find(s => s.slug === 'available' || s.name.toLowerCase().includes('stock')) || this.statuses[0];
 
@@ -268,12 +320,10 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
         this.showReturnConfirmModal = false;
         this.loadAsset();
         this.updated.emit();
-        this.cdr.markForCheck();
       },
       error: () => {
         this.toastr.error('Failed to return asset to stock');
         this.actionLoading = false;
-        this.cdr.markForCheck();
       }
     });
   }
@@ -283,14 +333,12 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
     this.selectedNewUserId = '';
     this.userFilterQuery = '';
     this.isAssigning = true;
-    this.cdr.markForCheck();
   }
 
   cancelInlineAssign(): void {
     this.isAssigning = false;
     this.selectedNewUserId = '';
     this.userFilterQuery = '';
-    this.cdr.markForCheck();
   }
 
   get filteredUsers(): User[] {
@@ -308,7 +356,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
     // Double laptop check
     if (isLaptop && this.selectedNewUserId) {
       this.actionLoading = true;
-      this.cdr.markForCheck();
       this.assetService.getAssets({ assignedUserId: this.selectedNewUserId }).subscribe({
         next: (res: any) => {
           this.actionLoading = false;
@@ -322,7 +369,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
             this.pendingAssignUserId = this.selectedNewUserId;
             this.laptopWarningMessage = `${selectedUser?.name || 'This employee'} already has a laptop assigned (Serial: ${existingLaptop.serialNumber || 'N/A'}). Do you want to proceed?`;
             this.showLaptopWarningModal = true;
-            this.cdr.markForCheck();
           } else {
             this.promptAssignConfirm(selectedUser);
           }
@@ -350,7 +396,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
       this.confirmButtonText = 'Assign Asset';
     }
     this.showAssignConfirmModal = true;
-    this.cdr.markForCheck();
   }
 
   confirmAssignmentAction(): void {
@@ -371,7 +416,6 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
 
   private executeAssignUser(userId: string): void {
     this.actionLoading = true;
-    this.cdr.markForCheck();
 
     const assignedStatus = this.statuses.find(s => s.slug === 'assigned' || s.name.toLowerCase().includes('use')) || this.statuses[0];
     const targetUser = this.users.find(u => u.id === userId);
@@ -387,12 +431,10 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
         this.selectedNewUserId = '';
         this.loadAsset();
         this.updated.emit();
-        this.cdr.markForCheck();
       },
       error: (err: any) => {
         this.toastr.error(err?.error?.message || 'Failed to assign asset');
         this.actionLoading = false;
-        this.cdr.markForCheck();
       }
     });
   }
@@ -402,12 +444,10 @@ export class AssetDrawerComponent implements OnInit, OnChanges {
   printLabel(): void {
     if (!this.asset) return;
     this.showPrintModal = true;
-    this.cdr.markForCheck();
   }
 
   closePrintModal(): void {
     this.showPrintModal = false;
-    this.cdr.markForCheck();
   }
 
   navigateToEdit(): void {
