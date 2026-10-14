@@ -50,7 +50,7 @@ export class StatePreservationService {
   }
 
   private onSuspend() {
-    console.log('[StatePreservationService] App is pausing/suspending, ensuring localStorage sync...');
+    // Ensuring localStorage sync on pause/suspend
   }
 
   restorePath(): boolean {
@@ -58,7 +58,6 @@ export class StatePreservationService {
     const token = localStorage.getItem('token');
 
     if (savedPath && token && savedPath !== '/' && !savedPath.includes('/login')) {
-      console.log(`[StatePreservationService] Rehydrating route: ${savedPath}`);
       this.router.navigateByUrl(savedPath);
       return true;
     }

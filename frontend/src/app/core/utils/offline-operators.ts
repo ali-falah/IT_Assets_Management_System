@@ -12,7 +12,6 @@ export function withOfflineFallback<T>(fallbackFn: () => Promise<T> | Observable
     return source.pipe(
       catchError((error) => {
         if (error.status === 0 || !navigator.onLine) {
-          console.log('Network error or offline: switching to local storage');
           return from(fallbackFn());
         }
         return throwError(() => error);

@@ -14,8 +14,6 @@ export const offlineInterceptor: HttpInterceptorFn = (req, next) => {
       // Check if it's a network error (status 0) or if we are explicitly offline
       if (error.status === 0 || !window.navigator.onLine) {
         if (isModifyingRequest) {
-          console.log('Offline detected. Queueing request:', req.url);
-          
           offlineManager.enqueueRequest(
             req.url,
             req.method,

@@ -10,7 +10,7 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.DB_PASS || 'postgres',
   database: process.env.DB_NAME || 'it_assets',
   entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/**/migrations/*.js'],
+  migrations: [],
 };
 
 const dataSource = new DataSource(dataSourceOptions);
