@@ -188,6 +188,10 @@ export class AssetFormComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  openHistoryDrawer() {
+    this.router.navigate(['/activities'], { queryParams: { serial: this.fullAsset?.serialNumber } });
+  }
+
   initForm() {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],

@@ -1,8 +1,21 @@
-<div class="flex-1 flex flex-col space-y-3.5 w-full max-w-full overflow-x-hidden pb-4">
+<div class="flex-1 flex flex-col gap-3 w-full max-w-full overflow-hidden min-h-0">
   
   <!-- Projected Header Actions for Desktop Layout -->
   <ng-template appPageHeaderActions>
     <div class="flex items-center gap-2">
+      <!-- Compact Global Search (hidden at top, reveals on scroll down) -->
+      <div class="relative min-h-0 hidden lg:block transition-all duration-300 ease-out overflow-hidden"
+        [class.max-h-0]="!showHeaderSearch"
+        [class.opacity-0]="!showHeaderSearch"
+        [class.-translate-y-2]="!showHeaderSearch"
+        [class.max-h-10]="showHeaderSearch"
+        [class.opacity-100]="showHeaderSearch"
+        [class.translate-y-0]="showHeaderSearch">
+        <lucide-icon name="search" [size]="13" class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none mr-2"></lucide-icon>
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+          placeholder="Search..."
+          class="w-40 pl-8 pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+      </div>
       <!-- View Mode Toggle -->
       <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
         <button (click)="setViewMode('timeline')"
@@ -169,75 +182,20 @@
 
   </div>
 
-  <!-- Overview Metrics Bar (High-Density Compact with Hover Effects - Desktop Only) -->
-  <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-2.5">
-    <!-- Total Events -->
-    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
-      <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200">
-        <lucide-icon name="activity" [size]="16"></lucide-icon>
-      </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Total Events</p>
-        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.totalCount | number }}</h3>
-      </div>
-    </div>
-
-    <!-- Asset Operations -->
-    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
-      <div class="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
-        <lucide-icon name="laptop" [size]="16"></lucide-icon>
-      </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 transition-colors">Asset Operations</p>
-        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.assetEventsCount | number }}</h3>
-      </div>
-    </div>
-
-    <!-- Assignments & Returns -->
-    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
-      <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-        <lucide-icon name="arrow-up-right" [size]="16"></lucide-icon>
-      </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Assignments</p>
-        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.assignmentEventsCount | number }}</h3>
-      </div>
-    </div>
-
-    <!-- Recent 24h -->
-    <div class="bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-3 group cursor-default">
-      <div class="p-2 bg-amber-50 text-amber-600 rounded-lg shrink-0 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-200">
-        <lucide-icon name="clock" [size]="16"></lucide-icon>
-      </div>
-      <div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-600 transition-colors">Past 24 Hours</p>
-        <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mt-0.5">{{ stats.last24hCount | number }}</h3>
-      </div>
-    </div>
-  </div>
-
   <!-- Sticky Filter & Search Container (Clean Full-Width, No Overflow - Desktop Only) -->
   <div class="hidden md:block sticky top-0 z-30 pt-1 pb-2 bg-background/95 backdrop-blur-md transition-all w-full">
     
-    <div class="bg-white rounded-xl p-3 border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 space-y-2.5">
-      <!-- Top Row: Search & Date Presets -->
-      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
-        
-        <!-- Live Search Box with Hover & Focus Elevation -->
-        <div class="relative flex-1 group">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-            <lucide-icon name="search" [size]="15"></lucide-icon>
-          </div>
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
-            placeholder="Search by asset, user, serial number, actor, or changes..."
-            class="w-full pl-9 pr-8 py-2 bg-slate-50/90 hover:bg-white hover:border-slate-300 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-xs outline-none transition-all text-xs text-slate-800 placeholder-slate-400">
-          <button *ngIf="searchTerm" (click)="clearSearch()"
-            class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
-            <lucide-icon name="x" [size]="13"></lucide-icon>
-          </button>
+    <div class="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 space-y-2">
+      <!-- Top Row: Compact Inline Metrics Strip on Left + Date Range Selectors on Right -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+        <div class="flex items-center gap-4 text-[11px] text-slate-600 flex-wrap">
+          <span class="inline-flex items-center gap-1.5"><lucide-icon name="activity" [size]="12" class="text-indigo-500"></lucide-icon><span class="font-bold text-slate-800">{{ stats.totalCount | number }}</span> Total</span>
+          <span class="inline-flex items-center gap-1.5"><lucide-icon name="laptop" [size]="12" class="text-blue-500"></lucide-icon><span class="font-bold text-slate-800">{{ stats.assetEventsCount | number }}</span> Asset Ops</span>
+          <span class="inline-flex items-center gap-1.5"><lucide-icon name="arrow-up-right" [size]="12" class="text-emerald-500"></lucide-icon><span class="font-bold text-slate-800">{{ stats.assignmentEventsCount | number }}</span> Assignments</span>
+          <span class="inline-flex items-center gap-1.5"><lucide-icon name="clock" [size]="12" class="text-amber-500"></lucide-icon><span class="font-bold text-slate-800">{{ stats.last24hCount | number }}</span> Past 24h</span>
         </div>
 
-        <!-- Date Range Selectors -->
+        <!-- Date Range Selectors (Top Right) -->
         <div class="flex items-center gap-1.5 flex-wrap">
           <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs shadow-2xs">
             <button (click)="setDateRange('all')"
@@ -268,8 +226,25 @@
         </div>
       </div>
 
-      <!-- Category Filter Pills Row with Micro-Interactions -->
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5 pt-0.5 no-scrollbar border-t border-slate-100">
+      <!-- Bottom Row: Search & Category Filters -->
+      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+
+        <!-- Live Search Box with Hover & Focus Elevation (takes remaining space) -->
+        <div class="relative flex-1 min-w-0 group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+            <lucide-icon name="search" [size]="15"></lucide-icon>
+          </div>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+            placeholder="Search by asset, user, serial number, actor, or changes..."
+            class="w-full pl-9 pr-8 py-2 bg-slate-50/90 hover:bg-white hover:border-slate-300 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:shadow-xs outline-none transition-all text-xs text-slate-800 placeholder-slate-400">
+          <button *ngIf="searchTerm" (click)="clearSearch()"
+            class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600">
+            <lucide-icon name="x" [size]="13"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
         <button (click)="setCategory('all')"
           [ngClass]="selectedCategory === 'all' ? 'bg-indigo-600 text-white font-semibold shadow-xs' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
           class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all shrink-0 hover:shadow-2xs active:scale-95">
@@ -319,10 +294,11 @@
   </div>
 
   <!-- Content Container with Permanently Docked Bottom Pagination -->
-  <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col">
+  <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 mt-2">
 
     <!-- Scrollable Activities List Area -->
-    <div class="overflow-y-auto max-h-[calc(100vh-175px)] md:max-h-[calc(100vh-270px)] min-h-[350px]">
+    <div class="flex-1 min-h-0 overflow-y-auto" (scroll)="onListScroll($event)">
+      <div #topSentinel class="h-1 w-full"></div>
 
       <!-- Loading State -->
       <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 space-y-3">
@@ -482,14 +458,7 @@
                       By: <span class="font-semibold text-slate-800">{{ activity.actorName }}</span>
                     </span>
 
-                    <!-- Quick View Asset Button -->
-                    <button type="button" *ngIf="(activity.entityId || activity.entityName) && activity.action.startsWith('asset') && activity.action !== 'asset_deleted'"
-                      (click)="viewAsset(activity.entityId || activity.entityName, $event)"
-                      class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold ml-auto hover:underline text-[11px] cursor-pointer focus:outline-none"
-                      title="Quick Inspect Asset Details">
-                      <lucide-icon name="external-link" [size]="11"></lucide-icon>
-                      <span>View Asset</span>
-                    </button>
+                    <!-- (View Asset button removed) -->
                   </div>
 
                   <!-- Field-Level Diffs Box (only when valid differences exist) -->
@@ -738,13 +707,6 @@
                   class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-all cursor-pointer"
                   title="Quick Inspect Drawer">
                   <lucide-icon name="panel-right" [size]="13"></lucide-icon>
-                </button>
-                <button type="button"
-                  (click)="viewAsset(activity.entityId || activity.entityName, $event)"
-                  class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline text-[11px] cursor-pointer inline-flex items-center gap-0.5"
-                  title="Quick Inspect Asset Details">
-                  <span>View</span>
-                  <lucide-icon name="external-link" [size]="10"></lucide-icon>
                 </button>
               </div>
               <button type="button" *ngIf="activity.isUserEvent && activity.action !== 'user_deleted'"

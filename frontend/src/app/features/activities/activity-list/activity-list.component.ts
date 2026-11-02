@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, NgZone, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, inject, NgZone, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin, from, of, catchError, map } from 'rxjs';
@@ -65,7 +65,9 @@ export interface TimelineGroup {
   // Default change detection: Angular automatically picks up all state changes
   // from zone events (clicks, timeouts, HTTP). No markForCheck()/detectChanges() needed.
 })
-export class ActivityListComponent implements OnInit {
+export class ActivityListComponent implements OnInit, AfterViewInit {
+  @ViewChild('topSentinel') topSentinel?: ElementRef<HTMLElement>;
+  private headerSearchObserver?: IntersectionObserver;
   private pageHeaderService = inject(PageHeaderService);
   private activityLogService = inject(ActivityLogService);
   private assignmentService = inject(AssignmentService);
@@ -76,6 +78,7 @@ export class ActivityListComponent implements OnInit {
   private toastr = inject(ToastrService);
   private ngZone = inject(NgZone);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   activities: UnifiedActivity[] = [];
   users: User[] = [];
@@ -211,14 +214,36 @@ export class ActivityListComponent implements OnInit {
       event.preventDefault();
     }
     if (!serial) return;
-    navigator.clipboard.writeText(serial);
-    this.toastr.success('Serial Number copied to clipboard');
-    this.copiedSerialMap[serial] = true;
+    const finish = () => {
+      this.toastr.success('Serial Number copied to clipboard');
+      this.copiedSerialMap[serial] = true;
+      if (this.copyTimeouts[serial]) clearTimeout(this.copyTimeouts[serial]);
+      this.copyTimeouts[serial] = setTimeout(() => {
+        this.copiedSerialMap[serial] = false;
+      }, 2000);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(serial).then(finish).catch(() => this.fallbackCopy(serial, finish));
+    } else {
+      this.fallbackCopy(serial, finish);
+    }
+  }
 
-    if (this.copyTimeouts[serial]) clearTimeout(this.copyTimeouts[serial]);
-    this.copyTimeouts[serial] = setTimeout(() => {
-      this.copiedSerialMap[serial] = false;
-    }, 2000);
+  private fallbackCopy(text: string, done: () => void) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    } catch {
+      this.toastr.error('Failed to copy');
+    }
   }
 
   private dismissHoverCard() {
@@ -362,6 +387,7 @@ export class ActivityListComponent implements OnInit {
 
   // Search & Filter state
   searchTerm = '';
+  showHeaderSearch = false;
   selectedCategory: 'all' | 'assets' | 'assignments' | 'users' | 'updates' | 'deletions' = 'all';
   selectedDateRange: 'all' | 'today' | 'week' | 'month' | 'custom' = 'all';
   customStartDate = '';
@@ -433,6 +459,8 @@ export class ActivityListComponent implements OnInit {
       title: 'Activity & Audit History',
       subtitle: 'Comprehensive audit trail of asset lifecycle, assignments, and user operations'
     });
+    const serial = this.route.snapshot.queryParamMap.get('serial');
+    if (serial) this.searchTerm = serial;
     this.loadActivities();
   }
 
@@ -547,6 +575,33 @@ export class ActivityListComponent implements OnInit {
     this.searchTerm = '';
     this.currentPage = 1;
     this.updateDerivedData();
+  }
+
+  onListScroll(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    const scrollTop = target ? target.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+    this.showHeaderSearch = scrollTop > 10;
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    this.showHeaderSearch = scrollTop > 10;
+  }
+
+  ngAfterViewInit(): void {
+    const el = this.topSentinel?.nativeElement;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    this.headerSearchObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        this.ngZone.run(() => {
+          this.showHeaderSearch = !entry.isIntersecting;
+        });
+      },
+      { threshold: 0 }
+    );
+    this.headerSearchObserver.observe(el);
   }
 
   onCustomDateChange(): void {

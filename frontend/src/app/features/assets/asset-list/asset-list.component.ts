@@ -78,16 +78,36 @@ export class AssetNameRenderer implements ICellRendererAngularComp {
     event.stopPropagation();
     event.preventDefault();
     if (this.params?.value) {
-      navigator.clipboard.writeText(this.params.value);
-      this.toastr.success('Asset Name copied to clipboard');
-      this.copied = true;
-      this.cdr.detectChanges();
-      if (this.copyTimeout) clearTimeout(this.copyTimeout);
-      this.copyTimeout = setTimeout(() => {
-        this.copied = false;
+      const finish = () => {
+        this.toastr.success('Asset Name copied to clipboard');
+        this.copied = true;
         this.cdr.detectChanges();
-      }, 2000);
+        if (this.copyTimeout) clearTimeout(this.copyTimeout);
+        this.copyTimeout = setTimeout(() => {
+          this.copied = false;
+          this.cdr.detectChanges();
+        }, 2000);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(this.params.value).then(finish).catch(() => { this.fallbackCopy(this.params.value); finish(); });
+      } else {
+        this.fallbackCopy(this.params.value); finish();
+      }
     }
+  }
+
+  private fallbackCopy(text: string) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch { this.toastr.error('Failed to copy'); }
   }
 }
 
@@ -271,6 +291,19 @@ import { AssetLabelModalComponent } from '../../../shared/components/asset-label
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetListComponent implements OnInit, OnDestroy {
+  private fallbackCopy(text: string) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch { /* ignore */ }
+  }
   private pageHeaderService = inject(PageHeaderService);
   private assetService = inject(AssetService);
   private excelExportService = inject(ExcelExportService);
@@ -838,7 +871,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       {
         field: 'serialNumber',
         headerName: 'Serial No.',
-        flex: 1.8,
+        flex: 1.2,
         cellRenderer: (params: any) => {
           if (!params.value) return '-';
           return `
@@ -854,28 +887,36 @@ export class AssetListComponent implements OnInit, OnDestroy {
         onCellClicked: (event: any) => {
           const btn = event.event?.target?.closest('.copy-btn') as HTMLElement;
           if (btn) {
-            navigator.clipboard.writeText(event.value);
-            this.toastr.success('Copied to clipboard');
-            const copyIcon = btn.querySelector('.copy-icon');
-            const checkIcon = btn.querySelector('.check-icon');
-            if (copyIcon && checkIcon) {
-              copyIcon.classList.add('hidden');
-              checkIcon.classList.remove('hidden');
-              btn.classList.add('bg-emerald-50', 'text-emerald-600');
-              setTimeout(() => {
-                copyIcon.classList.remove('hidden');
-                checkIcon.classList.add('hidden');
-                btn.classList.remove('bg-emerald-50', 'text-emerald-600');
-              }, 2000);
+            const finish = () => {
+              this.toastr.success('Copied to clipboard');
+              const copyIcon = btn.querySelector('.copy-icon');
+              const checkIcon = btn.querySelector('.check-icon');
+              if (copyIcon && checkIcon) {
+                copyIcon.classList.add('hidden');
+                checkIcon.classList.remove('hidden');
+                btn.classList.add('bg-emerald-50', 'text-emerald-600');
+                setTimeout(() => {
+                  copyIcon.classList.remove('hidden');
+                  checkIcon.classList.add('hidden');
+                  btn.classList.remove('bg-emerald-50', 'text-emerald-600');
+                }, 2000);
+              }
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText(event.value).then(finish).catch(() => {
+                this.fallbackCopy(event.value); finish();
+              });
+            } else {
+              this.fallbackCopy(event.value); finish();
             }
           }
         }
       },
-      { field: 'category.name', headerName: 'Category', flex: 1, cellClass: 'text-slate-500 font-medium' },
+      { field: 'category.name', headerName: 'Category', flex: 0.8, cellClass: 'text-slate-500 font-medium' },
       {
         field: 'status.name',
         headerName: 'Status',
-        flex: 1.25,
+        flex: 1,
         headerClass: 'ag-header-center',
         cellClass: 'flex items-center justify-center text-center',
         editable: (params: any) => !params.data?.assignedUserId,
@@ -966,7 +1007,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       {
         field: 'assignedUser.name',
         headerName: 'Assigned To',
-        flex: 1.5,
+        flex: 2.5,
         editable: true,
         cellEditor: SearchableCellEditorComponent,
         cellEditorParams: () => ({ values: ['Unassigned', ...this.users.map(u => u.name)] }),

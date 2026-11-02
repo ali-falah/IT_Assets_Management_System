@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -26,6 +26,7 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
   @Output() openUserDetail = new EventEmitter<string>();
 
   private assetService = inject(AssetService);
+  private cdr = inject(ChangeDetectorRef);
   private masterDataService = inject(MasterDataService);
   private userService = inject(UserService);
   private toastr = inject(ToastrService);
@@ -107,6 +108,7 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
       this.selectedNewUserId = '';
       this.userFilterQuery = '';
       this.loadAsset();
+      this.cdr.markForCheck();
     }
   }
 
@@ -148,6 +150,7 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
       next: (data: any) => {
         this.asset = (data && data.data) ? data.data : data;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         const raw = (this.assetId || '').trim();
@@ -158,14 +161,17 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
               if (searchRes?.data && searchRes.data.length > 0) {
                 this.asset = searchRes.data[0];
                 this.loading = false;
+                this.cdr.markForCheck();
               } else {
                 this.toastr.error('Asset not found');
                 this.loading = false;
+                this.cdr.markForCheck();
               }
             },
             error: () => {
               this.toastr.error('Failed to load asset details');
               this.loading = false;
+              this.cdr.markForCheck();
             }
           });
           return;
@@ -173,6 +179,7 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
         console.error('Failed to load asset in drawer:', err);
         this.toastr.error('Failed to load asset details');
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -182,14 +189,34 @@ export class AssetDrawerComponent implements OnInit, OnChanges, OnDestroy {
 
   copySerial(): void {
     if (this.asset?.serialNumber) {
-      navigator.clipboard.writeText(this.asset.serialNumber);
-      this.toastr.success('Serial Number copied to clipboard');
-      this.copiedSerial = true;
-      if (this.copySerialTimeout) clearTimeout(this.copySerialTimeout);
-      this.copySerialTimeout = setTimeout(() => {
-        this.copiedSerial = false;
-      }, 2000);
+      const finish = () => {
+        this.toastr.success('Serial Number copied to clipboard');
+        this.copiedSerial = true;
+        if (this.copySerialTimeout) clearTimeout(this.copySerialTimeout);
+        this.copySerialTimeout = setTimeout(() => {
+          this.copiedSerial = false;
+        }, 2000);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(this.asset.serialNumber).then(finish).catch(() => { this.fallbackCopy(this.asset.serialNumber); finish(); });
+      } else {
+        this.fallbackCopy(this.asset.serialNumber); finish();
+      }
     }
+  }
+
+  private fallbackCopy(text: string) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch { this.toastr.error('Failed to copy'); }
   }
 
   // Status Helpers
